@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QUdpSocket>
 #include <QTimer>
-#include "../ZRTP/zrtp.h"
+#include "zrtp.h"
 #include "mycallbacks.h"
 
 class NetworkManager : public QObject
@@ -19,6 +19,9 @@ public:
 signals:
 
 public slots:
+
+public:
+    uint8_t* getMyZid() {return myZid;}
 
 private:
     QUdpSocket *socket;

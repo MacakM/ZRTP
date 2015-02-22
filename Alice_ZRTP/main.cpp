@@ -5,7 +5,9 @@ int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
+    NetworkManager *manager = new NetworkManager();
 
+    //std::cout << manager->getMyZid();
 
     return a.exec();
 }
