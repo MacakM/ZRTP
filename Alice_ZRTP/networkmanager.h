@@ -3,13 +3,15 @@
 
 #include <QObject>
 #include <QUdpSocket>
+#include <QTimer>
 #include "../ZRTP/zrtp.h"
+#include "mycallbacks.h"
 
 class NetworkManager : public QObject
 {
     Q_OBJECT
 
-    typedef bool (*function)(const uint8_t* data, int32_t length);
+    friend class MyCallbacks;
 
 public:
     explicit NetworkManager(QObject *parent = 0);
@@ -17,13 +19,14 @@ public:
 signals:
 
 public slots:
-    bool sendData(const uint8_t *data, int32_t length);
 
 private:
-    static QUdpSocket *socket;
+    QUdpSocket *socket;
+    QTimer timer;
 
     Zrtp *zrtp;
     ZrtpCallback *callbacks;
+    uint8_t *myZid;
 };
 
 #endif // NETWORKMANAGER_H

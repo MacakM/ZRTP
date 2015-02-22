@@ -5,13 +5,10 @@
 
 class ZrtpCallback {
 
-    typedef bool (*function)(const uint8_t* data, int32_t length);
-
 public:
-    ZrtpCallback(function pFunc);
+    ZrtpCallback() {}
 
-protected:
-    function sendData;
+    virtual bool sendData (const uint8_t* data, int32_t length) = 0;
 
 };
 

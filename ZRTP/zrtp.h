@@ -13,7 +13,7 @@ public:
 private:
     bool sendData(const uint8_t *data, int32_t length);
 
-    uint8_t myZID;
+    uint8_t *myZID;
     ZrtpCallback *callback;
 };
 
