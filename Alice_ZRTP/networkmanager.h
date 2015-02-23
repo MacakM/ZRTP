@@ -6,6 +6,13 @@
 #include <QTimer>
 #include "zrtp.h"
 #include "mycallbacks.h"
+#include "parser.h"
+
+enum Role
+{
+    Initiator,
+    Responder
+};
 
 class NetworkManager : public QObject
 {
@@ -23,11 +30,14 @@ public slots:
 
 public:
     uint8_t getMyZid();
+    void setArguments(Arguments args);
 
 private:
     QUdpSocket *sendSocket;
     QUdpSocket *readSocket;
     QTimer timer;
+
+    Role myRole;
 
     Zrtp *zrtp;
     ZrtpCallback *callbacks;
