@@ -1,7 +1,8 @@
 #include "mycallbacks.h"
 
-MyCallbacks::MyCallbacks()
+MyCallbacks::MyCallbacks(NetworkManager *manager)
 {
+    this->manager = manager;
 }
 
 bool MyCallbacks::sendData (const uint8_t* data, int32_t length)

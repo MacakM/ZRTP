@@ -21,7 +21,7 @@ signals:
 public slots:
 
 public:
-    uint8_t* getMyZid() {return myZid;}
+    uint8_t getMyZid();
 
 private:
     QUdpSocket *socket;
@@ -29,7 +29,7 @@ private:
 
     Zrtp *zrtp;
     ZrtpCallback *callbacks;
-    uint8_t *myZid;
+    uint8_t myZid;
 };
 
 #endif // NETWORKMANAGER_H

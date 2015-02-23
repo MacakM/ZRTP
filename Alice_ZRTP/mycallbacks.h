@@ -11,7 +11,7 @@ class MyCallbacks : public ZrtpCallback
 {
 
 public:
-    MyCallbacks();
+    MyCallbacks(NetworkManager *manager);
 
     virtual bool sendData (const uint8_t* data, int32_t length);
 

@@ -3,8 +3,15 @@
 NetworkManager::NetworkManager(QObject *parent) :
     QObject(parent)
 {
-    myZid = (uint8_t*) 8;
-    callbacks = new MyCallbacks();
+    socket = new QUdpSocket();
+    myZid = 8;
 
-    zrtp = new Zrtp(myZid, callbacks);
+    callbacks = new MyCallbacks(this);
+
+    zrtp = new Zrtp(&myZid, callbacks);
+}
+
+uint8_t NetworkManager::getMyZid()
+{
+     return myZid;
 }
