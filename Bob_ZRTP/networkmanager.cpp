@@ -5,7 +5,7 @@ NetworkManager::NetworkManager(QObject *parent) :
 {
     sendSocket = new QUdpSocket();
     readSocket = new QUdpSocket();
-    readSocket->bind(QHostAddress::LocalHost, 4321);
+    readSocket->bind(QHostAddress::LocalHost, 1234);
     connect(readSocket, SIGNAL(readyRead()),
                 this, SLOT(processPendingDatagram()));
 

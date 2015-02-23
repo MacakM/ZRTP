@@ -32,6 +32,7 @@ private:
     Zrtp *zrtp;
     ZrtpCallback *callbacks;
     uint8_t myZid;
+
 };
 
 #endif // NETWORKMANAGER_H
