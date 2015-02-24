@@ -12,6 +12,9 @@ Zrtp::Zrtp(uint8_t *zid, ZrtpCallback *cb)
 
 void Zrtp::processTimeout()
 {
+    /*Event event;
+    event.type = Timeout;
+    engine->processEvent(&event);*/
     uint8_t* msg = (uint8_t*)"Hello";
     sendData(msg,5);
     activateTimer(2000);

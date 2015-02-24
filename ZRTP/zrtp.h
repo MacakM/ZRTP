@@ -3,10 +3,12 @@
 
 #include "Integers.h"
 #include "ZrtpCallback.h"
+#include "stateengine.h"
 #include <iostream>
 
 class Zrtp
 {
+
 public:
     Zrtp(uint8_t *zid, ZrtpCallback *cb);
 
