@@ -7,9 +7,22 @@ Zrtp::Zrtp(uint8_t *zid, ZrtpCallback *cb)
 
     uint8_t* msg = (uint8_t*)"Hello";
     sendData(msg,5);
+    activateTimer(2000);
+}
+
+void Zrtp::processTimeout()
+{
+    uint8_t* msg = (uint8_t*)"Hello";
+    sendData(msg,5);
+    activateTimer(2000);
 }
 
 bool Zrtp::sendData(const uint8_t *data, int32_t length)
 {
     return callback->sendData(data, length);
+}
+
+bool Zrtp::activateTimer(int32_t time)
+{
+    return callback->activateTimer(time);
 }

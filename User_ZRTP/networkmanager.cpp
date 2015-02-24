@@ -12,6 +12,9 @@ NetworkManager::NetworkManager(int argc, char *argv[], QObject *parent) :
     connect(readSocket, SIGNAL(readyRead()),
                 this, SLOT(processPendingDatagram()));
 
+    timer.setSingleShot(true);
+    connect(&timer, SIGNAL(timeout()), this, SLOT(sendTimeout()));
+
     if(myRole == Initiator)
     {
         myZid = 8;
@@ -22,6 +25,9 @@ NetworkManager::NetworkManager(int argc, char *argv[], QObject *parent) :
     }
 
     callbacks = new MyCallbacks(this);
+
+    //testing
+    Sleep(10000);
 
     zrtp = new Zrtp(&myZid, callbacks);
 }
@@ -38,6 +44,11 @@ void NetworkManager::processPendingDatagram()
     qDebug() << "Message: " << datagram;
     qDebug() << "Sender: " << sender;
     qDebug() << "Port: " << senderPort;
+}
+
+void NetworkManager::sendTimeout()
+{
+    zrtp->processTimeout();
 }
 
 uint8_t NetworkManager::getMyZid()

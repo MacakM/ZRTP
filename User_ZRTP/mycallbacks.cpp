@@ -14,3 +14,15 @@ bool MyCallbacks::sendData (const uint8_t* data, int32_t length)
     }
     return true;
 }
+
+bool MyCallbacks::activateTimer(int32_t time)
+{
+    manager->timer.start(time);
+    return true;
+}
+
+bool MyCallbacks::cancelTimer()
+{
+    manager->timer.stop();
+    return true;
+}

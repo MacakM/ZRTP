@@ -8,11 +8,9 @@
 #include "mycallbacks.h"
 #include "parser.h"
 
-enum Role
-{
-    Initiator,
-    Responder
-};
+//just for testing
+#include <windows.h>
+#include <conio.h>
 
 class NetworkManager : public QObject
 {
@@ -27,6 +25,7 @@ signals:
 
 public slots:
     void processPendingDatagram();
+    void sendTimeout();
 
 public:
     uint8_t getMyZid();
@@ -44,6 +43,7 @@ private:
 
     Zrtp *zrtp;
     ZrtpCallback *callbacks;
+
     uint8_t myZid;
 
     void setArguments(Arguments args);
