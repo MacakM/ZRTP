@@ -28,3 +28,8 @@ bool Zrtp::activateTimer(int32_t time)
 {
     return callback->activateTimer(time);
 }
+
+bool Zrtp::cancelTimer()
+{
+    return callback->cancelTimer();
+}

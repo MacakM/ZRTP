@@ -4,6 +4,15 @@ StateEngine::StateEngine(Zrtp *zrtp)
 {
     initHandlers();
     this->zrtp = zrtp;
+
+    T1.start = 50;
+    T1.cap = 200;
+    T1.maxResend = 20;
+
+    T2.start = 150;
+    T2.cap = 1200;
+    T2.maxResend = 10;
+
     actualState = Initial;
 }
 
@@ -23,6 +32,28 @@ void StateEngine::initHandlers()
     handlers[WaitErrorAck] = &StateEngine::handleWaitErrorAck;
 }
 
+void StateEngine::timerStart(zrtpTimer *t)
+{
+    t->actualTime = t->start;
+    t->resendCounter = 0;
+    zrtp->activateTimer(t->start);
+}
+
+bool StateEngine::timerNext(zrtpTimer *t)
+{
+    t->actualTime *= 2;
+    if(t->actualTime > t->cap)
+    {
+        t->actualTime = t->cap;
+    }
+    t->resendCounter++;
+    if(t->resendCounter > t->maxResend)
+    {
+        return false;
+    }
+    return zrtp->activateTimer(t->actualTime);
+}
+
 void StateEngine::processEvent(Event *event)
 {
     actualEvent = event;
@@ -35,21 +66,22 @@ void StateEngine::handleInitial()
     {
         uint8_t* msg = (uint8_t*)"Hello";
         zrtp->sendData(msg,5);
-        zrtp->activateTimer(2000);
-        //actualState = SentHello;
-    }
-
-    if(actualEvent->type == Timeout)
-    {
-        uint8_t* msg = (uint8_t*)"HelloTimer";
-        zrtp->sendData(msg,10);
-        zrtp->activateTimer(2000);
+        timerStart(&T1);
+        actualState = SentHello;
     }
 }
 
 void StateEngine::handleSentHello()
 {
-
+    if(actualEvent->type == Timeout)
+    {
+        uint8_t* msg = (uint8_t*)"HelloTimer";
+        zrtp->sendData(msg,10);
+        if(!timerNext(&T1))
+        {
+            zrtp->cancelTimer();
+        }
+    }
 }
 
 void StateEngine::handleSentHelloAck()

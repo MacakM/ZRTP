@@ -40,9 +40,16 @@ typedef struct {
     uint8_t *data;
 } Event;
 
+typedef struct {
+    int32_t start;
+    int32_t cap;
+    int32_t actualTime;
+    int32_t resendCounter;
+    int32_t maxResend;
+} zrtpTimer;
+
 typedef void (StateEngine::*Handler)(void);
 typedef std::map<States, Handler> handlerMap;
-
 
 class StateEngine
 {
@@ -57,7 +64,12 @@ private:
     States actualState;
     Event *actualEvent;
 
+    zrtpTimer T1;
+    zrtpTimer T2;
+
     void initHandlers();
+    void timerStart(zrtpTimer *t);
+    bool timerNext(zrtpTimer *t);
 
     void handleInitial();
     void handleSentHello();
