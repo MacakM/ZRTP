@@ -5,19 +5,18 @@ Zrtp::Zrtp(uint8_t *zid, ZrtpCallback *cb)
     myZID = zid;
     callback = cb;
 
-    uint8_t* msg = (uint8_t*)"Hello";
-    sendData(msg,5);
-    activateTimer(2000);
+    engine = new StateEngine(this);
+
+    Event event;
+    event.type = Start;
+    engine->processEvent(&event);
 }
 
 void Zrtp::processTimeout()
 {
-    /*Event event;
+    Event event;
     event.type = Timeout;
-    engine->processEvent(&event);*/
-    uint8_t* msg = (uint8_t*)"Hello";
-    sendData(msg,5);
-    activateTimer(2000);
+    engine->processEvent(&event);
 }
 
 bool Zrtp::sendData(const uint8_t *data, int32_t length)

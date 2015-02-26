@@ -6,8 +6,11 @@
 #include "stateengine.h"
 #include <iostream>
 
+class StateEngine;
+
 class Zrtp
 {
+    friend class StateEngine;
 
 public:
     Zrtp(uint8_t *zid, ZrtpCallback *cb);
@@ -20,6 +23,7 @@ private:
 
     uint8_t *myZID;
     ZrtpCallback *callback;
+    StateEngine *engine;
 };
 
 #endif // ZRTP_H

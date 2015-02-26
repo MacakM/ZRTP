@@ -1,10 +1,14 @@
 #ifndef STATEENGINE_H
 #define STATEENGINE_H
 
+#include "zrtp.h"
 #include "Integers.h"
 #include <map>
 
+#include <iostream>
+
 class StateEngine;
+class Zrtp;
 
 typedef enum
 {
@@ -24,7 +28,7 @@ typedef enum
 
 typedef enum
 {
-    Initialize,
+    Start,
     End,
     Packet,
     Timeout
@@ -39,18 +43,21 @@ typedef struct {
 typedef void (StateEngine::*Handler)(void);
 typedef std::map<States, Handler> handlerMap;
 
-class Zrtp;
 
 class StateEngine
 {
 public:
-    StateEngine();
+    StateEngine(Zrtp *zrtp);
+
+    void processEvent(Event *event);
 
 private:
+    Zrtp *zrtp;
     handlerMap handlers;
+    States actualState;
+    Event *actualEvent;
 
     void initHandlers();
-    void processEvent(Event *event);
 
     void handleInitial();
     void handleSentHello();
