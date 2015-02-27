@@ -26,11 +26,14 @@ signals:
 public slots:
     void processPendingDatagram();
     void sendTimeout();
+    void sendMessage(uint8_t *msg);
 
 public:
     uint8_t getMyZid();
 
 private:
+    uint8_t myZid;
+
     QUdpSocket *sendSocket;
     QUdpSocket *readSocket;
     QTimer timer;
@@ -44,7 +47,6 @@ private:
     Zrtp *zrtp;
     ZrtpCallback *callbacks;
 
-    uint8_t myZid;
 
     void setArguments(Arguments args);
 };

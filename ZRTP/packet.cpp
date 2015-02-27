@@ -17,10 +17,15 @@ uint8_t *Packet::getType()
 
 void Packet::setLength(uint16_t length)
 {
-    //TODO
+    packetHeader->length = length;
 }
 
 void Packet::setType(uint8_t *type)
 {
-    //TODO
+    memcpy(packetHeader->type, type, TYPE_SIZE);
+}
+
+void Packet::setZrtpIdentifier()
+{
+    packetHeader->identifier = (uint16_t)0x505a;
 }

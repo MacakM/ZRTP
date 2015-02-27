@@ -64,8 +64,9 @@ void StateEngine::handleInitial()
 {
     if(actualEvent->type == Start)
     {
-        uint8_t* msg = (uint8_t*)"Hello";
-        zrtp->sendData(msg,5);
+        zrtp->hello = new PacketHello();
+        uint8_t* msg = (uint8_t*)"Hello   ";
+        zrtp->sendData(msg,8);
         timerStart(&T1);
         actualState = SentHello;
     }
@@ -75,11 +76,26 @@ void StateEngine::handleSentHello()
 {
     if(actualEvent->type == Timeout)
     {
-        uint8_t* msg = (uint8_t*)"HelloTimer";
-        zrtp->sendData(msg,10);
+        uint8_t* msg = (uint8_t*)"Hello   ";
+        zrtp->sendData(msg,8);
         if(!timerNext(&T1))
         {
             zrtp->cancelTimer();
+        }
+    }
+    if(actualEvent->type == Message)
+    {
+        uint8_t *msg = actualEvent->message;
+        uint8_t first = *msg;
+        uint8_t last = *(msg+7);
+        if(first == 'H' && last == ' ')
+        {
+            uint8_t *ack = (uint8_t*)"HelloACK";
+            zrtp->sendData(ack,8);
+        }
+        if(first == 'H' && last == 'K')
+        {
+            actualState = ReceivedHelloAck;
         }
     }
 }

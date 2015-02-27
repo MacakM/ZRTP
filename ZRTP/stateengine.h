@@ -4,6 +4,7 @@
 #include "zrtp.h"
 #include "Integers.h"
 #include <map>
+#include "packet.h"
 
 #include <iostream>
 
@@ -30,14 +31,14 @@ typedef enum
 {
     Start,
     End,
-    Packet,
+    Message,
     Timeout
 }EventType;
 
 typedef struct {
     EventType type;
     int32_t length;
-    uint8_t *data;
+    uint8_t *message;
 } Event;
 
 typedef struct {

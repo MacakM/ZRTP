@@ -44,11 +44,17 @@ void NetworkManager::processPendingDatagram()
     qDebug() << "Message: " << datagram;
     qDebug() << "Sender: " << sender;
     qDebug() << "Port: " << senderPort;
+    sendMessage((uint8_t*)datagram.data());
 }
 
 void NetworkManager::sendTimeout()
 {
     zrtp->processTimeout();
+}
+
+void NetworkManager::sendMessage(uint8_t *msg)
+{
+    zrtp->processMessage(msg);
 }
 
 uint8_t NetworkManager::getMyZid()

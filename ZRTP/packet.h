@@ -2,18 +2,19 @@
 #define PACKET_H
 
 #include "Integers.h"
+#include <string.h>
 
-#define WORD                4
+#define WORD_SIZE           4
 
-#define TYPE_SIZE           2 * WORD
-#define VERSION_SIZE        1 * WORD
-#define CLIENTID_SIZE       4 * WORD
-#define HASHIMAGE_SIZE      8 * WORD
-#define ZID_SIZE            3 * WORD
-#define MAC_SIZE            2 * WORD
-#define HVI_SIZE            8 * WORD
-#define ID_SIZE             2 * WORD
-#define VECTOR_SIZE         4 * WORD
+#define TYPE_SIZE           2 * WORD_SIZE
+#define VERSION_SIZE        1 * WORD_SIZE
+#define CLIENTID_SIZE       4 * WORD_SIZE
+#define HASHIMAGE_SIZE      8 * WORD_SIZE
+#define ZID_SIZE            3 * WORD_SIZE
+#define MAC_SIZE            2 * WORD_SIZE
+#define HVI_SIZE            8 * WORD_SIZE
+#define ID_SIZE             2 * WORD_SIZE
+#define VECTOR_SIZE         4 * WORD_SIZE
 
 typedef struct
 {
@@ -32,6 +33,7 @@ public:
 
     void setLength(uint16_t length);
     void setType(uint8_t *type);
+    void setZrtpIdentifier();
 
 protected:
     Header *packetHeader;

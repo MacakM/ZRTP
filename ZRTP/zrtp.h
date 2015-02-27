@@ -4,6 +4,7 @@
 #include "Integers.h"
 #include "ZrtpCallback.h"
 #include "stateengine.h"
+#include "packethello.h"
 #include <iostream>
 
 class StateEngine;
@@ -15,6 +16,7 @@ class Zrtp
 public:
     Zrtp(uint8_t *zid, ZrtpCallback *cb);
 
+    void processMessage(uint8_t *msg);
     void processTimeout();
 
 private:
@@ -25,6 +27,8 @@ private:
     uint8_t *myZID;
     ZrtpCallback *callback;
     StateEngine *engine;
+
+    PacketHello *hello;
 };
 
 #endif // ZRTP_H

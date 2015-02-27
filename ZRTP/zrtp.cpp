@@ -12,6 +12,14 @@ Zrtp::Zrtp(uint8_t *zid, ZrtpCallback *cb)
     engine->processEvent(&event);
 }
 
+void Zrtp::processMessage(uint8_t *msg)
+{
+    Event event;
+    event.type = Message;
+    event.message = msg;
+    engine->processEvent(&event);
+}
+
 void Zrtp::processTimeout()
 {
     Event event;
