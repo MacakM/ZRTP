@@ -2,7 +2,8 @@
 #define PACKET_H
 
 #include "Integers.h"
-#include <string.h>
+#include <iostream>
+#include <string>
 
 #define WORD_SIZE           4
 
@@ -34,6 +35,8 @@ public:
     void setLength(uint16_t length);
     void setType(uint8_t *type);
     void setZrtpIdentifier();
+
+    virtual uint8_t *toBytes() = 0;
 
 protected:
     Header *packetHeader;

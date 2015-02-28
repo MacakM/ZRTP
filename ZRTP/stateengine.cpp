@@ -76,6 +76,10 @@ void StateEngine::handleSentHello()
 {
     if(actualEvent->type == Timeout)
     {
+        PacketHello *hello = new PacketHello();
+        uint8_t *message = hello->toBytes();
+
+
         uint8_t* msg = (uint8_t*)"Hello   ";
         zrtp->sendData(msg,8);
         if(!timerNext(&T1))
