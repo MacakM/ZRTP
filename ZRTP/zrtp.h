@@ -16,7 +16,7 @@ class Zrtp
 public:
     Zrtp(uint8_t *zid, ZrtpCallback *cb);
 
-    void processMessage(uint8_t *msg);
+    void processMessage(uint8_t *msg, int32_t length);
     void processTimeout();
 
 private:

@@ -13,14 +13,19 @@ uint8_t *PacketHello::toBytes()
 {
     uint8_t *pos = data;
 
-
-    uint8_t first = packetHeader->identifier & 0xFF;
-    uint8_t second = (packetHeader->identifier >> 8) & 0xFF;
-
-    *pos = first;
+    *pos = packetHeader->identifier >> 8;
     pos++;
-    *pos = second;
+    *pos = packetHeader->identifier;
+    pos++;
 
+    *pos = packetHeader->length >> 8;
+    pos++;
+    *pos = packetHeader->length;
+
+    for (uint8_t i = 0; i < TYPE_SIZE; i++)
+    {
+        *(++pos) = packetHeader->type[i];
+    }
     return data;
     //TODO
 }

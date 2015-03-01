@@ -37,14 +37,21 @@ void NetworkManager::processPendingDatagram()
     QByteArray datagram;
     QHostAddress sender;
     quint16 senderPort;
+    int32_t size;
 
+    size = (int32_t)readSocket->pendingDatagramSize();
     datagram.resize(readSocket->pendingDatagramSize());
     readSocket->readDatagram(datagram.data(), datagram.size(), &sender, &senderPort);
 
-    qDebug() << "Message: " << datagram;
+
+    qDebug() << "Message: ";
+    for(uint8_t i = 0; i < size; i++)
+    {
+        qDebug() << datagram[i];
+    }
     qDebug() << "Sender: " << sender;
     qDebug() << "Port: " << senderPort;
-    sendMessage((uint8_t*)datagram.data());
+    sendMessage((uint8_t*)datagram.data(), size);
 }
 
 void NetworkManager::sendTimeout()
@@ -52,9 +59,9 @@ void NetworkManager::sendTimeout()
     zrtp->processTimeout();
 }
 
-void NetworkManager::sendMessage(uint8_t *msg)
+void NetworkManager::sendMessage(uint8_t *msg, int32_t length)
 {
-    zrtp->processMessage(msg);
+    zrtp->processMessage(msg, length);
 }
 
 uint8_t NetworkManager::getMyZid()

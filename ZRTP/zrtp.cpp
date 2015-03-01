@@ -6,17 +6,19 @@ Zrtp::Zrtp(uint8_t *zid, ZrtpCallback *cb)
     callback = cb;
 
     engine = new StateEngine(this);
+    hello = new PacketHello();
 
     Event event;
     event.type = Start;
     engine->processEvent(&event);
 }
 
-void Zrtp::processMessage(uint8_t *msg)
+void Zrtp::processMessage(uint8_t *msg, int32_t length)
 {
     Event event;
     event.type = Message;
     event.message = msg;
+    event.length = length;
     engine->processEvent(&event);
 }
 
