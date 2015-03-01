@@ -7,6 +7,7 @@ Zrtp::Zrtp(uint8_t *zid, ZrtpCallback *cb)
 
     engine = new StateEngine(this);
     hello = new PacketHello();
+    helloAck = new PacketHelloAck();
 
     Event event;
     event.type = Start;

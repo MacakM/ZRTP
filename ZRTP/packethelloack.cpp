@@ -1,15 +1,15 @@
-#include "packethello.h"
+#include "packethelloack.h"
 
-PacketHello::PacketHello()
+PacketHelloAck::PacketHelloAck()
 {
     packetHeader = new Header();
     setZrtpIdentifier();
-    uint8_t *type = (uint8_t*)"Hello   ";
+    uint8_t *type = (uint8_t*)"HelloACK";
     setType(type);
     setLength((sizeof(Header) / WORD_SIZE) - 1);
 }
 
-uint8_t *PacketHello::toBytes()
+uint8_t *PacketHelloAck::toBytes()
 {
     uint8_t *pos = data;
 
@@ -27,4 +27,5 @@ uint8_t *PacketHello::toBytes()
         *(++pos) = packetHeader->type[i];
     }
     return data;
+
 }

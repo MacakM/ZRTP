@@ -65,8 +65,6 @@ void StateEngine::handleInitial()
     if(actualEvent->type == Start)
     {
         uint8_t *message = zrtp->hello->toBytes();
-
-        //uint8_t* msg = (uint8_t*)"Hello   ";
         zrtp->sendData(message,20);
         timerStart(&T1);
         actualState = SentHello;
@@ -77,8 +75,8 @@ void StateEngine::handleSentHello()
 {
     if(actualEvent->type == Timeout)
     {
-        uint8_t* msg = (uint8_t*)"Hello   ";
-        zrtp->sendData(msg,8);
+        uint8_t *message = zrtp->hello->toBytes();
+        zrtp->sendData(message,20);
         if(!timerNext(&T1))
         {
             zrtp->cancelTimer();
@@ -87,15 +85,22 @@ void StateEngine::handleSentHello()
     if(actualEvent->type == Message)
     {
         uint8_t *msg = actualEvent->message;
-        uint8_t first = *msg;
-        uint8_t last = *(msg+7);
+        uint8_t first = *(msg + 4);
+        uint8_t last = *(msg + 11);
+        //Hello
         if(first == 'H' && last == ' ')
         {
-            uint8_t *ack = (uint8_t*)"HelloACK";
-            zrtp->sendData(ack,8);
+            uint8_t *message = zrtp->helloAck->toBytes();
+            zrtp->sendData(message,12);
+            /*uint8_t *ack = (uint8_t*)"HelloACK";
+            zrtp->sendData(ack,8);*/
+            timerStart(&T1);
+            actualState = SentHelloAck;
         }
+        //HelloACK
         if(first == 'H' && last == 'K')
         {
+            zrtp->cancelTimer();
             actualState = ReceivedHelloAck;
         }
     }
@@ -103,7 +108,28 @@ void StateEngine::handleSentHello()
 
 void StateEngine::handleSentHelloAck()
 {
+    if(actualEvent->type == Timeout)
+    {
+        uint8_t *message = zrtp->helloAck->toBytes();
+        zrtp->sendData(message,12);
+        if(!timerNext(&T1))
+        {
+            zrtp->cancelTimer();
+        }
+    }
 
+    if(actualEvent->type == Message)
+    {
+        uint8_t *msg = actualEvent->message;
+        uint8_t first = *(msg + 4);
+        uint8_t last = *(msg + 11);
+        //HelloACK
+        if(first == 'H' && last == 'K')
+        {
+            zrtp->cancelTimer();
+            actualState = WaitCommit;
+        }
+    }
 }
 
 void StateEngine::handleReceivedHelloAck()

@@ -5,6 +5,7 @@
 #include "ZrtpCallback.h"
 #include "stateengine.h"
 #include "packethello.h"
+#include "packethelloack.h"
 #include <iostream>
 
 class StateEngine;
@@ -29,6 +30,7 @@ private:
     StateEngine *engine;
 
     PacketHello *hello;
+    PacketHelloAck *helloAck;
 };
 
 #endif // ZRTP_H
