@@ -65,6 +65,9 @@ private:
     States actualState;
     Event *actualEvent;
 
+    uint8_t *sentMessage;
+    uint8_t sentMessageLength;
+
     zrtpTimer T1;
     zrtpTimer T2;
 

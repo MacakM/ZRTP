@@ -65,7 +65,10 @@ void StateEngine::handleInitial()
     if(actualEvent->type == Start)
     {
         uint8_t *message = zrtp->hello->toBytes();
-        zrtp->sendData(message,20);
+        uint16_t messageLength = zrtp->hello->getLength() * WORD_SIZE;
+        zrtp->sendData(message,messageLength);
+        sentMessage = message;
+        sentMessageLength = messageLength;
         timerStart(&T1);
         actualState = SentHello;
     }
@@ -75,8 +78,7 @@ void StateEngine::handleSentHello()
 {
     if(actualEvent->type == Timeout)
     {
-        uint8_t *message = zrtp->hello->toBytes();
-        zrtp->sendData(message,20);
+        zrtp->sendData(sentMessage,sentMessageLength);
         if(!timerNext(&T1))
         {
             zrtp->cancelTimer();
@@ -91,9 +93,10 @@ void StateEngine::handleSentHello()
         if(first == 'H' && last == ' ')
         {
             uint8_t *message = zrtp->helloAck->toBytes();
-            zrtp->sendData(message,12);
-            /*uint8_t *ack = (uint8_t*)"HelloACK";
-            zrtp->sendData(ack,8);*/
+            uint16_t messageLength = zrtp->helloAck->getLength() * WORD_SIZE;
+            zrtp->sendData(message,messageLength);
+            sentMessage = message;
+            sentMessageLength = messageLength;
             timerStart(&T1);
             actualState = SentHelloAck;
         }
@@ -110,8 +113,7 @@ void StateEngine::handleSentHelloAck()
 {
     if(actualEvent->type == Timeout)
     {
-        uint8_t *message = zrtp->helloAck->toBytes();
-        zrtp->sendData(message,12);
+        zrtp->sendData(sentMessage,sentMessageLength);
         if(!timerNext(&T1))
         {
             zrtp->cancelTimer();
