@@ -6,7 +6,7 @@ PacketHello::PacketHello()
     setZrtpIdentifier();
     uint8_t *type = (uint8_t*)"Hello   ";
     setType(type);
-    setLength((sizeof(Header) / WORD_SIZE) - 1);
+    setLength(((sizeof(Header) + sizeof(uint8_t[CLIENTID_SIZE])) / WORD_SIZE) - 1);
 }
 
 uint8_t *PacketHello::toBytes()
@@ -26,5 +26,10 @@ uint8_t *PacketHello::toBytes()
     {
         *(++pos) = packetHeader->type[i];
     }
+    for(uint8_t i = 0; i < CLIENTID_SIZE; i++)
+    {
+        *(++pos) = clientId[i];
+    }
+
     return data;
 }

@@ -1,12 +1,13 @@
 #include "zrtp.h"
 
-Zrtp::Zrtp(uint8_t *zid, ZrtpCallback *cb)
+Zrtp::Zrtp(uint8_t *zid, ZrtpCallback *cb, std::string clientId)
 {
     myZID = zid;
     callback = cb;
 
     engine = new StateEngine(this);
     hello = new PacketHello();
+    memcpy(hello->clientId,clientId.c_str(),CLIENTID_SIZE + 1);
     helloAck = new PacketHelloAck();
 
     Event event;

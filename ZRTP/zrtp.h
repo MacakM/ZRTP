@@ -15,7 +15,7 @@ class Zrtp
     friend class StateEngine;
 
 public:
-    Zrtp(uint8_t *zid, ZrtpCallback *cb);
+    Zrtp(uint8_t *zid, ZrtpCallback *cb, std::string clientId);
 
     void processMessage(uint8_t *msg, int32_t length);
     void processTimeout();

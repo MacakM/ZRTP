@@ -10,6 +10,8 @@ public:
 
     virtual uint8_t *toBytes();
 
+    uint8_t clientId[CLIENTID_SIZE];
+
 private:
     uint8_t data[20];
 };
