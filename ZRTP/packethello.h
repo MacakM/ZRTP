@@ -10,9 +10,11 @@ public:
 
     virtual uint8_t *toBytes();
 
-    uint8_t clientId[CLIENTID_SIZE];
+    void setClientId(std::string id);
 
 private:
+    uint8_t clientId[CLIENTID_SIZE];
+
     uint8_t data[20];
 };
 

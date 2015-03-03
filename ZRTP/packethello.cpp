@@ -7,6 +7,7 @@ PacketHello::PacketHello()
     uint8_t *type = (uint8_t*)"Hello   ";
     setType(type);
     setLength(((sizeof(Header) + sizeof(uint8_t[CLIENTID_SIZE])) / WORD_SIZE) - 1);
+    memset(clientId,0,CLIENTID_SIZE);
 }
 
 uint8_t *PacketHello::toBytes()
@@ -32,4 +33,9 @@ uint8_t *PacketHello::toBytes()
     }
 
     return data;
+}
+
+void PacketHello::setClientId(std::string id)
+{
+    memcpy(clientId,id.c_str(),id.length());
 }

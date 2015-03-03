@@ -4,6 +4,7 @@
 #include "Integers.h"
 #include <iostream>
 #include <string>
+#include <cstring>
 
 #define WORD_SIZE           4
 

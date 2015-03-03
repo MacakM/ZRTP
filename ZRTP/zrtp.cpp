@@ -7,7 +7,7 @@ Zrtp::Zrtp(uint8_t *zid, ZrtpCallback *cb, std::string clientId)
 
     engine = new StateEngine(this);
     hello = new PacketHello();
-    memcpy(hello->clientId,clientId.c_str(),CLIENTID_SIZE + 1);
+    hello->setClientId(clientId);
     helloAck = new PacketHelloAck();
 
     Event event;
