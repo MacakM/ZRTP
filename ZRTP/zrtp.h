@@ -4,8 +4,14 @@
 #include "Integers.h"
 #include "ZrtpCallback.h"
 #include "stateengine.h"
+
 #include "packethello.h"
 #include "packethelloack.h"
+#include "packetcommit.h"
+#include "packetdhpart.h"
+#include "packetconfirm.h"
+#include "packetconf2ack.h"
+
 #include <iostream>
 
 typedef enum
