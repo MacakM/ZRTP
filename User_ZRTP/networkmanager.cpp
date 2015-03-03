@@ -29,7 +29,7 @@ NetworkManager::NetworkManager(int argc, char *argv[], QObject *parent) :
     //testing
     Sleep(10000);
 
-    zrtp = new Zrtp(&myZid, callbacks, "MacakM");
+    zrtp = new Zrtp(&myZid, callbacks, myRole, "MacakM");
 }
 
 void NetworkManager::processPendingDatagram()

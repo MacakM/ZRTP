@@ -8,6 +8,12 @@
 #include "packethelloack.h"
 #include <iostream>
 
+typedef enum
+{
+    Initiator,
+    Responder
+}Role;
+
 class StateEngine;
 
 class Zrtp
@@ -15,7 +21,7 @@ class Zrtp
     friend class StateEngine;
 
 public:
-    Zrtp(uint8_t *zid, ZrtpCallback *cb, std::string clientId);
+    Zrtp(uint8_t *zid, ZrtpCallback *cb, Role role, std::string clientId);
 
     void processMessage(uint8_t *msg, int32_t length);
     void processTimeout();
@@ -27,6 +33,7 @@ private:
 
     uint8_t *myZID;
     ZrtpCallback *callback;
+    Role myRole;
     StateEngine *engine;
 
     PacketHello *hello;

@@ -1,9 +1,10 @@
 #include "zrtp.h"
 
-Zrtp::Zrtp(uint8_t *zid, ZrtpCallback *cb, std::string clientId)
+Zrtp::Zrtp(uint8_t *zid, ZrtpCallback *cb, Role role, std::string clientId)
 {
     myZID = zid;
     callback = cb;
+    myRole = role;
 
     engine = new StateEngine(this);
     hello = new PacketHello();

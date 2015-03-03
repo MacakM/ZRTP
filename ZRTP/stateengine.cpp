@@ -95,9 +95,6 @@ void StateEngine::handleSentHello()
             uint8_t *message = zrtp->helloAck->toBytes();
             uint16_t messageLength = zrtp->helloAck->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
-            sentMessage = message;
-            sentMessageLength = messageLength;
-            timerStart(&T1);
             actualState = SentHelloAck;
         }
         //HelloACK
@@ -125,18 +122,52 @@ void StateEngine::handleSentHelloAck()
         uint8_t *msg = actualEvent->message;
         uint8_t first = *(msg + 4);
         uint8_t last = *(msg + 11);
+        //Hello
+        if(first == 'H' && last == ' ')
+        {
+            uint8_t *message = zrtp->helloAck->toBytes();
+            uint16_t messageLength = zrtp->helloAck->getLength() * WORD_SIZE;
+            zrtp->sendData(message,messageLength);
+        }
         //HelloACK
         if(first == 'H' && last == 'K')
         {
             zrtp->cancelTimer();
-            actualState = WaitCommit;
+            if(zrtp->myRole == Responder)
+            {
+                actualState = WaitCommit;
+            }
+            else
+            {
+                actualState = SentCommit;
+            }
         }
     }
 }
 
 void StateEngine::handleReceivedHelloAck()
 {
-
+    if(actualEvent->type == Message)
+    {
+        uint8_t *msg = actualEvent->message;
+        uint8_t first = *(msg + 4);
+        uint8_t last = *(msg + 11);
+        //Hello
+        if(first == 'H' && last == ' ')
+        {
+            uint8_t *message = zrtp->helloAck->toBytes();
+            uint16_t messageLength = zrtp->helloAck->getLength() * WORD_SIZE;
+            zrtp->sendData(message,messageLength);
+            if(zrtp->myRole == Responder)
+            {
+                actualState = WaitCommit;
+            }
+            else
+            {
+                actualState = SentCommit;
+            }
+        }
+    }
 }
 
 void StateEngine::handleSentCommit()

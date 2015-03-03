@@ -4,12 +4,6 @@
 #include "Integers.h"
 
 
-typedef enum
-{
-    Initiator,
-    Responder
-}Role;
-
 class ZrtpCallback {
 
 public:
