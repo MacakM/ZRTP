@@ -44,6 +44,12 @@ private:
 
     PacketHello *hello;
     PacketHelloAck *helloAck;
+    PacketCommit *commit;
+    PacketDHPart *dhPart1;
+    PacketDHPart *dhPart2;
+    PacketConfirm *confirm1;
+    PacketConfirm *confirm2;
+    PacketConf2Ack *conf2Ack;
 };
 
 #endif // ZRTP_H

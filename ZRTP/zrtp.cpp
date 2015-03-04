@@ -10,6 +10,16 @@ Zrtp::Zrtp(uint8_t *zid, ZrtpCallback *cb, Role role, std::string clientId)
     hello = new PacketHello();
     hello->setClientId(clientId);
     helloAck = new PacketHelloAck();
+    commit = new PacketCommit();
+    dhPart1 = new PacketDHPart();
+    dhPart1->setType((uint8_t*)"DHPart1 ");
+    dhPart2 = new PacketDHPart();
+    dhPart2->setType((uint8_t*)"DHPart2 ");
+    confirm1 = new PacketConfirm();
+    confirm1->setType((uint8_t*)"Confirm1");
+    confirm2 = new PacketConfirm();
+    confirm2->setType((uint8_t*)"Confirm2");
+    conf2Ack = new PacketConf2Ack();
 
     Event event;
     event.type = Start;
