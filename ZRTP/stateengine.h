@@ -23,8 +23,8 @@ typedef enum
     WaitConfirm1        = 0x0007,
     WaitConfirm2        = 0x0008,
     WaitConf2Ack        = 0x0009,
-    Secured             = 0x0010,
-    WaitErrorAck        = 0x0011
+    Secured             = 0x000a,
+    WaitErrorAck        = 0x000b
 }States;
 
 typedef enum
@@ -37,8 +37,8 @@ typedef enum
 
 typedef struct {
     EventType type;
-    int32_t length;
     uint8_t *message;
+    int32_t messageLength;
 } Event;
 
 typedef struct {

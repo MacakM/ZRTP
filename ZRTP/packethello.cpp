@@ -4,8 +4,7 @@ PacketHello::PacketHello()
 {
     packetHeader = new Header();
     setZrtpIdentifier();
-    uint8_t *type = (uint8_t*)"Hello   ";
-    setType(type);
+    setType((uint8_t*)"Hello   ");
     setLength(((sizeof(Header) + sizeof(uint8_t[CLIENTID_SIZE])) / WORD_SIZE) - 1);
     memset(clientId,0,CLIENTID_SIZE);
 }

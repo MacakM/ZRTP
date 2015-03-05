@@ -31,7 +31,7 @@ void Zrtp::processMessage(uint8_t *msg, int32_t length)
     Event event;
     event.type = Message;
     event.message = msg;
-    event.length = length;
+    event.messageLength = length;
     engine->processEvent(&event);
 }
 

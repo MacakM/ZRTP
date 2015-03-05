@@ -62,16 +62,18 @@ void StateEngine::processEvent(Event *event)
 
 void StateEngine::handleInitial()
 {
-    if(actualEvent->type == Start)
+    if(actualEvent->type != Start)
     {
-        uint8_t *message = zrtp->hello->toBytes();
-        uint16_t messageLength = zrtp->hello->getLength() * WORD_SIZE;
-        zrtp->sendData(message,messageLength);
-        sentMessage = message;
-        sentMessageLength = messageLength;
-        timerStart(&T1);
-        actualState = SentHello;
+        return;
     }
+
+    uint8_t *message = zrtp->hello->toBytes();
+    uint16_t messageLength = zrtp->hello->getLength() * WORD_SIZE;
+    zrtp->sendData(message,messageLength);
+    sentMessage = message;
+    sentMessageLength = messageLength;
+    timerStart(&T1);
+    actualState = SentHello;
 }
 
 void StateEngine::handleSentHello()
@@ -207,6 +209,7 @@ void StateEngine::handleSentCommit()
         //DHPart1
         if(first == 'D' && secondLast == '1')
         {
+            zrtp->cancelTimer();
             uint8_t *message = zrtp->dhPart2->toBytes();
             uint16_t messageLength = zrtp->dhPart2->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
@@ -286,6 +289,7 @@ void StateEngine::handleWaitConfirm1()
         //Confirm1
         if(first == 'C' && last == '1')
         {
+            zrtp->cancelTimer();
             uint8_t *message = zrtp->confirm2->toBytes();
             uint16_t messageLength = zrtp->confirm2->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
@@ -337,9 +341,10 @@ void StateEngine::handleWaitConf2Ack()
         uint8_t *msg = actualEvent->message;
         uint8_t first = *(msg + 4);
         uint8_t last = *(msg + 11);
-        //Confirm1
+        //Conf2ACK
         if(first == 'C' && last == 'K')
         {
+            zrtp->cancelTimer();
             actualState = Secured;
         }
     }
@@ -364,5 +369,24 @@ void StateEngine::handleSecured()
 
 void StateEngine::handleWaitErrorAck()
 {
-
+    if(actualEvent->type == Timeout)
+    {
+        zrtp->sendData(sentMessage,sentMessageLength);
+        if(!timerNext(&T2))
+        {
+            zrtp->cancelTimer();
+        }
+    }
+    if(actualEvent->type == Message)
+    {
+        uint8_t *msg = actualEvent->message;
+        uint8_t first = *(msg + 4);
+        uint8_t last = *(msg + 11);
+        //ErrorACK
+        if(first == 'E' && last == 'K')
+        {
+            zrtp->cancelTimer();
+            actualState = Initial;
+        }
+    }
 }

@@ -9,7 +9,5 @@ int main(int argc, char *argv[])
 
     NetworkManager *manager = new NetworkManager(argc,argv);
 
-
-    //std::cout << manager->getMyZid(); problem with uint8_t
     return a.exec();
 }

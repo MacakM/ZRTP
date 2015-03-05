@@ -25,8 +25,8 @@ signals:
 
 public slots:
     void processPendingDatagram();
-    void sendTimeout();
-    void sendMessage(uint8_t *msg, int32_t length);
+    void processTimeout();
+    void processMessage(uint8_t *msg, int32_t length);
 
 public:
     uint8_t getMyZid();

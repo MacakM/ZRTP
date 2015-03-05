@@ -4,8 +4,7 @@ PacketHelloAck::PacketHelloAck()
 {
     packetHeader = new Header();
     setZrtpIdentifier();
-    uint8_t *type = (uint8_t*)"HelloACK";
-    setType(type);
+    setType((uint8_t*)"HelloACK");
     setLength((sizeof(Header) / WORD_SIZE) - 1);
 }
 
