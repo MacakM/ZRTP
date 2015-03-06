@@ -5,7 +5,7 @@ PacketHello::PacketHello()
     packetHeader = new Header();
     setZrtpIdentifier();
     setType((uint8_t*)"Hello   ");
-    setLength(((sizeof(Header) + sizeof(uint8_t[CLIENTID_SIZE])) / WORD_SIZE) - 1);
+    setLength(((sizeof(Header) + sizeof(uint8_t[CLIENTID_SIZE]) + sizeof(uint8_t[HASHIMAGE_SIZE])) / WORD_SIZE) - 1);
     memset(clientId,0,CLIENTID_SIZE);
 }
 
@@ -30,6 +30,10 @@ uint8_t *PacketHello::toBytes()
     {
         *(++pos) = clientId[i];
     }
+    for(uint8_t i = 0; i < HASHIMAGE_SIZE; i++)
+    {
+        *(++pos) = h3[i];
+    }
 
     return data;
 }
@@ -37,4 +41,9 @@ uint8_t *PacketHello::toBytes()
 void PacketHello::setClientId(std::string id)
 {
     memcpy(clientId,id.c_str(),id.length());
+}
+
+void PacketHello::setH3(uint8_t *hash)
+{
+    memcpy(h3,hash,HASHIMAGE_SIZE);
 }

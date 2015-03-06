@@ -14,6 +14,9 @@
 
 #include <iostream>
 
+#include <openssl/sha.h>
+#include <openssl/rand.h>
+
 typedef enum
 {
     Initiator,
@@ -36,6 +39,7 @@ private:
     bool sendData(const uint8_t *data, int32_t length);
     bool activateTimer(int32_t time);
     bool cancelTimer();
+    void createHashImages();
 
     uint8_t *myZID;
     ZrtpCallback *callback;
@@ -50,6 +54,11 @@ private:
     PacketConfirm *confirm1;
     PacketConfirm *confirm2;
     PacketConf2Ack *conf2Ack;
+
+    uint8_t h0[HASHIMAGE_SIZE];
+    uint8_t h1[HASHIMAGE_SIZE];
+    uint8_t h2[HASHIMAGE_SIZE];
+    uint8_t h3[HASHIMAGE_SIZE];
 };
 
 #endif // ZRTP_H

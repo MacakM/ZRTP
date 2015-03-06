@@ -6,9 +6,12 @@ Zrtp::Zrtp(uint8_t *zid, ZrtpCallback *cb, Role role, std::string clientId)
     callback = cb;
     myRole = role;
 
+    createHashImages();
+
     engine = new StateEngine(this);
     hello = new PacketHello();
     hello->setClientId(clientId);
+    hello->setH3(h3);
     helloAck = new PacketHelloAck();
     commit = new PacketCommit();
     dhPart1 = new PacketDHPart();
@@ -55,4 +58,13 @@ bool Zrtp::activateTimer(int32_t time)
 bool Zrtp::cancelTimer()
 {
     return callback->cancelTimer();
+}
+
+void Zrtp::createHashImages()
+{
+    RAND_bytes(h0,HASHIMAGE_SIZE);
+
+    SHA256(h0,HASHIMAGE_SIZE,h1);
+    SHA256(h1,HASHIMAGE_SIZE,h2);
+    SHA256(h2,HASHIMAGE_SIZE,h3);
 }
