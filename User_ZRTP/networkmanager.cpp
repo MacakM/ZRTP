@@ -15,21 +15,13 @@ NetworkManager::NetworkManager(int argc, char *argv[], QObject *parent) :
     timer.setSingleShot(true);
     connect(&timer, SIGNAL(timeout()), this, SLOT(processTimeout()));
 
-    if(myRole == Initiator)
-    {
-        myZid = 8;
-    }
-    else    //Responder
-    {
-        myZid = 14;
-    }
-
     callbacks = new MyCallbacks(this);
 
     //testing
     (myRole == Initiator) ? Sleep(10000) : Sleep(5000);
 
-    zrtp = new Zrtp(&myZid, callbacks, myRole, "MacakM");
+    zrtp = new Zrtp(callbacks, myRole, "MacakM");
+    myZid = zrtp->getZid();
 }
 
 void NetworkManager::processPendingDatagram()

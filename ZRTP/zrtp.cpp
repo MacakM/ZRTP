@@ -1,17 +1,18 @@
 #include "zrtp.h"
 
-Zrtp::Zrtp(uint8_t *zid, ZrtpCallback *cb, Role role, std::string clientId)
+Zrtp::Zrtp(ZrtpCallback *cb, Role role, std::string clientId)
 {
-    myZID = zid;
     callback = cb;
     myRole = role;
 
+    RAND_bytes(myZID,ZID_SIZE);
     createHashImages();
 
     engine = new StateEngine(this);
     hello = new PacketHello();
     hello->setClientId(clientId);
     hello->setH3(h3);
+    hello->setZid(myZID);
     helloAck = new PacketHelloAck();
     commit = new PacketCommit();
     dhPart1 = new PacketDHPart();
@@ -43,6 +44,11 @@ void Zrtp::processTimeout()
     Event event;
     event.type = Timeout;
     engine->processEvent(&event);
+}
+
+uint8_t Zrtp::getZid()
+{
+    return *myZID;
 }
 
 bool Zrtp::sendData(const uint8_t *data, int32_t length)

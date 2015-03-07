@@ -6,6 +6,7 @@
 #include <string>
 #include <cstring>
 
+
 #define WORD_SIZE           4
 
 #define TYPE_SIZE           2 * WORD_SIZE

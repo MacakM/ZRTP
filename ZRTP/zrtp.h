@@ -30,10 +30,11 @@ class Zrtp
     friend class StateEngine;
 
 public:
-    Zrtp(uint8_t *zid, ZrtpCallback *cb, Role role, std::string clientId);
+    Zrtp(ZrtpCallback *cb, Role role, std::string clientId);
 
     void processMessage(uint8_t *msg, int32_t length);
     void processTimeout();
+    uint8_t getZid();
 
 private:
     bool sendData(const uint8_t *data, int32_t length);
@@ -41,7 +42,7 @@ private:
     bool cancelTimer();
     void createHashImages();
 
-    uint8_t *myZID;
+    uint8_t myZID[ZID_SIZE];
     ZrtpCallback *callback;
     Role myRole;
     StateEngine *engine;
