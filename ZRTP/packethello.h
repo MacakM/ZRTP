@@ -31,7 +31,13 @@ private:
     uint8_t flags;
     Counts counts;
 
-    uint8_t data[80];
+    uint8_t *hashTypes;
+    uint8_t *cipherTypes;
+    uint8_t *authTagTypes;
+    uint8_t *keyAgreementTypes;
+    uint8_t *sasTypes;
+
+    uint8_t data[220];
 };
 
 #endif // PACKETHELLO_H

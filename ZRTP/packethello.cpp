@@ -7,14 +7,23 @@ PacketHello::PacketHello()
     setType((uint8_t*)"Hello   ");
     setLength(((sizeof(Header) + sizeof(uint8_t[CLIENTID_SIZE]) +
                 sizeof(uint8_t[HASHIMAGE_SIZE]) + sizeof(uint8_t[ZID_SIZE]) +
-                sizeof(uint8_t) + sizeof(uint8_t[VERSION_SIZE]) + sizeof(Counts)) / WORD_SIZE) - 1);
+                sizeof(uint8_t) + sizeof(uint8_t[VERSION_SIZE]) +
+                sizeof(Counts))/ WORD_SIZE) - 1);
     memcpy(version,"1.10",VERSION_SIZE);
     flags = 0;
-    counts.hc = 0;
+
+    counts.hc = 2;
     counts.cc = 1;
-    counts.ac = 5;
-    counts.kc = 0;
-    counts.sc = 10;
+    counts.ac = 1;
+    counts.kc = 1;
+    counts.sc = 1;
+
+    hashTypes = (uint8_t*)"S256S386";
+    cipherTypes = (uint8_t*)"AES1";
+    authTagTypes = (uint8_t*)"HS32";
+    keyAgreementTypes = (uint8_t*)"DH3K";
+    sasTypes = (uint8_t*)"B32 ";
+    setLength(getLength() + (4 / WORD_SIZE) * (counts.hc + counts.cc + counts.ac + counts.kc + counts.sc));
 }
 
 uint8_t *PacketHello::toBytes()
@@ -56,6 +65,42 @@ uint8_t *PacketHello::toBytes()
     *(++pos) = 0x0000 | counts.hc;
     *(++pos) = 0x0000 | counts.cc << 4 | counts.ac;
     *(++pos) = 0x0000 | counts.kc << 4 | counts.sc;
+
+    for(uint8_t i = 0; i < counts.hc; i++)
+    {
+        for(uint8_t j = 0; j < 4; j++)
+        {
+            *(++pos) = *(hashTypes++);
+        }
+    }
+    for(uint8_t i = 0; i < counts.cc; i++)
+    {
+        for(uint8_t j = 0; j < 4; j++)
+        {
+            *(++pos) = *(cipherTypes++);
+        }
+    }
+    for(uint8_t i = 0; i < counts.ac; i++)
+    {
+        for(uint8_t j = 0; j < 4; j++)
+        {
+            *(++pos) = *(authTagTypes++);
+        }
+    }
+    for(uint8_t i = 0; i < counts.kc; i++)
+    {
+        for(uint8_t j = 0; j < 4; j++)
+        {
+            *(++pos) = *(keyAgreementTypes++);
+        }
+    }
+    for(uint8_t i = 0; i < counts.sc; i++)
+    {
+        for(uint8_t j = 0; j < 4; j++)
+        {
+            *(++pos) = *(sasTypes++);
+        }
+    }
     return data;
 }
 

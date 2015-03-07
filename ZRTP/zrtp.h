@@ -15,6 +15,7 @@
 #include <iostream>
 
 #include <openssl/sha.h>
+#include <openssl/hmac.h>
 #include <openssl/rand.h>
 
 typedef enum
