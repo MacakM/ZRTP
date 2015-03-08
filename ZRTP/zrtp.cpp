@@ -9,11 +9,9 @@ Zrtp::Zrtp(ZrtpCallback *cb, Role role, std::string clientId)
     createHashImages();
 
     engine = new StateEngine(this);
-    hello = new PacketHello();
-    hello->setClientId(clientId);
-    hello->setH3(h3);
-    hello->setZid(myZID);
-    createHelloMac();
+
+    createHelloPacket(clientId);
+
     helloAck = new PacketHelloAck();
     commit = new PacketCommit();
     dhPart1 = new PacketDHPart();
@@ -67,6 +65,22 @@ bool Zrtp::cancelTimer()
     return callback->cancelTimer();
 }
 
+void Zrtp::createHelloPacket(std::string clientId)
+{
+    hello = new PacketHello();
+    hello->setVersion((uint8_t*)"1.10");
+    hello->setClientId(clientId);
+    hello->setH3(h3);
+    hello->setZid(myZID);
+    hello->addHash((uint8_t*)"S256");
+    hello->addHash((uint8_t*)"S386");
+    hello->addCipher((uint8_t*)"AES1");
+    hello->addAuthTag((uint8_t*)"HS32");
+    hello->addKeyAgreement((uint8_t*)"DH3K");
+    hello->addSas((uint8_t*)"B32 ");
+    createHelloMac();
+}
+
 void Zrtp::createHashImages()
 {
     RAND_bytes(h0,HASHIMAGE_SIZE);
@@ -81,8 +95,6 @@ void Zrtp::createHelloMac()
     uint8_t key[HASHIMAGE_SIZE];
     memcpy(key,h2,HASHIMAGE_SIZE);
 
-
-    // The data that we're going to hash using HMAC
     uint8_t *data = hello->toBytes();
     uint16_t length = hello->getLength() - 2;
 

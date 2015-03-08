@@ -35,12 +35,16 @@ public:
 
     void processMessage(uint8_t *msg, int32_t length);
     void processTimeout();
+
     uint8_t getZid();
 
 private:
     bool sendData(const uint8_t *data, int32_t length);
     bool activateTimer(int32_t time);
     bool cancelTimer();
+
+    void createHelloPacket(std::string clientId);
+
     void createHashImages();
     void createHelloMac();
 

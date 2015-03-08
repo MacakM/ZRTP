@@ -16,12 +16,20 @@ public:
 
     virtual uint8_t *toBytes();
 
+    void setVersion(uint8_t *version);
     void setClientId(std::string id);
     void setH3(uint8_t *hash);
     void setZid(uint8_t *zid);
     void setFlagS();
     void setFlagM();
     void setFlagP();
+
+    void addHash(uint8_t hash[4]);
+    void addCipher(uint8_t cipher[4]);
+    void addAuthTag(uint8_t authTag[4]);
+    void addKeyAgreement(uint8_t keyAgreement[4]);
+    void addSas(uint8_t sas[4]);
+
     void setMac(uint8_t mac[MAC_SIZE]);
 
 private:
@@ -33,13 +41,13 @@ private:
     Counts counts;
     uint8_t mac[MAC_SIZE];
 
-    uint8_t *hashTypes;
-    uint8_t *cipherTypes;
-    uint8_t *authTagTypes;
-    uint8_t *keyAgreementTypes;
-    uint8_t *sasTypes;
+    uint8_t hashTypes[28];
+    uint8_t cipherTypes[28];
+    uint8_t authTagTypes[28];
+    uint8_t keyAgreementTypes[28];
+    uint8_t sasTypes[28];
 
-    uint8_t data[220];
+    uint8_t data[MAX_HELLO_LENGTH];
 };
 
 #endif // PACKETHELLO_H

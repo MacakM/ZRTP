@@ -9,20 +9,14 @@ PacketHello::PacketHello()
                 sizeof(uint8_t[HASHIMAGE_SIZE]) + sizeof(uint8_t[ZID_SIZE]) +
                 sizeof(uint8_t) + sizeof(uint8_t[VERSION_SIZE]) +
                 sizeof(Counts) + sizeof(uint8_t[MAC_SIZE]))/ WORD_SIZE) - 1);
-    memcpy(version,"1.10",VERSION_SIZE);
     flags = 0;
 
-    counts.hc = 2;
-    counts.cc = 1;
-    counts.ac = 1;
-    counts.kc = 1;
-    counts.sc = 1;
+    counts.hc = 0;
+    counts.cc = 0;
+    counts.ac = 0;
+    counts.kc = 0;
+    counts.sc = 0;
 
-    hashTypes = (uint8_t*)"S256S386";
-    cipherTypes = (uint8_t*)"AES1";
-    authTagTypes = (uint8_t*)"HS32";
-    keyAgreementTypes = (uint8_t*)"DH3K";
-    sasTypes = (uint8_t*)"B32 ";
     setLength(getLength() + (4 / WORD_SIZE) * (counts.hc + counts.cc + counts.ac + counts.kc + counts.sc));
 }
 
@@ -114,6 +108,11 @@ uint8_t *PacketHello::toBytes()
     return data;
 }
 
+void PacketHello::setVersion(uint8_t *version)
+{
+    memcpy(this->version,version,VERSION_SIZE);
+}
+
 void PacketHello::setClientId(std::string id)
 {
     memset(clientId,0,CLIENTID_SIZE);
@@ -143,6 +142,36 @@ void PacketHello::setFlagM()
 void PacketHello::setFlagP()
 {
     flags |= 16;
+}
+
+void PacketHello::addHash(uint8_t hash[])
+{
+    counts.hc++;
+    memcpy(&hashTypes[(counts.hc - 1) * WORD_SIZE],hash,WORD_SIZE);
+}
+
+void PacketHello::addCipher(uint8_t cipher[])
+{
+    counts.cc++;
+    memcpy(&cipherTypes[(counts.cc - 1) * WORD_SIZE], cipher, WORD_SIZE);
+}
+
+void PacketHello::addAuthTag(uint8_t authTag[])
+{
+    counts.ac++;
+    memcpy(&authTagTypes[(counts.ac - 1) * WORD_SIZE], authTag, WORD_SIZE);
+}
+
+void PacketHello::addKeyAgreement(uint8_t keyAgreement[])
+{
+    counts.kc++;
+    memcpy(&keyAgreementTypes[(counts.kc - 1) * WORD_SIZE], keyAgreement, WORD_SIZE);
+}
+
+void PacketHello::addSas(uint8_t sas[])
+{
+    counts.sc++;
+    memcpy(&sasTypes[(counts.sc - 1) * WORD_SIZE], sas, WORD_SIZE);
 }
 
 void PacketHello::setMac(uint8_t mac[])
