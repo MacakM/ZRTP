@@ -27,3 +27,8 @@ uint8_t *PacketConfirm::toBytes()
 
     return data;
 }
+
+void PacketConfirm::parse(uint8_t *data)
+{
+
+}

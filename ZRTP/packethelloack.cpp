@@ -28,3 +28,8 @@ uint8_t *PacketHelloAck::toBytes()
     return data;
 
 }
+
+void PacketHelloAck::parse(uint8_t *data)
+{
+
+}

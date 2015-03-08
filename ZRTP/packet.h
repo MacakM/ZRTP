@@ -6,6 +6,8 @@
 #include <string>
 #include <cstring>
 
+#define ZRTP_IDENTIFIER     0x505a
+
 #define MAX_HELLO_LENGTH    220
 #define MAX_HELLOACK_LENGTH 12
 
@@ -41,6 +43,7 @@ public:
     void setZrtpIdentifier();
 
     virtual uint8_t *toBytes() = 0;
+    virtual void parse(uint8_t *data) = 0;
 
 protected:
     Header *packetHeader;

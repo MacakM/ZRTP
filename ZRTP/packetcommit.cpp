@@ -28,3 +28,8 @@ uint8_t *PacketCommit::toBytes()
 
     return data;
 }
+
+void PacketCommit::parse(uint8_t *data)
+{
+
+}

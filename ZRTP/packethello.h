@@ -15,6 +15,7 @@ public:
     PacketHello();
 
     virtual uint8_t *toBytes();
+    virtual void parse(uint8_t *data);
 
     void setVersion(uint8_t *version);
     void setClientId(std::string id);

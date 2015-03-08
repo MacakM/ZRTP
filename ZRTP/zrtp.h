@@ -54,6 +54,7 @@ private:
     StateEngine *engine;
 
     PacketHello *hello;
+    PacketHello *peerHello;
     PacketHelloAck *helloAck;
     PacketCommit *commit;
     PacketDHPart *dhPart1;

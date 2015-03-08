@@ -12,6 +12,7 @@ Zrtp::Zrtp(ZrtpCallback *cb, Role role, std::string clientId)
 
     createHelloPacket(clientId);
 
+    peerHello = new PacketHello();
     helloAck = new PacketHelloAck();
     commit = new PacketCommit();
     dhPart1 = new PacketDHPart();

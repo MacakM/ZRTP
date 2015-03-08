@@ -97,6 +97,7 @@ void StateEngine::handleSentHello()
             uint8_t *message = zrtp->helloAck->toBytes();
             uint16_t messageLength = zrtp->helloAck->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
+            zrtp->peerHello->parse(msg);
             actualState = SentHelloAck;
         }
         //HelloACK

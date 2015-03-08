@@ -27,3 +27,8 @@ uint8_t *PacketDHPart::toBytes()
 
     return data;
 }
+
+void PacketDHPart::parse(uint8_t *data)
+{
+
+}

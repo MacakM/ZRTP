@@ -104,6 +104,90 @@ uint8_t *PacketHello::toBytes()
     return data;
 }
 
+void PacketHello::parse(uint8_t *data)
+{
+    uint8_t *pos = data;
+
+    packetHeader->identifier = *pos << 8 | *(pos + 1);
+    pos += 2;
+
+    uint16_t zrtpId = (uint16_t)ZRTP_IDENTIFIER;
+    if(memcmp(&packetHeader->identifier,&zrtpId,WORD_SIZE) != 0)
+    {
+        std::cout << "CHYBA";
+    }
+
+    packetHeader->length = *pos << 8 | *(pos + 1);
+    pos += 10;
+
+    for(uint8_t i = 0; i < VERSION_SIZE; i++)
+    {
+        version[i] = *(pos++);
+    }
+    for(uint8_t i = 0; i < CLIENTID_SIZE; i++)
+    {
+        clientId[i] = *(pos++);
+    }
+    for(uint8_t i = 0; i < HASHIMAGE_SIZE; i++)
+    {
+        h3[i] = *(pos++);
+    }
+    for(uint8_t i = 0; i < ZID_SIZE; i++)
+    {
+        zid[i] = *(pos++);
+    }
+    flags = *(pos++);
+
+    counts.hc = *(pos++) | 0x00;
+    counts.cc = *(pos) >> 4 | 0x00;
+    counts.ac = *(pos++) | 0x00;
+    counts.kc = *(pos) >> 4 | 0x00;
+    counts.sc = *(pos++) | 0x00;
+
+    uint8_t *typePos = hashTypes;
+    for(uint8_t i = 0; i < counts.hc; i++)
+    {
+        for(uint8_t j = 0; j < 4; j++)
+        {
+            *(typePos++) = *(pos++);
+        }
+    }
+    typePos = cipherTypes;
+    for(uint8_t i = 0; i < counts.cc; i++)
+    {
+        for(uint8_t j = 0; j < 4; j++)
+        {
+            *(typePos++) = *(pos++);
+        }
+    }
+    typePos = authTagTypes;
+    for(uint8_t i = 0; i < counts.ac; i++)
+    {
+        for(uint8_t j = 0; j < 4; j++)
+        {
+            *(typePos++) = *(pos++);
+        }
+    }
+    typePos = keyAgreementTypes;
+    for(uint8_t i = 0; i < counts.kc; i++)
+    {
+        {
+            *(typePos++) = *(pos++);
+        }
+    }
+    typePos = sasTypes;
+    for(uint8_t i = 0; i < counts.sc; i++)
+    {
+        {
+            *(typePos++) = *(pos++);
+        }
+    }
+    for(uint8_t i = 0; i < MAC_SIZE; i++)
+    {
+        mac[i] = *(pos++);
+    }
+}
+
 void PacketHello::setVersion(uint8_t *version)
 {
     memcpy(this->version,version,VERSION_SIZE);

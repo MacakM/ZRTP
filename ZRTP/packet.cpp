@@ -27,5 +27,5 @@ void Packet::setType(uint8_t *type)
 
 void Packet::setZrtpIdentifier()
 {
-    packetHeader->identifier = (uint16_t)0x505a;
+    packetHeader->identifier = (uint16_t)ZRTP_IDENTIFIER;
 }

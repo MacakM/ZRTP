@@ -9,6 +9,7 @@ public:
     PacketDHPart();
 
     virtual uint8_t *toBytes();
+    virtual void parse(uint8_t *data);
 
 private:
     uint8_t data[20];

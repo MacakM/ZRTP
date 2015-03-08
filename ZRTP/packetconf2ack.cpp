@@ -28,3 +28,8 @@ uint8_t *PacketConf2Ack::toBytes()
 
     return data;
 }
+
+void PacketConf2Ack::parse(uint8_t *data)
+{
+
+}
