@@ -10,14 +10,11 @@ PacketHello::PacketHello()
                 sizeof(uint8_t) + sizeof(uint8_t[VERSION_SIZE]) +
                 sizeof(Counts) + sizeof(uint8_t[MAC_SIZE]))/ WORD_SIZE) - 1);
     flags = 0;
-
     counts.hc = 0;
     counts.cc = 0;
     counts.ac = 0;
     counts.kc = 0;
     counts.sc = 0;
-
-    setLength(getLength() + (4 / WORD_SIZE) * (counts.hc + counts.cc + counts.ac + counts.kc + counts.sc));
 }
 
 uint8_t *PacketHello::toBytes()
@@ -60,7 +57,7 @@ uint8_t *PacketHello::toBytes()
     *(++pos) = 0x0000 | counts.cc << 4 | counts.ac;
     *(++pos) = 0x0000 | counts.kc << 4 | counts.sc;
 
-   uint8_t *typePos = hashTypes;
+    uint8_t *typePos = hashTypes;
     for(uint8_t i = 0; i < counts.hc; i++)
     {
         for(uint8_t j = 0; j < 4; j++)
@@ -104,7 +101,6 @@ uint8_t *PacketHello::toBytes()
     {
         *(++pos) = mac[i];
     }
-    *(++pos) = '\0';
     return data;
 }
 
@@ -148,30 +144,35 @@ void PacketHello::addHash(uint8_t hash[])
 {
     counts.hc++;
     memcpy(&hashTypes[(counts.hc - 1) * WORD_SIZE],hash,WORD_SIZE);
+    setLength(getLength() + 1);
 }
 
 void PacketHello::addCipher(uint8_t cipher[])
 {
     counts.cc++;
     memcpy(&cipherTypes[(counts.cc - 1) * WORD_SIZE], cipher, WORD_SIZE);
+    setLength(getLength() + 1);
 }
 
 void PacketHello::addAuthTag(uint8_t authTag[])
 {
     counts.ac++;
     memcpy(&authTagTypes[(counts.ac - 1) * WORD_SIZE], authTag, WORD_SIZE);
+    setLength(getLength() + 1);
 }
 
 void PacketHello::addKeyAgreement(uint8_t keyAgreement[])
 {
     counts.kc++;
     memcpy(&keyAgreementTypes[(counts.kc - 1) * WORD_SIZE], keyAgreement, WORD_SIZE);
+    setLength(getLength() + 1);
 }
 
 void PacketHello::addSas(uint8_t sas[])
 {
     counts.sc++;
     memcpy(&sasTypes[(counts.sc - 1) * WORD_SIZE], sas, WORD_SIZE);
+    setLength(getLength() + 1);
 }
 
 void PacketHello::setMac(uint8_t mac[])

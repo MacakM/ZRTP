@@ -6,6 +6,8 @@
 #include <string>
 #include <cstring>
 
+#define MAX_HELLO_LENGTH    220
+#define MAX_HELLOACK_LENGTH 12
 
 #define WORD_SIZE           4
 

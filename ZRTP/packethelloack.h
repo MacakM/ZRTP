@@ -11,7 +11,7 @@ public:
     virtual uint8_t *toBytes();
 
 private:
-    uint8_t data[12];
+    uint8_t data[MAX_HELLOACK_LENGTH];
 };
 
 #endif // PACKETHELLOACK_H
