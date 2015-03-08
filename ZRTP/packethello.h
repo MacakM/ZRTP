@@ -22,6 +22,7 @@ public:
     void setFlagS();
     void setFlagM();
     void setFlagP();
+    void setMac(uint8_t mac[MAC_SIZE]);
 
 private:
     uint8_t version[VERSION_SIZE];
@@ -30,6 +31,7 @@ private:
     uint8_t zid[ZID_SIZE];
     uint8_t flags;
     Counts counts;
+    uint8_t mac[MAC_SIZE];
 
     uint8_t *hashTypes;
     uint8_t *cipherTypes;

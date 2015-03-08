@@ -8,7 +8,7 @@ PacketHello::PacketHello()
     setLength(((sizeof(Header) + sizeof(uint8_t[CLIENTID_SIZE]) +
                 sizeof(uint8_t[HASHIMAGE_SIZE]) + sizeof(uint8_t[ZID_SIZE]) +
                 sizeof(uint8_t) + sizeof(uint8_t[VERSION_SIZE]) +
-                sizeof(Counts))/ WORD_SIZE) - 1);
+                sizeof(Counts) + sizeof(uint8_t[MAC_SIZE]))/ WORD_SIZE) - 1);
     memcpy(version,"1.10",VERSION_SIZE);
     flags = 0;
 
@@ -66,41 +66,51 @@ uint8_t *PacketHello::toBytes()
     *(++pos) = 0x0000 | counts.cc << 4 | counts.ac;
     *(++pos) = 0x0000 | counts.kc << 4 | counts.sc;
 
+   uint8_t *typePos = hashTypes;
     for(uint8_t i = 0; i < counts.hc; i++)
     {
         for(uint8_t j = 0; j < 4; j++)
         {
-            *(++pos) = *(hashTypes++);
+            *(++pos) = *(typePos++);
         }
     }
+    typePos = cipherTypes;
     for(uint8_t i = 0; i < counts.cc; i++)
     {
         for(uint8_t j = 0; j < 4; j++)
         {
-            *(++pos) = *(cipherTypes++);
+            *(++pos) = *(typePos++);
         }
     }
+    typePos = authTagTypes;
     for(uint8_t i = 0; i < counts.ac; i++)
     {
         for(uint8_t j = 0; j < 4; j++)
         {
-            *(++pos) = *(authTagTypes++);
+            *(++pos) = *(typePos++);
         }
     }
+    typePos = keyAgreementTypes;
     for(uint8_t i = 0; i < counts.kc; i++)
     {
         for(uint8_t j = 0; j < 4; j++)
         {
-            *(++pos) = *(keyAgreementTypes++);
+            *(++pos) = *(typePos++);
         }
     }
+    typePos = sasTypes;
     for(uint8_t i = 0; i < counts.sc; i++)
     {
         for(uint8_t j = 0; j < 4; j++)
         {
-            *(++pos) = *(sasTypes++);
+            *(++pos) = *(typePos++);
         }
     }
+    for(uint8_t i = 0; i < MAC_SIZE; i++)
+    {
+        *(++pos) = mac[i];
+    }
+    *(++pos) = '\0';
     return data;
 }
 
@@ -133,4 +143,9 @@ void PacketHello::setFlagM()
 void PacketHello::setFlagP()
 {
     flags |= 16;
+}
+
+void PacketHello::setMac(uint8_t mac[])
+{
+    memcpy(this->mac, mac, MAC_SIZE);
 }

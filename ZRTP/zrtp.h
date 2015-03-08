@@ -42,6 +42,7 @@ private:
     bool activateTimer(int32_t time);
     bool cancelTimer();
     void createHashImages();
+    void createHelloMac();
 
     uint8_t myZID[ZID_SIZE];
     ZrtpCallback *callback;
