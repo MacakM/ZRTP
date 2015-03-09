@@ -10,6 +10,9 @@
 
 #define MAX_HELLO_LENGTH    220
 #define MAX_HELLOACK_LENGTH 12
+#define MAX_COMMIT_LENGTH   116
+
+#define MAX_CONF2ACK_LENGTH 12
 
 #define WORD_SIZE           4
 

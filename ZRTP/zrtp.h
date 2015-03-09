@@ -44,6 +44,7 @@ private:
     bool cancelTimer();
 
     void createHelloPacket(std::string clientId);
+    void createCommitPacket();
 
     void createHashImages();
     void createHelloMac();

@@ -94,10 +94,10 @@ void StateEngine::handleSentHello()
         //Hello
         if(first == 'H' && last == ' ')
         {
+            zrtp->peerHello->parse(msg);
             uint8_t *message = zrtp->helloAck->toBytes();
             uint16_t messageLength = zrtp->helloAck->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
-            zrtp->peerHello->parse(msg);
             actualState = SentHelloAck;
         }
         //HelloACK
@@ -128,6 +128,7 @@ void StateEngine::handleSentHelloAck()
         //Hello
         if(first == 'H' && last == ' ')
         {
+            zrtp->peerHello->parse(msg);
             uint8_t *message = zrtp->helloAck->toBytes();
             uint16_t messageLength = zrtp->helloAck->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
@@ -171,6 +172,7 @@ void StateEngine::handleReceivedHelloAck()
         //Hello
         if(first == 'H' && last == ' ')
         {
+            zrtp->peerHello->parse(msg);
             uint8_t *message = zrtp->helloAck->toBytes();
             uint16_t messageLength = zrtp->helloAck->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
@@ -232,6 +234,7 @@ void StateEngine::handleWaitCommit()
         //Hello
         if(first == 'H' && last == ' ')
         {
+            zrtp->peerHello->parse(msg);
             uint8_t *message = zrtp->helloAck->toBytes();
             uint16_t messageLength = zrtp->helloAck->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);

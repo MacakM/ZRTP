@@ -42,11 +42,11 @@ private:
     Counts counts;
     uint8_t mac[MAC_SIZE];
 
-    uint8_t hashTypes[28];
-    uint8_t cipherTypes[28];
-    uint8_t authTagTypes[28];
-    uint8_t keyAgreementTypes[28];
-    uint8_t sasTypes[28];
+    uint8_t hashTypes[WORD_SIZE * 7];
+    uint8_t cipherTypes[WORD_SIZE * 7];
+    uint8_t authTagTypes[WORD_SIZE * 7];
+    uint8_t keyAgreementTypes[WORD_SIZE * 7];
+    uint8_t sasTypes[WORD_SIZE * 7];
 
     uint8_t data[MAX_HELLO_LENGTH];
 };

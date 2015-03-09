@@ -12,7 +12,7 @@ public:
     virtual void parse(uint8_t *data);
 
 private:
-    uint8_t data[20];
+    uint8_t data[MAX_CONF2ACK_LENGTH];
 };
 
 #endif // PACKETCONF2ACK_H

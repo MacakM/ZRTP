@@ -206,7 +206,7 @@ void PacketHello::setH3(uint8_t *hash)
 
 void PacketHello::setZid(uint8_t *zid)
 {
-    memcpy(this->zid,zid,sizeof(uint8_t[ZID_SIZE]));
+    memcpy(this->zid,zid,ZID_SIZE);
 }
 
 void PacketHello::setFlagS()

@@ -14,7 +14,9 @@ Zrtp::Zrtp(ZrtpCallback *cb, Role role, std::string clientId)
 
     peerHello = new PacketHello();
     helloAck = new PacketHelloAck();
-    commit = new PacketCommit();
+
+    createCommitPacket();
+
     dhPart1 = new PacketDHPart();
     dhPart1->setType((uint8_t*)"DHPart1 ");
     dhPart2 = new PacketDHPart();
@@ -80,6 +82,18 @@ void Zrtp::createHelloPacket(std::string clientId)
     hello->addKeyAgreement((uint8_t*)"DH3K");
     hello->addSas((uint8_t*)"B32 ");
     createHelloMac();
+}
+
+void Zrtp::createCommitPacket()
+{
+    commit = new PacketCommit();
+    commit->setH2(h2);
+    commit->setZid(myZID);
+    commit->setHash((uint8_t*)"S256");
+    commit->setCipher((uint8_t*)"AES1");
+    commit->setAuthTag((uint8_t*)"HS32");
+    commit->setKeyAgreement((uint8_t*)"DH3K");
+    commit->setSas((uint8_t*)"B32 ");
 }
 
 void Zrtp::createHashImages()
