@@ -155,6 +155,7 @@ void StateEngine::handleSentHelloAck()
         //Commit
         if(first == 'C' && last == ' ')
         {
+            zrtp->commit->parse(msg);
             uint8_t *message = zrtp->dhPart1->toBytes();
             uint16_t messageLength = zrtp->dhPart1->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
@@ -242,6 +243,7 @@ void StateEngine::handleWaitCommit()
         //Commit
         if(first == 'C' && last == ' ')
         {
+            zrtp->commit->parse(msg);
             uint8_t *message = zrtp->dhPart1->toBytes();
             uint16_t messageLength = zrtp->dhPart1->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
@@ -260,6 +262,7 @@ void StateEngine::handleWaitDHPart2()
         //Commit
         if(first == 'C' && secondLast == ' ')
         {
+            zrtp->commit->parse(msg);
             uint8_t *message = zrtp->dhPart1->toBytes();
             uint16_t messageLength = zrtp->dhPart1->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);

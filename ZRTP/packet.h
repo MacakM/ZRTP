@@ -41,9 +41,13 @@ public:
     uint16_t getLength();
     uint8_t *getType();
 
+    virtual uint8_t *getHashImage() {return NULL;}
+
     void setLength(uint16_t length);
     void setType(uint8_t *type);
     void setZrtpIdentifier();
+
+    virtual void setMac(uint8_t [MAC_SIZE]) {}
 
     virtual uint8_t *toBytes() = 0;
     virtual void parse(uint8_t *data) = 0;

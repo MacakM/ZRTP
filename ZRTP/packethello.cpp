@@ -118,6 +118,7 @@ void PacketHello::parse(uint8_t *data)
     }
 
     packetHeader->length = *pos << 8 | *(pos + 1);
+    setType((uint8_t*)"Hello   ");
     pos += 10;
 
     for(uint8_t i = 0; i < VERSION_SIZE; i++)
@@ -186,6 +187,11 @@ void PacketHello::parse(uint8_t *data)
     {
         mac[i] = *(pos++);
     }
+}
+
+uint8_t *PacketHello::getHashImage()
+{
+    return h3;
 }
 
 void PacketHello::setVersion(uint8_t *version)

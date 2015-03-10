@@ -11,6 +11,8 @@ public:
     virtual uint8_t *toBytes();
     virtual void parse(uint8_t *data);
 
+    uint8_t *getHashImage();
+
     void setH2(uint8_t *hash);
     void setZid(uint8_t *zid);
     void setHash(uint8_t hash[4]);

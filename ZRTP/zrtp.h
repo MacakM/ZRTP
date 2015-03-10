@@ -17,6 +17,7 @@
 #include <openssl/sha.h>
 #include <openssl/hmac.h>
 #include <openssl/rand.h>
+#include <openssl/dh.h>
 
 typedef enum
 {
@@ -45,9 +46,11 @@ private:
 
     void createHelloPacket(std::string clientId);
     void createCommitPacket();
+    void createDHPart2Packet();
 
     void createHashImages();
-    void createHelloMac();
+    void generateIds();
+    void createMac(Packet *packet);
 
     uint8_t myZID[ZID_SIZE];
     ZrtpCallback *callback;
@@ -68,6 +71,18 @@ private:
     uint8_t h1[HASHIMAGE_SIZE];
     uint8_t h2[HASHIMAGE_SIZE];
     uint8_t h3[HASHIMAGE_SIZE];
+
+    uint8_t hash[WORD_SIZE];
+    uint8_t cipher[WORD_SIZE];
+    uint8_t authTag[WORD_SIZE];
+    uint8_t keyAgreement[WORD_SIZE];
+    uint8_t sas[WORD_SIZE];
+
+    //I don't know length...
+    uint8_t rs1[ID_SIZE];
+    uint8_t rs2[ID_SIZE];
+    uint8_t auxsecret[ID_SIZE];
+    uint8_t pbxsecret[ID_SIZE];
 };
 
 #endif // ZRTP_H

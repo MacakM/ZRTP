@@ -26,13 +26,87 @@ uint8_t *PacketCommit::toBytes()
     {
         *(++pos) = packetHeader->type[i];
     }
+    for(uint8_t i = 0; i < HASHIMAGE_SIZE; i++)
+    {
+        *(++pos) = h2[i];
+    }
+    for(uint8_t i = 0; i < ZID_SIZE; i++)
+    {
+        *(++pos) = zid[i];
+    }
+    for(uint8_t i = 0; i < 4; i++)
+    {
+        *(++pos) = hash[i];
+    }
+    for(uint8_t i = 0; i < 4; i++)
+    {
+        *(++pos) = cipher[i];
+    }
+    for(uint8_t i = 0; i < 4; i++)
+    {
+        *(++pos) = authTag[i];
+    }
+    for(uint8_t i = 0; i < 4; i++)
+    {
+        *(++pos) = keyAgreement[i];
+    }
+    for(uint8_t i = 0; i < 4; i++)
+    {
+        *(++pos) = sas[i];
+    }
 
     return data;
 }
 
 void PacketCommit::parse(uint8_t *data)
 {
+    uint8_t *pos = data;
 
+    packetHeader->identifier = *pos << 8 | *(pos + 1);
+    pos += 2;
+
+    uint16_t zrtpId = (uint16_t)ZRTP_IDENTIFIER;
+    if(memcmp(&packetHeader->identifier,&zrtpId,WORD_SIZE) != 0)
+    {
+        std::cout << "CHYBA";
+    }
+
+    packetHeader->length = *pos << 8 | *(pos + 1);
+    setType((uint8_t*)"Commit  ");
+    pos += 10;
+    for(uint8_t i = 0; i < HASHIMAGE_SIZE; i++)
+    {
+        h2[i] = *(pos++);
+    }
+    for(uint8_t i = 0; i < ZID_SIZE; i++)
+    {
+        zid[i] = *(pos++);
+    }
+    for(uint8_t i = 0; i < 4; i++)
+    {
+        hash[i] = *(pos++);
+    }
+    for(uint8_t i = 0; i < 4; i++)
+    {
+        cipher[i] = *(pos++);
+    }
+    for(uint8_t i = 0; i < 4; i++)
+    {
+        authTag[i] = *(pos++);
+    }
+    for(uint8_t i = 0; i < 4; i++)
+    {
+        keyAgreement[i] = *(pos++);
+    }
+    for(uint8_t i = 0; i < 4; i++)
+    {
+        sas[i] = *(pos++);
+    }
+}
+
+uint8_t *PacketCommit::getHashImage()
+{
+    return h2;
 }
 
 void PacketCommit::setH2(uint8_t *hash)
