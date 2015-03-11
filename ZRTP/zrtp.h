@@ -51,6 +51,7 @@ private:
     void createHashImages();
     void generateIds();
     void createMac(Packet *packet);
+    void diffieHellman();
 
     uint8_t myZID[ZID_SIZE];
     ZrtpCallback *callback;

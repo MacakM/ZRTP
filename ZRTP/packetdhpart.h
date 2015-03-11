@@ -18,6 +18,9 @@ public:
     void setRs2Id(uint8_t *rs2Id);
     void setAuxsecretId(uint8_t *auxsecretId);
     void setPbxsecretId(uint8_t *pbxsecretId);
+    void setPv(uint8_t publicValue[]);
+
+    void setMac(uint8_t mac[MAC_SIZE]);
 
 private:
     uint8_t h1[HASHIMAGE_SIZE];
@@ -26,7 +29,7 @@ private:
     uint8_t auxsecretId[ID_SIZE];
     uint8_t pbxsecretId[ID_SIZE];
 
-    uint8_t *pv;
+    uint8_t pv[96*4];
 
     uint8_t mac[MAC_SIZE];
 
