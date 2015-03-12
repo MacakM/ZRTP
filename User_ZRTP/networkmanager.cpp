@@ -36,7 +36,7 @@ void NetworkManager::processPendingDatagram()
     readSocket->readDatagram(datagram.data(), datagram.size(), &sender, &senderPort);
 
     qDebug() << "Message: ";
-    for(uint8_t i = 0; i < size; i++)
+    for(int i = 0; i < size; i++)
     {
         qDebug() << datagram[i];
     }

@@ -1,6 +1,8 @@
 #ifndef PACKETDHPART_H
 #define PACKETDHPART_H
 
+#define DH3K_LENGTH 96 * WORD_SIZE
+
 #include "packet.h"
 
 class PacketDHPart : public Packet
@@ -29,11 +31,11 @@ private:
     uint8_t auxsecretId[ID_SIZE];
     uint8_t pbxsecretId[ID_SIZE];
 
-    uint8_t pv[96*4];
+    uint8_t pv[DH3K_LENGTH];
 
     uint8_t mac[MAC_SIZE];
 
-    uint8_t data[20];
+    uint8_t data[MAX_DHPART_LENGTH];
 };
 
 #endif // PACKETDHPART_H

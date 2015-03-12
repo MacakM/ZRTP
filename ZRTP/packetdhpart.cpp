@@ -4,7 +4,8 @@ PacketDHPart::PacketDHPart()
 {
     packetHeader = new Header();
     setZrtpIdentifier();
-    setLength((sizeof(Header) / WORD_SIZE) - 1);
+    setLength(((sizeof(Header) + sizeof(uint8_t[HASHIMAGE_SIZE]) + 4 * sizeof(uint8_t[ID_SIZE]) +
+                sizeof(uint8_t[DH3K_LENGTH]) + sizeof(uint8_t[MAC_SIZE])) / WORD_SIZE) - 1);
 }
 
 uint8_t *PacketDHPart::toBytes()
@@ -24,7 +25,34 @@ uint8_t *PacketDHPart::toBytes()
     {
         *(++pos) = packetHeader->type[i];
     }
-
+    for (uint8_t i = 0; i < HASHIMAGE_SIZE; i++)
+    {
+        *(++pos) = h1[i];
+    }
+    for (uint8_t i = 0; i < ID_SIZE; i++)
+    {
+        *(++pos) = rs1Id[i];
+    }
+    for (uint8_t i = 0; i < ID_SIZE; i++)
+    {
+        *(++pos) = rs2Id[i];
+    }
+    for (uint8_t i = 0; i < ID_SIZE; i++)
+    {
+        *(++pos) = auxsecretId[i];
+    }
+    for (uint8_t i = 0; i < ID_SIZE; i++)
+    {
+        *(++pos) = pbxsecretId[i];
+    }
+    for (uint16_t i = 0; i < DH3K_LENGTH; i++)
+    {
+        *(++pos) = pv[i];
+    }
+    for(uint8_t i = 0; i < MAC_SIZE; i++)
+    {
+        *(++pos) = mac[i];
+    }
     return data;
 }
 
@@ -65,7 +93,7 @@ void PacketDHPart::setPbxsecretId(uint8_t *pbxsecretId)
 
 void PacketDHPart::setPv(uint8_t publicValue[])
 {
-    memcpy(pv,publicValue,96*4);
+    memcpy(pv,publicValue,DH3K_LENGTH);
 }
 
 void PacketDHPart::setMac(uint8_t mac[])

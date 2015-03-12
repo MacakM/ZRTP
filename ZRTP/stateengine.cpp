@@ -156,6 +156,7 @@ void StateEngine::handleSentHelloAck()
         if(first == 'C' && last == ' ')
         {
             zrtp->commit->parse(msg);
+            zrtp->createDHPart1Packet();
             uint8_t *message = zrtp->dhPart1->toBytes();
             uint16_t messageLength = zrtp->dhPart1->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
@@ -214,6 +215,7 @@ void StateEngine::handleSentCommit()
         if(first == 'D' && secondLast == '1')
         {
             zrtp->cancelTimer();
+            zrtp->createDHPart2Packet();
             uint8_t *message = zrtp->dhPart2->toBytes();
             uint16_t messageLength = zrtp->dhPart2->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
@@ -244,7 +246,11 @@ void StateEngine::handleWaitCommit()
         if(first == 'C' && last == ' ')
         {
             zrtp->commit->parse(msg);
-            uint8_t *message = zrtp->dhPart1->toBytes();
+            zrtp->createDHPart1Packet();
+
+            uint8_t *message = (uint8_t*) malloc(zrtp->dhPart1->getLength() * WORD_SIZE);
+            memcpy(message,zrtp->dhPart1->toBytes(),zrtp->dhPart1->getLength() * WORD_SIZE);
+
             uint16_t messageLength = zrtp->dhPart1->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
             actualState = WaitDHPart2;

@@ -46,12 +46,14 @@ private:
 
     void createHelloPacket(std::string clientId);
     void createCommitPacket();
+    void createDHPart1Packet();
     void createDHPart2Packet();
 
     void createHashImages();
-    void generateIds();
+    void generateIds(PacketDHPart *packet);
     void createMac(Packet *packet);
-    void diffieHellman();
+    void diffieHellman(PacketDHPart *packet);
+    void generateHvi();
 
     uint8_t myZID[ZID_SIZE];
     ZrtpCallback *callback;
@@ -84,6 +86,9 @@ private:
     uint8_t rs2[ID_SIZE];
     uint8_t auxsecret[ID_SIZE];
     uint8_t pbxsecret[ID_SIZE];
+
+    BIGNUM *privateKey;
+    BIGNUM *publicKey;
 };
 
 #endif // ZRTP_H
