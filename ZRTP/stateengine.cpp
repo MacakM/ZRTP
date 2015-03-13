@@ -143,6 +143,7 @@ void StateEngine::handleSentHelloAck()
             }
             else
             {
+                zrtp->createCommitPacket();
                 uint8_t *message = zrtp->commit->toBytes();
                 uint16_t messageLength = zrtp->commit->getLength() * WORD_SIZE;
                 zrtp->sendData(message,messageLength);
@@ -184,6 +185,7 @@ void StateEngine::handleReceivedHelloAck()
             }
             else
             {
+                zrtp->createCommitPacket();
                 uint8_t *message = zrtp->commit->toBytes();
                 uint16_t messageLength = zrtp->commit->getLength() * WORD_SIZE;
                 zrtp->sendData(message,messageLength);
@@ -216,7 +218,7 @@ void StateEngine::handleSentCommit()
         {
             zrtp->cancelTimer();
             zrtp->createDHPart2Packet();
-            uint8_t *message = zrtp->dhPart2->toBytes();
+            uint8_t *message = zrtp->dhPart2->toBytes();    //SIGSEGV in RUN, in DEBUG all right
             uint16_t messageLength = zrtp->dhPart2->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
             sentMessage = message;
@@ -288,6 +290,7 @@ void StateEngine::handleWaitConfirm1()
 {
     if(actualEvent->type == Timeout)
     {
+        std::cout << "CASOVY SKILL" << std::endl;
         zrtp->sendData(sentMessage,sentMessageLength);
         if(!timerNext(&T2))
         {

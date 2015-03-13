@@ -6,7 +6,6 @@ PacketCommit::PacketCommit()
     setZrtpIdentifier();
     setType((uint8_t*)"Commit  ");
     setLength(29);
-
 }
 
 uint8_t *PacketCommit::toBytes()
@@ -34,25 +33,33 @@ uint8_t *PacketCommit::toBytes()
     {
         *(++pos) = zid[i];
     }
-    for(uint8_t i = 0; i < 4; i++)
+    for(uint8_t i = 0; i < WORD_SIZE; i++)
     {
         *(++pos) = hash[i];
     }
-    for(uint8_t i = 0; i < 4; i++)
+    for(uint8_t i = 0; i < WORD_SIZE; i++)
     {
         *(++pos) = cipher[i];
     }
-    for(uint8_t i = 0; i < 4; i++)
+    for(uint8_t i = 0; i < WORD_SIZE; i++)
     {
         *(++pos) = authTag[i];
     }
-    for(uint8_t i = 0; i < 4; i++)
+    for(uint8_t i = 0; i < WORD_SIZE; i++)
     {
         *(++pos) = keyAgreement[i];
     }
-    for(uint8_t i = 0; i < 4; i++)
+    for(uint8_t i = 0; i < WORD_SIZE; i++)
     {
         *(++pos) = sas[i];
+    }
+    for(uint8_t i = 0; i < HVI_SIZE; i++)
+    {
+        *(++pos) = hvi[i];
+    }
+    for(uint8_t i = 0; i < MAC_SIZE; i++)
+    {
+        *(++pos) = mac[i];
     }
 
     return data;

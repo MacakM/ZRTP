@@ -20,10 +20,11 @@ Zrtp::Zrtp(ZrtpCallback *cb, Role role, std::string clientId)
     peerHello = new PacketHello();
     helloAck = new PacketHelloAck();
 
-    createCommitPacket();
-
-
-
+    commit = new PacketCommit();
+    dhPart1 = new PacketDHPart();
+    dhPart1->setType((uint8_t*)"DHPart1 ");
+    dhPart2 = new PacketDHPart();
+    dhPart1->setType((uint8_t*)"DHPart2 ");
     confirm1 = new PacketConfirm();
     confirm1->setType((uint8_t*)"Confirm1");
     confirm2 = new PacketConfirm();
