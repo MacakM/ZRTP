@@ -11,6 +11,7 @@
 //just for testing
 #include <windows.h>
 #include <conio.h>
+#include <fstream>
 
 class NetworkManager : public QObject
 {
@@ -47,6 +48,7 @@ private:
     Zrtp *zrtp;
     ZrtpCallback *callbacks;
 
+    std::ofstream myFile;
 
     void setArguments(Arguments args);
 };

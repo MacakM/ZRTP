@@ -8,6 +8,8 @@ NetworkManager::NetworkManager(int argc, char *argv[], QObject *parent) :
 
     setArguments(Parser::getArguments(argc,argv));
 
+    (myRole == Initiator) ? myFile.open("Alice.txt") : myFile.open("Bob.txt");
+    myFile.close();
     readSocket->bind(receiveIp, receivePort);
     connect(readSocket, SIGNAL(readyRead()),
                 this, SLOT(processPendingDatagram()));
@@ -35,13 +37,21 @@ void NetworkManager::processPendingDatagram()
     datagram.resize(readSocket->pendingDatagramSize());
     readSocket->readDatagram(datagram.data(), datagram.size(), &sender, &senderPort);
 
-    qDebug() << "Message: ";
+    (myRole == Initiator) ? myFile.open("Alice.txt",std::ios::app) : myFile.open("Bob.txt",std::ios::app);
+    myFile << "Message: " << std::endl;
     for(int i = 0; i < size; i++)
     {
-        qDebug() << datagram[i];
+        myFile << datagram[i];
+        if(i % 12 == 11)
+        {
+            myFile << std::endl;
+        }
     }
-    qDebug() << "Sender: " << sender;
-    qDebug() << "Port: " << senderPort;
+    myFile << std::endl;
+    myFile << "Sender: " << sender.toString().toStdString();
+    myFile << " Port: " << senderPort;
+    myFile << std::endl << std::endl;
+    myFile.close();
     processMessage((uint8_t*)datagram.data(), size);
 }
 
