@@ -94,7 +94,9 @@ void StateEngine::handleSentHello()
         //Hello
         if(first == 'H' && last == ' ')
         {
+            zrtp->peerHello = new PacketHello();
             zrtp->peerHello->parse(msg);
+            zrtp->createHelloAckPacket();
             uint8_t *message = zrtp->helloAck->toBytes();
             uint16_t messageLength = zrtp->helloAck->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
@@ -103,6 +105,8 @@ void StateEngine::handleSentHello()
         //HelloACK
         if(first == 'H' && last == 'K')
         {
+            zrtp->peerHelloAck = new PacketHelloAck();
+            zrtp->peerHelloAck->parse(msg);
             zrtp->cancelTimer();
             actualState = ReceivedHelloAck;
         }
@@ -136,6 +140,8 @@ void StateEngine::handleSentHelloAck()
         //HelloACK
         if(first == 'H' && last == 'K')
         {
+            zrtp->peerHelloAck = new PacketHelloAck();
+            zrtp->peerHelloAck->parse(msg);
             zrtp->cancelTimer();
             if(zrtp->myRole == Responder)
             {
@@ -156,11 +162,13 @@ void StateEngine::handleSentHelloAck()
         //Commit
         if(first == 'C' && last == ' ')
         {
+            zrtp->commit = new PacketCommit();
             zrtp->commit->parse(msg);
             zrtp->createDHPart1Packet();
             uint8_t *message = zrtp->dhPart1->toBytes();
             uint16_t messageLength = zrtp->dhPart1->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
+            actualState = WaitDHPart2;
         }
     }
 }
@@ -175,12 +183,14 @@ void StateEngine::handleReceivedHelloAck()
         //Hello
         if(first == 'H' && last == ' ')
         {
+            zrtp->peerHello = new PacketHello();
             zrtp->peerHello->parse(msg);
-            uint8_t *message = zrtp->helloAck->toBytes();
-            uint16_t messageLength = zrtp->helloAck->getLength() * WORD_SIZE;
-            zrtp->sendData(message,messageLength);
             if(zrtp->myRole == Responder)
             {
+                zrtp->createHelloAckPacket();
+                uint8_t *message = zrtp->helloAck->toBytes();
+                uint16_t messageLength = zrtp->helloAck->getLength() * WORD_SIZE;
+                zrtp->sendData(message,messageLength);
                 actualState = WaitCommit;
             }
             else
@@ -218,7 +228,7 @@ void StateEngine::handleSentCommit()
         {
             zrtp->cancelTimer();
             zrtp->createDHPart2Packet();
-            uint8_t *message = zrtp->dhPart2->toBytes();    //SIGSEGV in RUN, in DEBUG all right
+            uint8_t *message = zrtp->dhPart2->toBytes();
             uint16_t messageLength = zrtp->dhPart2->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
             sentMessage = message;
@@ -247,6 +257,7 @@ void StateEngine::handleWaitCommit()
         //Commit
         if(first == 'C' && last == ' ')
         {
+            zrtp->commit = new PacketCommit();
             zrtp->commit->parse(msg);
             zrtp->createDHPart1Packet();
 
@@ -290,7 +301,6 @@ void StateEngine::handleWaitConfirm1()
 {
     if(actualEvent->type == Timeout)
     {
-        std::cout << "CASOVY SKILL" << std::endl;
         zrtp->sendData(sentMessage,sentMessageLength);
         if(!timerNext(&T2))
         {
@@ -337,6 +347,7 @@ void StateEngine::handleWaitConfirm2()
             uint8_t *message = zrtp->conf2Ack->toBytes();
             uint16_t messageLength = zrtp->conf2Ack->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
+            std::cout << "DONE";
             actualState = Secured;
         }
     }
@@ -361,6 +372,7 @@ void StateEngine::handleWaitConf2Ack()
         if(first == 'C' && last == 'K')
         {
             zrtp->cancelTimer();
+            std::cout << "DONE";
             actualState = Secured;
         }
     }

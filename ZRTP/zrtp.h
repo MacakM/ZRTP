@@ -45,6 +45,7 @@ private:
     bool cancelTimer();
 
     void createHelloPacket(std::string clientId);
+    void createHelloAckPacket();
     void createCommitPacket();
     void createDHPart1Packet();
     void createDHPart2Packet();
@@ -52,8 +53,10 @@ private:
     void createHashImages();
     void generateIds(PacketDHPart *packet);
     void createMac(Packet *packet);
-    void diffieHellman(PacketDHPart *packet);
+    void diffieHellman();
     void generateHvi();
+
+    void setPv(PacketDHPart *packet);
 
     uint8_t myZID[ZID_SIZE];
     ZrtpCallback *callback;
@@ -63,6 +66,7 @@ private:
     PacketHello *hello;
     PacketHello *peerHello;
     PacketHelloAck *helloAck;
+    PacketHelloAck *peerHelloAck;
     PacketCommit *commit;
     PacketDHPart *dhPart1;
     PacketDHPart *dhPart2;

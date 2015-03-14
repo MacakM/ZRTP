@@ -13,18 +13,14 @@ Zrtp::Zrtp(ZrtpCallback *cb, Role role, std::string clientId)
     RAND_bytes(auxsecret,ID_SIZE);
     RAND_bytes(pbxsecret,ID_SIZE);
 
+    diffieHellman();
+
     engine = new StateEngine(this);
 
     createHelloPacket(clientId);
 
-    peerHello = new PacketHello();
-    helloAck = new PacketHelloAck();
-
-    commit = new PacketCommit();
     dhPart1 = new PacketDHPart();
     dhPart1->setType((uint8_t*)"DHPart1 ");
-    dhPart2 = new PacketDHPart();
-    dhPart1->setType((uint8_t*)"DHPart2 ");
     confirm1 = new PacketConfirm();
     confirm1->setType((uint8_t*)"Confirm1");
     confirm2 = new PacketConfirm();
@@ -88,6 +84,11 @@ void Zrtp::createHelloPacket(std::string clientId)
     createMac(hello);
 }
 
+void Zrtp::createHelloAckPacket()
+{
+    helloAck = new PacketHelloAck();
+}
+
 void Zrtp::createCommitPacket()
 {
     commit = new PacketCommit();
@@ -111,7 +112,7 @@ void Zrtp::createDHPart1Packet()
     dhPart1->setType((uint8_t*)"DHPart1 ");
     dhPart1->setH1(h1);
     generateIds(dhPart1);
-    diffieHellman(dhPart1);
+    setPv(dhPart1);
     createMac(dhPart1);
 }
 
@@ -121,13 +122,13 @@ void Zrtp::createDHPart2Packet()
     dhPart2->setType((uint8_t*)"DHPart2 ");
     dhPart2->setH1(h1);
     generateIds(dhPart2);
-    diffieHellman(dhPart2);
+    setPv(dhPart2);
     createMac(dhPart2);
 }
 
 void Zrtp::createHashImages()
 {
-    RAND_bytes(h0,HASHIMAGE_SIZE);
+    RAND_bytes(h0,SHA256_DIGEST_LENGTH);
 
     SHA256(h0,HASHIMAGE_SIZE,h1);
     SHA256(h1,HASHIMAGE_SIZE,h2);
@@ -139,14 +140,14 @@ void Zrtp::generateIds(PacketDHPart *packet)
     uint8_t *checkingHash = (uint8_t*)"S256";
     if(memcmp(hash,checkingHash,WORD_SIZE) == 0)
     {
-        uint8_t id[ID_SIZE];
-        SHA256(id,ID_SIZE,rs1);
+        uint8_t id[SHA256_DIGEST_LENGTH];
+        SHA256(rs1,ID_SIZE,id);
         packet->setRs1Id(id);
-        SHA256(id,ID_SIZE,rs2);
+        SHA256(rs2,ID_SIZE,id);
         packet->setRs1Id(id);
-        SHA256(id,ID_SIZE,auxsecret);
+        SHA256(auxsecret,ID_SIZE,id);
         packet->setAuxsecretId(id);
-        SHA256(id,ID_SIZE,pbxsecret);
+        SHA256(pbxsecret,ID_SIZE,id);
         packet->setPbxsecretId(id);
     }
 }
@@ -193,7 +194,7 @@ void Zrtp::createMac(Packet *packet)
     packet->setMac(computedMac);
 }
 
-void Zrtp::diffieHellman(PacketDHPart *packet)
+void Zrtp::diffieHellman()
 {
     const char* modpGroup3072 =
             "FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD1"
@@ -231,17 +232,21 @@ void Zrtp::diffieHellman(PacketDHPart *packet)
     BN_copy(privateKey,dh->priv_key);
     BN_copy(publicKey,dh->pub_key);
 
-    uint8_t *buffer = (uint8_t*)malloc((BN_num_bytes(dh->pub_key)+1) * sizeof(uint8_t));
-    buffer[BN_num_bytes(dh->pub_key)] = '\0';
-
-    BN_bn2bin(dh->pub_key,buffer);
-
-    packet->setPv(buffer);
-
     DH_free(dh);
 }
 
 void Zrtp::generateHvi()
 {
 
+}
+
+void Zrtp::setPv(PacketDHPart *packet)
+{
+    uint8_t *buffer = (uint8_t*)malloc((BN_num_bytes(publicKey)+1) * sizeof(uint8_t));
+    buffer[BN_num_bytes(publicKey)] = '\0';
+
+    BN_bn2bin(publicKey,buffer);
+
+    packet->setPv(buffer);
+    free(buffer);
 }
