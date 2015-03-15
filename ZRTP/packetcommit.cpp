@@ -89,31 +89,34 @@ void PacketCommit::parse(uint8_t *data)
     {
         zid[i] = *(pos++);
     }
-    for(uint8_t i = 0; i < 4; i++)
+    for(uint8_t i = 0; i < WORD_SIZE; i++)
     {
         hash[i] = *(pos++);
     }
-    for(uint8_t i = 0; i < 4; i++)
+    for(uint8_t i = 0; i < WORD_SIZE; i++)
     {
         cipher[i] = *(pos++);
     }
-    for(uint8_t i = 0; i < 4; i++)
+    for(uint8_t i = 0; i < WORD_SIZE; i++)
     {
         authTag[i] = *(pos++);
     }
-    for(uint8_t i = 0; i < 4; i++)
+    for(uint8_t i = 0; i < WORD_SIZE; i++)
     {
         keyAgreement[i] = *(pos++);
     }
-    for(uint8_t i = 0; i < 4; i++)
+    for(uint8_t i = 0; i < WORD_SIZE; i++)
     {
         sas[i] = *(pos++);
     }
-}
-
-uint8_t *PacketCommit::getHashImage()
-{
-    return h2;
+    for(uint8_t i = 0; i < HVI_SIZE; i++)
+    {
+        hvi[i] = *(pos++);
+    }
+    for(uint8_t i = 0; i < MAC_SIZE; i++)
+    {
+        mac[i] = *(pos++);
+    }
 }
 
 void PacketCommit::setH2(uint8_t *hash)
@@ -149,4 +152,14 @@ void PacketCommit::setKeyAgreement(uint8_t keyAgreement[])
 void PacketCommit::setSas(uint8_t sas[])
 {
     memcpy(this->sas, sas, WORD_SIZE);
+}
+
+void PacketCommit::setHvi(uint8_t hvi[])
+{
+    memcpy(this->hvi, hvi, HVI_SIZE);
+}
+
+void PacketCommit::setMac(uint8_t mac[])
+{
+    memcpy(this->mac, mac, MAC_SIZE);
 }

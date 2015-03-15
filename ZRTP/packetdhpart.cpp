@@ -58,12 +58,49 @@ uint8_t *PacketDHPart::toBytes()
 
 void PacketDHPart::parse(uint8_t *data)
 {
+    uint8_t *pos = data;
 
-}
+    packetHeader->identifier = *pos << 8 | *(pos + 1);
+    pos += 2;
 
-uint8_t *PacketDHPart::getHashImage()
-{
-    return h1;
+    uint16_t zrtpId = (uint16_t)ZRTP_IDENTIFIER;
+    if(memcmp(&packetHeader->identifier,&zrtpId,WORD_SIZE) != 0)
+    {
+        std::cout << "CHYBA";
+    }
+
+    packetHeader->length = *pos << 8 | *(pos + 1);
+    setType((uint8_t*)"Hello   ");
+    pos += 10;
+
+    for(uint8_t i = 0; i < HASHIMAGE_SIZE; i++)
+    {
+        h1[i] = *(pos++);
+    }
+    for(uint8_t i = 0; i < ID_SIZE; i++)
+    {
+        rs1Id[i] = *(pos++);
+    }
+    for(uint8_t i = 0; i < ID_SIZE; i++)
+    {
+        rs2Id[i] = *(pos++);
+    }
+    for(uint8_t i = 0; i < ID_SIZE; i++)
+    {
+        auxsecretId[i] = *(pos++);
+    }
+    for(uint8_t i = 0; i < ID_SIZE; i++)
+    {
+        pbxsecretId[i] = *(pos++);
+    }
+    for(uint16_t i = 0; i < DH3K_LENGTH; i++)
+    {
+        pv[i] = *(pos++);
+    }
+    for(uint8_t i = 0; i < MAC_SIZE; i++)
+    {
+        mac[i] = *(pos++);
+    }
 }
 
 void PacketDHPart::setH1(uint8_t *hash)

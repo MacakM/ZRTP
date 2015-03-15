@@ -12,9 +12,9 @@
 #define MAX_HELLOACK_LENGTH 12
 #define MAX_COMMIT_LENGTH   116
 #define MAX_DHPART_LENGTH   468
-#define MAX_ERROR_LENGTH    16
-
+#define MAX_CONFIRM_LENGTH  76
 #define MAX_CONF2ACK_LENGTH 12
+#define MAX_ERROR_LENGTH    16
 
 #define WORD_SIZE           4
 
@@ -42,9 +42,6 @@ public:
 
     uint16_t getLength();
     uint8_t *getType();
-
-    //FIX THIS
-    virtual uint8_t *getHashImage() {return NULL;}
 
     void setLength(uint16_t length);
     void setType(uint8_t *type);

@@ -226,8 +226,9 @@ void StateEngine::handleSentCommit()
         //DHPart1
         if(first == 'D' && secondLast == '1')
         {
+            zrtp->dhPart1 = new PacketDHPart();
+            zrtp->dhPart1->parse(msg);
             zrtp->cancelTimer();
-            zrtp->createDHPart2Packet();
             uint8_t *message = zrtp->dhPart2->toBytes();
             uint16_t messageLength = zrtp->dhPart2->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
@@ -289,6 +290,9 @@ void StateEngine::handleWaitDHPart2()
         //DHPart2
         if(first == 'D' && secondLast == '2')
         {
+            zrtp->dhPart2 = new PacketDHPart();
+            zrtp->dhPart2->parse(msg);
+            //create confirm1
             uint8_t *message = zrtp->confirm1->toBytes();
             uint16_t messageLength = zrtp->confirm1->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
@@ -337,6 +341,7 @@ void StateEngine::handleWaitConfirm2()
         //DHPart2
         if(first == 'D' && last == '2')
         {
+            zrtp->dhPart2->parse(msg);
             uint8_t *message = zrtp->confirm1->toBytes();
             uint16_t messageLength = zrtp->confirm1->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);

@@ -60,7 +60,7 @@ uint8_t *PacketHello::toBytes()
     uint8_t *typePos = hashTypes;
     for(uint8_t i = 0; i < counts.hc; i++)
     {
-        for(uint8_t j = 0; j < 4; j++)
+        for(uint8_t j = 0; j < WORD_SIZE; j++)
         {
             *(++pos) = *(typePos++);
         }
@@ -68,7 +68,7 @@ uint8_t *PacketHello::toBytes()
     typePos = cipherTypes;
     for(uint8_t i = 0; i < counts.cc; i++)
     {
-        for(uint8_t j = 0; j < 4; j++)
+        for(uint8_t j = 0; j < WORD_SIZE; j++)
         {
             *(++pos) = *(typePos++);
         }
@@ -76,7 +76,7 @@ uint8_t *PacketHello::toBytes()
     typePos = authTagTypes;
     for(uint8_t i = 0; i < counts.ac; i++)
     {
-        for(uint8_t j = 0; j < 4; j++)
+        for(uint8_t j = 0; j < WORD_SIZE; j++)
         {
             *(++pos) = *(typePos++);
         }
@@ -84,7 +84,7 @@ uint8_t *PacketHello::toBytes()
     typePos = keyAgreementTypes;
     for(uint8_t i = 0; i < counts.kc; i++)
     {
-        for(uint8_t j = 0; j < 4; j++)
+        for(uint8_t j = 0; j < WORD_SIZE; j++)
         {
             *(++pos) = *(typePos++);
         }
@@ -92,7 +92,7 @@ uint8_t *PacketHello::toBytes()
     typePos = sasTypes;
     for(uint8_t i = 0; i < counts.sc; i++)
     {
-        for(uint8_t j = 0; j < 4; j++)
+        for(uint8_t j = 0; j < WORD_SIZE; j++)
         {
             *(++pos) = *(typePos++);
         }
@@ -148,7 +148,7 @@ void PacketHello::parse(uint8_t *data)
     uint8_t *typePos = hashTypes;
     for(uint8_t i = 0; i < counts.hc; i++)
     {
-        for(uint8_t j = 0; j < 4; j++)
+        for(uint8_t j = 0; j < WORD_SIZE; j++)
         {
             *(typePos++) = *(pos++);
         }
@@ -156,7 +156,7 @@ void PacketHello::parse(uint8_t *data)
     typePos = cipherTypes;
     for(uint8_t i = 0; i < counts.cc; i++)
     {
-        for(uint8_t j = 0; j < 4; j++)
+        for(uint8_t j = 0; j < WORD_SIZE; j++)
         {
             *(typePos++) = *(pos++);
         }
@@ -164,7 +164,7 @@ void PacketHello::parse(uint8_t *data)
     typePos = authTagTypes;
     for(uint8_t i = 0; i < counts.ac; i++)
     {
-        for(uint8_t j = 0; j < 4; j++)
+        for(uint8_t j = 0; j < WORD_SIZE; j++)
         {
             *(typePos++) = *(pos++);
         }
@@ -172,6 +172,7 @@ void PacketHello::parse(uint8_t *data)
     typePos = keyAgreementTypes;
     for(uint8_t i = 0; i < counts.kc; i++)
     {
+        for(uint8_t j = 0; j < WORD_SIZE; j++)
         {
             *(typePos++) = *(pos++);
         }
@@ -179,6 +180,7 @@ void PacketHello::parse(uint8_t *data)
     typePos = sasTypes;
     for(uint8_t i = 0; i < counts.sc; i++)
     {
+        for(uint8_t j = 0; j < WORD_SIZE; j++)
         {
             *(typePos++) = *(pos++);
         }
@@ -187,11 +189,6 @@ void PacketHello::parse(uint8_t *data)
     {
         mac[i] = *(pos++);
     }
-}
-
-uint8_t *PacketHello::getHashImage()
-{
-    return h3;
 }
 
 void PacketHello::setVersion(uint8_t *version)

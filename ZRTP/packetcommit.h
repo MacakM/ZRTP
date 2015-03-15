@@ -11,8 +11,6 @@ public:
     virtual uint8_t *toBytes();
     virtual void parse(uint8_t *data);
 
-    uint8_t *getHashImage();
-
     void setH2(uint8_t *hash);
     void setZid(uint8_t *zid);
     void setHash(uint8_t hash[4]);
@@ -21,6 +19,8 @@ public:
     void setKeyAgreement(uint8_t keyAgreement[4]);
     void setSas(uint8_t sas[4]);
 
+    void setHvi(uint8_t hvi[HVI_SIZE]);
+    void setMac(uint8_t mac[MAC_SIZE]);
 private:
     uint8_t h2[HASHIMAGE_SIZE];
     uint8_t zid[ZID_SIZE];

@@ -17,8 +17,6 @@ public:
     virtual uint8_t *toBytes();
     virtual void parse(uint8_t *data);
 
-    uint8_t *getHashImage();
-
     void setVersion(uint8_t *version);
     void setClientId(std::string id);
     void setH3(uint8_t *hash);

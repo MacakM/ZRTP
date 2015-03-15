@@ -49,6 +49,7 @@ private:
     void createCommitPacket();
     void createDHPart1Packet();
     void createDHPart2Packet();
+    void createConfirm1Packet();
 
     void createHashImages();
     void generateIds(PacketDHPart *packet);

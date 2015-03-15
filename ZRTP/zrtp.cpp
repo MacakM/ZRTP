@@ -19,8 +19,6 @@ Zrtp::Zrtp(ZrtpCallback *cb, Role role, std::string clientId)
 
     createHelloPacket(clientId);
 
-    dhPart1 = new PacketDHPart();
-    dhPart1->setType((uint8_t*)"DHPart1 ");
     confirm1 = new PacketConfirm();
     confirm1->setType((uint8_t*)"Confirm1");
     confirm2 = new PacketConfirm();
@@ -104,6 +102,8 @@ void Zrtp::createCommitPacket()
     memcpy(keyAgreement,(uint8_t*)"DH3K",WORD_SIZE);
     commit->setSas((uint8_t*)"B32 ");
     memcpy(sas,(uint8_t*)"B32 ",WORD_SIZE);
+    generateHvi();
+    createMac(commit);
 }
 
 void Zrtp::createDHPart1Packet()
@@ -126,9 +126,24 @@ void Zrtp::createDHPart2Packet()
     createMac(dhPart2);
 }
 
+void Zrtp::createConfirm1Packet()
+{
+    confirm1 = new PacketConfirm();
+    confirm1->setType((uint8_t*)"Confirm1");
+    confirm1->setH0(h0);
+    confirm1->setSigLen(0);
+    confirm1->setExpInterval(0);
+
+    uint8_t vector[VECTOR_SIZE];
+    RAND_bytes(vector,VECTOR_SIZE);
+    confirm1->setInitVector(vector);
+
+    //este confirmMac
+}
+
 void Zrtp::createHashImages()
 {
-    RAND_bytes(h0,SHA256_DIGEST_LENGTH);
+    RAND_bytes(h0,HASHIMAGE_SIZE);
 
     SHA256(h0,HASHIMAGE_SIZE,h1);
     SHA256(h1,HASHIMAGE_SIZE,h2);
@@ -155,25 +170,21 @@ void Zrtp::generateIds(PacketDHPart *packet)
 void Zrtp::createMac(Packet *packet)
 {
     uint8_t key[HASHIMAGE_SIZE];
-    uint8_t *checkType = (uint8_t*)"Hello   ";
-    if(memcmp(packet->getType(), checkType, TYPE_SIZE) == 0)
+
+    switch(packet->getType()[0])
     {
+    //Hello
+    case 'H':
         memcpy(key,h2,HASHIMAGE_SIZE);
-        checkType = (uint8_t*)"Commit  ";
-    }
-    else if(memcmp(packet->getType(), checkType, TYPE_SIZE) == 0)
-    {
+        break;
+    //Commit
+    case 'C':
         memcpy(key,h1,HASHIMAGE_SIZE);
-        checkType = (uint8_t*)"DHPart1 ";
-    }
-    else if(memcmp(packet->getType(), checkType, TYPE_SIZE) == 0)
-    {
+        break;
+    //DHPart1 or DHPart2
+    case 'D':
         memcpy(key,h0,HASHIMAGE_SIZE);
-        checkType = (uint8_t*)"DHPart2 ";
-    }
-    else if(memcmp(packet->getType(), checkType, TYPE_SIZE) == 0)
-    {
-        memcpy(key,h0,HASHIMAGE_SIZE);
+        break;
     }
 
     uint8_t *data = packet->toBytes();
@@ -237,7 +248,17 @@ void Zrtp::diffieHellman()
 
 void Zrtp::generateHvi()
 {
+    createDHPart2Packet();
+    uint8_t *buffer = (uint8_t*)malloc((dhPart2->getLength() + peerHello->getLength()) * WORD_SIZE);
 
+    memcpy(buffer, dhPart2->toBytes(), dhPart2->getLength() * WORD_SIZE);
+    uint8_t *secondHalf = &(buffer[dhPart2->getLength() * WORD_SIZE]);
+    memcpy(secondHalf, peerHello->toBytes(), peerHello->getLength() * WORD_SIZE);
+
+    uint8_t hash[SHA256_DIGEST_LENGTH];
+    SHA256(buffer, (dhPart2->getLength() + peerHello->getLength()) * WORD_SIZE, hash);
+    commit->setHvi(hash);
+    free(buffer);
 }
 
 void Zrtp::setPv(PacketDHPart *packet)
