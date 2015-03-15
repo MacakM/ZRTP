@@ -70,8 +70,12 @@ void PacketDHPart::parse(uint8_t *data)
     }
 
     packetHeader->length = *pos << 8 | *(pos + 1);
-    setType((uint8_t*)"Hello   ");
-    pos += 10;
+
+    pos += 2;
+    for(uint8_t i = 0; i < TYPE_SIZE; i++)
+    {
+        packetHeader->type[i] = *(pos++);
+    }
 
     for(uint8_t i = 0; i < HASHIMAGE_SIZE; i++)
     {
@@ -101,6 +105,11 @@ void PacketDHPart::parse(uint8_t *data)
     {
         mac[i] = *(pos++);
     }
+}
+
+uint8_t *PacketDHPart::getPv()
+{
+    return pv;
 }
 
 void PacketDHPart::setH1(uint8_t *hash)

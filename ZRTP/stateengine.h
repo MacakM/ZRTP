@@ -13,18 +13,18 @@ class Zrtp;
 
 typedef enum
 {
-    Initial             = 0x0000,
-    SentHello           = 0x0001,
-    SentHelloAck        = 0x0002,
-    ReceivedHelloAck    = 0x0003,
-    SentCommit          = 0x0004,
-    WaitCommit          = 0x0005,
-    WaitDHPart2         = 0x0006,
-    WaitConfirm1        = 0x0007,
-    WaitConfirm2        = 0x0008,
-    WaitConf2Ack        = 0x0009,
-    Secured             = 0x000a,
-    WaitErrorAck        = 0x000b
+    Initial,
+    SentHello,
+    SentHelloAck,
+    ReceivedHelloAck,
+    SentCommit,
+    WaitCommit,
+    WaitDHPart2,
+    WaitConfirm1,
+    WaitConfirm2,
+    WaitConf2Ack,
+    Secured,
+    WaitErrorAck
 }States;
 
 typedef enum

@@ -191,6 +191,11 @@ void PacketHello::parse(uint8_t *data)
     }
 }
 
+uint8_t *PacketHello::getZid()
+{
+    return zid;
+}
+
 void PacketHello::setVersion(uint8_t *version)
 {
     memcpy(this->version,version,VERSION_SIZE);

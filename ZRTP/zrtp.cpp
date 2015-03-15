@@ -19,8 +19,6 @@ Zrtp::Zrtp(ZrtpCallback *cb, Role role, std::string clientId)
 
     createHelloPacket(clientId);
 
-    confirm1 = new PacketConfirm();
-    confirm1->setType((uint8_t*)"Confirm1");
     confirm2 = new PacketConfirm();
     confirm2->setType((uint8_t*)"Confirm2");
     conf2Ack = new PacketConf2Ack();
@@ -239,9 +237,14 @@ void Zrtp::diffieHellman()
 
     privateKey = BN_new();
     publicKey = BN_new();
+    p = BN_new();
 
     BN_copy(privateKey,dh->priv_key);
     BN_copy(publicKey,dh->pub_key);
+    BN_copy(p, dh->p);
+
+    /*BN_free(prime);
+    BN_free(&generator);*/
 
     DH_free(dh);
 }
@@ -259,6 +262,113 @@ void Zrtp::generateHvi()
     SHA256(buffer, (dhPart2->getLength() + peerHello->getLength()) * WORD_SIZE, hash);
     commit->setHvi(hash);
     free(buffer);
+}
+
+void Zrtp::createTotalHash()
+{
+    PacketHello *helloR;
+    (myRole == Initiator) ? helloR = peerHello : helloR = hello;
+
+    uint8_t *buffer = (uint8_t*)malloc((helloR->getLength() + commit->getLength() +
+                                        dhPart1->getLength() + dhPart2->getLength()) * WORD_SIZE);
+
+    memcpy(buffer, helloR->toBytes(), helloR->getLength() * WORD_SIZE);
+    uint8_t *nextPos = &(buffer[helloR->getLength() * WORD_SIZE]);
+    memcpy(nextPos, commit->toBytes(), commit->getLength() * WORD_SIZE);
+    nextPos = &(buffer[(helloR->getLength() + commit->getLength()) * WORD_SIZE]);
+    memcpy(nextPos, dhPart1->toBytes(), dhPart1->getLength() * WORD_SIZE);
+    nextPos = &(buffer[(helloR->getLength() + commit->getLength() + dhPart1->getLength()) * WORD_SIZE]);
+    memcpy(nextPos, dhPart2->toBytes(), dhPart2->getLength() * WORD_SIZE);
+
+    uint8_t hash[SHA256_DIGEST_LENGTH];
+    SHA256(buffer, (helloR->getLength() + commit->getLength() +
+                    dhPart1->getLength() + dhPart2->getLength()) * WORD_SIZE, hash);
+    memcpy(totalHash,hash,SHA256_DIGEST_LENGTH);
+    free(buffer);
+
+    std::cout << "Total hash:" << std::endl;
+    for(int i = 0; i < SHA256_DIGEST_LENGTH; i++)
+    {
+        std::cout << totalHash[i];
+    }
+    std::cout << std::endl;
+
+    createDHResult();
+}
+
+void Zrtp::createDHResult()
+{
+    PacketDHPart *dhPartR;
+
+    BIGNUM *peerPublicKey = BN_new();
+    BIGNUM *result = BN_new();
+
+    BN_CTX* ctx = BN_CTX_new();
+
+    dhResult = BN_new();
+    (myRole == Initiator) ? dhPartR = dhPart1 : dhPartR = dhPart2;
+
+    BN_bin2bn(dhPartR->getPv(),DH3K_LENGTH,peerPublicKey);
+    BN_mod_exp(result,peerPublicKey,privateKey, p, ctx);
+
+    BN_copy(dhResult,result);
+
+    BN_free(peerPublicKey);
+    BN_free(result);
+    BN_CTX_free(ctx);
+
+    uint8_t *buffer;
+    buffer = (uint8_t*)calloc(BN_num_bytes(dhResult), sizeof(uint8_t));
+
+    BN_bn2bin(dhResult,buffer);
+
+    std::cout << std::endl;
+    std::cout << "DHResult:" << std::endl;
+    for(int i = 0; i < BN_num_bytes(dhResult); i++)
+    {
+        std::cout << buffer[i];
+    }
+    std::cout << std::endl;
+    free(buffer);
+
+    createKDFContext();
+}
+
+void Zrtp::createKDFContext()
+{
+    bool initiator = (myRole == Initiator);
+
+    uint8_t context[KDF_CONTEXT_LENGTH];
+    uint8_t *pos;
+    pos = &context[0];
+    if(initiator)
+    {
+        memcpy(pos,myZID,ZID_SIZE);
+        pos = &context[ZID_SIZE];
+        memcpy(pos,peerHello->getZid(),ZID_SIZE);
+    }
+    else
+    {
+        memcpy(pos,peerHello->getZid(),ZID_SIZE);
+        pos = &context[ZID_SIZE];
+        memcpy(pos,myZID,ZID_SIZE);
+    }
+    pos = &context[2*ZID_SIZE];
+    memcpy(pos,totalHash,SHA256_DIGEST_LENGTH);
+    memcpy(kdfContext,context,KDF_CONTEXT_LENGTH);
+
+    std::cout << std::endl;
+    std::cout << "KDF_Context:" << std::endl;
+    for(int i = 0; i < KDF_CONTEXT_LENGTH; i++)
+    {
+        std::cout << kdfContext[i];
+    }
+    std::cout << std::endl;
+}
+
+void Zrtp::createS0()
+{
+
 }
 
 void Zrtp::setPv(PacketDHPart *packet)

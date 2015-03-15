@@ -1,6 +1,8 @@
 #ifndef ZRTP_H
 #define ZRTP_H
 
+#define KDF_CONTEXT_LENGTH  2 * ZID_SIZE + SHA256_DIGEST_LENGTH
+
 #include "Integers.h"
 #include "ZrtpCallback.h"
 #include "stateengine.h"
@@ -11,6 +13,7 @@
 #include "packetdhpart.h"
 #include "packetconfirm.h"
 #include "packetconf2ack.h"
+#include "packeterror.h"
 
 #include <iostream>
 
@@ -56,6 +59,10 @@ private:
     void createMac(Packet *packet);
     void diffieHellman();
     void generateHvi();
+    void createTotalHash();
+    void createDHResult();
+    void createKDFContext();
+    void createS0();
 
     void setPv(PacketDHPart *packet);
 
@@ -74,6 +81,7 @@ private:
     PacketConfirm *confirm1;
     PacketConfirm *confirm2;
     PacketConf2Ack *conf2Ack;
+    PacketError *error;
 
     uint8_t h0[HASHIMAGE_SIZE];
     uint8_t h1[HASHIMAGE_SIZE];
@@ -94,6 +102,12 @@ private:
 
     BIGNUM *privateKey;
     BIGNUM *publicKey;
+    BIGNUM *p;
+    BIGNUM *dhResult;
+
+    uint8_t s0[SHA256_DIGEST_LENGTH];
+    uint8_t kdfContext[KDF_CONTEXT_LENGTH];
+    uint8_t totalHash[SHA256_DIGEST_LENGTH];
 };
 
 #endif // ZRTP_H

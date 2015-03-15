@@ -31,5 +31,17 @@ uint8_t *PacketConf2Ack::toBytes()
 
 void PacketConf2Ack::parse(uint8_t *data)
 {
+    uint8_t *pos = data;
 
+    packetHeader->identifier = *pos << 8 | *(pos + 1);
+    pos += 2;
+
+    uint16_t zrtpId = (uint16_t)ZRTP_IDENTIFIER;
+    if(memcmp(&packetHeader->identifier,&zrtpId,WORD_SIZE) != 0)
+    {
+        std::cout << "CHYBA";
+    }
+
+    packetHeader->length = *pos << 8 | *(pos + 1);
+    setType((uint8_t*)"Conf2ACK");
 }

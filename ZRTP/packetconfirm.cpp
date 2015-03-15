@@ -4,7 +4,8 @@ PacketConfirm::PacketConfirm()
 {
     packetHeader = new Header();
     setZrtpIdentifier();
-    setLength((sizeof(Header) / WORD_SIZE) - 1);
+    setLength(3);//19
+    flags = 0;
 }
 
 uint8_t *PacketConfirm::toBytes()
@@ -31,4 +32,44 @@ uint8_t *PacketConfirm::toBytes()
 void PacketConfirm::parse(uint8_t *data)
 {
 
+}
+
+void PacketConfirm::setInitVector(uint8_t vector[])
+{
+    memcpy(initVector,vector,VECTOR_SIZE);
+}
+
+void PacketConfirm::setH0(uint8_t *hash)
+{
+    memcpy(h0,hash,HASHIMAGE_SIZE);
+}
+
+void PacketConfirm::setSigLen(uint16_t length)
+{
+    sigLen = length;
+}
+
+void PacketConfirm::setFlagE()
+{
+    flags |= 8;
+}
+
+void PacketConfirm::setFlagV()
+{
+    flags |= 4;
+}
+
+void PacketConfirm::setFlagA()
+{
+    flags |= 2;
+}
+
+void PacketConfirm::setFlagD()
+{
+    flags |= 1;
+}
+
+void PacketConfirm::setExpInterval(uint32_t interval)
+{
+    expInterval = interval;
 }

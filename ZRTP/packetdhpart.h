@@ -13,6 +13,8 @@ public:
     virtual uint8_t *toBytes();
     virtual void parse(uint8_t *data);
 
+    uint8_t *getPv();
+
     void setH1(uint8_t *hash);
     void setRs1Id(uint8_t *rs1Id);
     void setRs2Id(uint8_t *rs2Id);
