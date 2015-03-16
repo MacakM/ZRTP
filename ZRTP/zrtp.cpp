@@ -2,6 +2,10 @@
 
 Zrtp::Zrtp(ZrtpCallback *cb, Role role, std::string clientId)
 {
+    if(!cb)
+    {
+        throw std::invalid_argument("NULL callback");
+    }
     callback = cb;
     myRole = role;
 
@@ -15,9 +19,17 @@ Zrtp::Zrtp(ZrtpCallback *cb, Role role, std::string clientId)
 
     diffieHellman();
 
+    assert(publicKey);
+    assert(privateKey);
+    assert(p);
+
     engine = new StateEngine(this);
 
+    assert(engine);
+
     createHelloPacket(clientId);
+
+    assert(hello);
 
     confirm2 = new PacketConfirm();
     confirm2->setType((uint8_t*)"Confirm2");
@@ -30,6 +42,11 @@ Zrtp::Zrtp(ZrtpCallback *cb, Role role, std::string clientId)
 
 void Zrtp::processMessage(uint8_t *msg, int32_t length)
 {
+    //ignore packet with shorter length than it should be
+    if(length < (int32_t)sizeof(Header) - WORD_SIZE)
+    {
+        return;
+    }
     Event event;
     event.type = Message;
     event.message = msg;
@@ -150,8 +167,7 @@ void Zrtp::createHashImages()
 
 void Zrtp::generateIds(PacketDHPart *packet)
 {
-    uint8_t *checkingHash = (uint8_t*)"S256";
-    if(memcmp(hash,checkingHash,WORD_SIZE) == 0)
+    if(memcmp(hash,"S256",WORD_SIZE) == 0)
     {
         uint8_t id[SHA256_DIGEST_LENGTH];
         SHA256(rs1,ID_SIZE,id);
@@ -187,6 +203,8 @@ void Zrtp::createMac(Packet *packet)
 
     uint8_t *data = packet->toBytes();
 
+    assert(data);
+
     uint16_t length = packet->getLength() - 2;
 
     data[(length) * WORD_SIZE] = '\0';
@@ -194,6 +212,8 @@ void Zrtp::createMac(Packet *packet)
     uint8_t* digest;
     digest = HMAC(EVP_sha256(), key, HASHIMAGE_SIZE,
                   data, length, NULL, NULL);
+
+    assert(digest);
 
     uint8_t computedMac[MAC_SIZE + 1];
     for(int i = 0; i < 4; i++)
@@ -252,6 +272,7 @@ void Zrtp::diffieHellman()
 void Zrtp::generateHvi()
 {
     createDHPart2Packet();
+    assert(dhPart2);
     uint8_t *buffer = (uint8_t*)malloc((dhPart2->getLength() + peerHello->getLength()) * WORD_SIZE);
 
     memcpy(buffer, dhPart2->toBytes(), dhPart2->getLength() * WORD_SIZE);
@@ -259,6 +280,7 @@ void Zrtp::generateHvi()
     memcpy(secondHalf, peerHello->toBytes(), peerHello->getLength() * WORD_SIZE);
 
     uint8_t hash[SHA256_DIGEST_LENGTH];
+    assert(buffer);
     SHA256(buffer, (dhPart2->getLength() + peerHello->getLength()) * WORD_SIZE, hash);
     commit->setHvi(hash);
     free(buffer);
@@ -281,6 +303,7 @@ void Zrtp::createTotalHash()
     memcpy(nextPos, dhPart2->toBytes(), dhPart2->getLength() * WORD_SIZE);
 
     uint8_t hash[SHA256_DIGEST_LENGTH];
+    assert(buffer);
     SHA256(buffer, (helloR->getLength() + commit->getLength() +
                     dhPart1->getLength() + dhPart2->getLength()) * WORD_SIZE, hash);
     memcpy(totalHash,hash,SHA256_DIGEST_LENGTH);
@@ -338,6 +361,8 @@ void Zrtp::createKDFContext()
 {
     bool initiator = (myRole == Initiator);
 
+    assert(peerHello);
+
     uint8_t context[KDF_CONTEXT_LENGTH];
     uint8_t *pos;
     pos = &context[0];
@@ -364,15 +389,66 @@ void Zrtp::createKDFContext()
         std::cout << kdfContext[i];
     }
     std::cout << std::endl;
+
+    createS0();
 }
 
 void Zrtp::createS0()
 {
+    int32_t counter = 1;
+    bool initiator = (myRole == Initiator);
 
+    uint8_t *buffer = (uint8_t*)malloc(sizeof(int32_t) + BN_num_bytes(dhResult)
+                                       + 13*sizeof(uint8_t) + 2*ZID_SIZE + SHA256_DIGEST_LENGTH
+                                       + 3*ID_SIZE + 3*sizeof(int32_t));
+    uint8_t *pos = buffer;
+    memcpy(pos, &counter, sizeof(int32_t));
+    pos += sizeof(int32_t);
+    BN_bn2bin(dhResult,pos);
+    pos += BN_num_bytes(dhResult);
+    memcpy(pos, "ZRTP-HMAC-KDF",13);
+    pos += 13*sizeof(uint8_t);
+    if(initiator)
+    {
+        memcpy(pos,myZID,ZID_SIZE);
+        pos += ZID_SIZE;
+        memcpy(pos,peerHello->getZid(),ZID_SIZE);
+    }
+    else
+    {
+        memcpy(pos,peerHello->getZid(),ZID_SIZE);
+        pos += ZID_SIZE;
+        memcpy(pos,myZID,ZID_SIZE);
+    }
+    pos += ZID_SIZE;
+    memcpy(pos,totalHash,SHA256_DIGEST_LENGTH);
+    pos += SHA256_DIGEST_LENGTH;
+
+    //s1,s2,s3 = NULL
+    memset(pos,0,3*sizeof(int32_t));
+    pos += 3*sizeof(int32_t);
+
+    int32_t bufferLength = pos - buffer;
+
+    uint8_t hash[SHA256_DIGEST_LENGTH];
+
+    SHA256(buffer,bufferLength,hash);
+
+    memcpy(s0,hash,SHA256_DIGEST_LENGTH);
+    BN_clear(dhResult);
+
+    std::cout << std::endl;
+    std::cout << "S0:" << std::endl;
+    for(int i = 0; i < SHA256_DIGEST_LENGTH; i++)
+    {
+        std::cout << s0[i];
+    }
+    std::cout << std::endl;
 }
 
 void Zrtp::setPv(PacketDHPart *packet)
 {
+    assert(publicKey);
     uint8_t *buffer = (uint8_t*)malloc((BN_num_bytes(publicKey)+1) * sizeof(uint8_t));
     buffer[BN_num_bytes(publicKey)] = '\0';
 
