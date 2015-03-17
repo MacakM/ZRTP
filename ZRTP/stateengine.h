@@ -72,8 +72,8 @@ private:
     zrtpTimer T2;
 
     void initHandlers();
-    void timerStart(zrtpTimer *t);
-    bool timerNext(zrtpTimer *t);
+    void timerStart(zrtpTimer *timer);
+    bool timerNext(zrtpTimer *timer);
 
     void handleInitial();
     void handleSentHello();

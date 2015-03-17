@@ -11,6 +11,7 @@ public:
     virtual uint8_t *toBytes();
     virtual void parse(uint8_t *data);
 
+    void setConfirmMac(uint8_t mac[MAC_SIZE]);
     void setInitVector(uint8_t vector[VECTOR_SIZE]);
     void setH0(uint8_t *hash);
     void setSigLen(uint16_t length);

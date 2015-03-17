@@ -4,7 +4,7 @@ PacketConfirm::PacketConfirm()
 {
     packetHeader = new Header();
     setZrtpIdentifier();
-    setLength(3);//19
+    setLength(19);
     flags = 0;
 }
 
@@ -25,6 +25,29 @@ uint8_t *PacketConfirm::toBytes()
     {
         *(++pos) = packetHeader->type[i];
     }
+    for (uint8_t i = 0; i < MAC_SIZE; i++)
+    {
+        *(++pos) = confirmMac[i];
+    }
+    for (uint8_t i = 0; i < VECTOR_SIZE; i++)
+    {
+        *(++pos) = initVector[i];
+    }
+    for (uint8_t i = 0; i < HASHIMAGE_SIZE; i++)
+    {
+        *(++pos) = h0[i];
+    }
+    *(++pos) = 0;
+
+    *(++pos) = sigLen >> 8;
+    *(++pos) = sigLen >> 0;
+
+    *(++pos) = flags;
+
+    *(++pos) = expInterval >> 24;
+    *(++pos) = expInterval >> 16;
+    *(++pos) = expInterval >> 8;
+    *(++pos) = expInterval;
 
     return data;
 }
@@ -32,6 +55,11 @@ uint8_t *PacketConfirm::toBytes()
 void PacketConfirm::parse(uint8_t *data)
 {
 
+}
+
+void PacketConfirm::setConfirmMac(uint8_t mac[])
+{
+    memcpy(confirmMac,mac,MAC_SIZE);
 }
 
 void PacketConfirm::setInitVector(uint8_t vector[])

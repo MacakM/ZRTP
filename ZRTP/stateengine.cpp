@@ -32,26 +32,26 @@ void StateEngine::initHandlers()
     handlers[WaitErrorAck] = &StateEngine::handleWaitErrorAck;
 }
 
-void StateEngine::timerStart(zrtpTimer *t)
+void StateEngine::timerStart(zrtpTimer *timer)
 {
-    t->actualTime = t->start;
-    t->resendCounter = 0;
-    zrtp->activateTimer(t->start);
+    timer->actualTime = timer->start;
+    timer->resendCounter = 0;
+    zrtp->activateTimer(timer->start);
 }
 
-bool StateEngine::timerNext(zrtpTimer *t)
+bool StateEngine::timerNext(zrtpTimer *timer)
 {
-    t->actualTime *= 2;
-    if(t->actualTime > t->cap)
+    timer->actualTime *= 2;
+    if(timer->actualTime > timer->cap)
     {
-        t->actualTime = t->cap;
+        timer->actualTime = timer->cap;
     }
-    t->resendCounter++;
-    if(t->resendCounter > t->maxResend)
+    timer->resendCounter++;
+    if(timer->resendCounter > timer->maxResend)
     {
         return false;
     }
-    return zrtp->activateTimer(t->actualTime);
+    return zrtp->activateTimer(timer->actualTime);
 }
 
 void StateEngine::processEvent(Event *event)
@@ -228,7 +228,9 @@ void StateEngine::handleSentCommit()
             sentMessage = message;
             sentMessageLength = messageLength;
 
-            zrtp->createTotalHash();
+            zrtp->createDHResult();
+            zrtp->sharedSecretCalculation();
+            zrtp->keyDerivation();
 
             timerStart(&T2);
             actualState = WaitConfirm1;
@@ -285,7 +287,10 @@ void StateEngine::handleWaitDHPart2()
             zrtp->dhPart2 = new PacketDHPart();
             zrtp->dhPart2->parse(msg);
 
-            zrtp->createTotalHash();
+            zrtp->createDHResult();
+            zrtp->sharedSecretCalculation();
+            zrtp->keyDerivation();
+
             zrtp->createConfirm1Packet();
             uint8_t *message = zrtp->confirm1->toBytes();
             uint16_t messageLength = zrtp->confirm1->getLength() * WORD_SIZE;
@@ -313,6 +318,7 @@ void StateEngine::handleWaitConfirm1()
         if(memcmp(type,"Confirm1", TYPE_SIZE) == 0)
         {
             zrtp->cancelTimer();
+            zrtp->createConfirm2Packet();
             uint8_t *message = zrtp->confirm2->toBytes();
             uint16_t messageLength = zrtp->confirm2->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
