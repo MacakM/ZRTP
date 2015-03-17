@@ -3,6 +3,7 @@
 NetworkManager::NetworkManager(int argc, char *argv[], QObject *parent) :
     QObject(parent)
 {
+    srand (time(NULL));
     sendSocket = new QUdpSocket();
     readSocket = new QUdpSocket();
 
@@ -15,7 +16,7 @@ NetworkManager::NetworkManager(int argc, char *argv[], QObject *parent) :
                 this, SLOT(processPendingDatagram()));
 
     timer.setSingleShot(true);
-    connect(&timer, SIGNAL(timeout()), this, SLOT(processTimeout()));
+    connect(&timer, SIGNAL(timeout()), this, SLOT(processZrtpTimeout()));
 
     callbacks = new MyCallbacks(this);
 
@@ -28,6 +29,8 @@ NetworkManager::NetworkManager(int argc, char *argv[], QObject *parent) :
 
 void NetworkManager::processPendingDatagram()
 {
+    uint8_t randValue = rand() % 10;
+
     QByteArray datagram;
     QHostAddress sender;
     quint16 senderPort;
@@ -36,6 +39,11 @@ void NetworkManager::processPendingDatagram()
     size = (int32_t)readSocket->pendingDatagramSize();
     datagram.resize(readSocket->pendingDatagramSize());
     readSocket->readDatagram(datagram.data(), datagram.size(), &sender, &senderPort);
+
+    if(randValue == 0)
+    {
+        return;
+    }
 
     (myRole == Initiator) ? myFile.open("Alice.txt",std::ios::app) : myFile.open("Bob.txt",std::ios::app);
     myFile << "Message: " << std::endl;
@@ -52,15 +60,15 @@ void NetworkManager::processPendingDatagram()
     myFile << " Port: " << senderPort;
     myFile << std::endl << std::endl;
     myFile.close();
-    processMessage((uint8_t*)datagram.data(), size);
+    processZrtpMessage((uint8_t*)datagram.data(), size);
 }
 
-void NetworkManager::processTimeout()
+void NetworkManager::processZrtpTimeout()
 {
     zrtp->processTimeout();
 }
 
-void NetworkManager::processMessage(uint8_t *msg, int32_t length)
+void NetworkManager::processZrtpMessage(uint8_t *msg, int32_t length)
 {
     zrtp->processMessage(msg, length);
 }

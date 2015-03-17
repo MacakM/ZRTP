@@ -12,6 +12,8 @@
 #include <windows.h>
 #include <conio.h>
 #include <fstream>
+#include <stdlib.h>
+#include <time.h>
 
 class NetworkManager : public QObject
 {
@@ -26,8 +28,8 @@ signals:
 
 public slots:
     void processPendingDatagram();
-    void processTimeout();
-    void processMessage(uint8_t *msg, int32_t length);
+    void processZrtpTimeout();
+    void processZrtpMessage(uint8_t *msg, int32_t length);
 
 public:
     uint8_t getMyZid();
