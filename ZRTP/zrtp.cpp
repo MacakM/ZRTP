@@ -31,8 +31,6 @@ Zrtp::Zrtp(ZrtpCallback *cb, Role role, std::string clientId)
 
     assert(hello);
 
-    confirm2 = new PacketConfirm();
-    confirm2->setType((uint8_t*)"Confirm2");
     conf2Ack = new PacketConf2Ack();
 
     Event event;
@@ -153,7 +151,22 @@ void Zrtp::createConfirm1Packet()
     RAND_bytes(vector,VECTOR_SIZE);
     confirm1->setInitVector(vector);
 
-    //este confirmMac
+    createConfirmMac(confirm1);
+}
+
+void Zrtp::createConfirm2Packet()
+{
+    confirm2 = new PacketConfirm();
+    confirm2->setType((uint8_t*)"Confirm2");
+    confirm2->setH0(h0);
+    confirm2->setSigLen(0);
+    confirm2->setExpInterval(0);
+
+    uint8_t vector[VECTOR_SIZE];
+    RAND_bytes(vector,VECTOR_SIZE);
+    confirm2->setInitVector(vector);
+
+    createConfirmMac(confirm2);
 }
 
 void Zrtp::createHashImages()
@@ -201,17 +214,17 @@ void Zrtp::createMac(Packet *packet)
         break;
     }
 
-    uint8_t *data = packet->toBytes();
+    uint8_t *buffer = packet->toBytes();
 
-    assert(data);
+    assert(buffer);
 
     uint16_t length = packet->getLength() - 2;
 
-    data[(length) * WORD_SIZE] = '\0';
+    buffer[(length) * WORD_SIZE] = '\0';
 
     uint8_t* digest;
     digest = HMAC(EVP_sha256(), key, HASHIMAGE_SIZE,
-                  data, length, NULL, NULL);
+                  buffer, length, NULL, NULL);
 
     assert(digest);
 
@@ -221,6 +234,29 @@ void Zrtp::createMac(Packet *packet)
         sprintf((char*)&computedMac[i*2], "%02x", (unsigned int)digest[i]);
     }
     packet->setMac(computedMac);
+}
+
+void Zrtp::createConfirmMac(PacketConfirm *packet)
+{
+    uint8_t key[SHA256_DIGEST_LENGTH];
+    (myRole == Initiator) ? memcpy(&key,macKeyI,MAC_SIZE) : memcpy(&key,macKeyR,MAC_SIZE);
+    uint8_t *buffer = packet->toBytes();
+    uint16_t bufferLength = packet->getLength() * WORD_SIZE;
+
+    uint8_t *startHash = &(buffer[9*WORD_SIZE]);
+
+    uint8_t* digest;
+    digest = HMAC(EVP_sha256(), key, HASHIMAGE_SIZE,
+                  startHash, bufferLength - 9*WORD_SIZE, NULL, NULL);
+
+    assert(digest);
+
+    uint8_t computedMac[MAC_SIZE + 1];
+    for(int i = 0; i < 4; i++)
+    {
+        sprintf((char*)&computedMac[i*2], "%02x", (unsigned int)digest[i]);
+    }
+    packet->setConfirmMac(computedMac);
 }
 
 void Zrtp::diffieHellman()
@@ -315,8 +351,6 @@ void Zrtp::createTotalHash()
         std::cout << totalHash[i];
     }
     std::cout << std::endl;
-
-    createDHResult();
 }
 
 void Zrtp::createDHResult()
@@ -353,7 +387,12 @@ void Zrtp::createDHResult()
     }
     std::cout << std::endl;
     free(buffer);
+}
 
+void Zrtp::sharedSecretCalculation()
+{
+    createTotalHash();
+    createS0();
     createKDFContext();
 }
 
@@ -389,8 +428,6 @@ void Zrtp::createKDFContext()
         std::cout << kdfContext[i];
     }
     std::cout << std::endl;
-
-    createS0();
 }
 
 void Zrtp::createS0()
@@ -444,6 +481,69 @@ void Zrtp::createS0()
         std::cout << s0[i];
     }
     std::cout << std::endl;
+}
+
+void Zrtp::kdf(uint8_t *key, uint8_t *label, int32_t labelLength, uint8_t *context, int32_t lengthL, uint8_t *derivedKey)
+{
+    int32_t counter = 1;
+    uint8_t ki[SHA256_DIGEST_LENGTH];
+    memcpy(ki,key,SHA256_DIGEST_LENGTH);
+
+    int32_t bufferLength = sizeof(int32_t) + labelLength + sizeof(uint8_t) + KDF_CONTEXT_LENGTH + sizeof(int32_t);
+    uint8_t *buffer = (uint8_t*)malloc(bufferLength);
+    uint8_t *pos = buffer;
+    memcpy(pos,&counter,sizeof(int32_t));
+    pos += sizeof(int32_t);
+    memcpy(pos,label,labelLength);
+    pos += labelLength;
+    memset(pos,0,sizeof(uint8_t));
+    pos += sizeof(uint8_t);
+    memcpy(pos,context,KDF_CONTEXT_LENGTH);
+    pos += KDF_CONTEXT_LENGTH;
+    memcpy(pos,&lengthL,sizeof(int32_t));
+
+    uint8_t* digest;
+    digest = HMAC(EVP_sha256(), ki, lengthL,
+                  buffer, bufferLength, NULL, NULL);
+
+    assert(digest);
+
+    uint8_t computedMac[lengthL + 1];
+    for(int i = 0; i < lengthL; i++)
+    {
+        sprintf((char*)&computedMac[i*2], "%02x", (unsigned int)digest[i]);
+    }
+    memcpy(derivedKey,computedMac,lengthL);
+    free(buffer);
+}
+
+void Zrtp::keyDerivation()
+{
+    //generate ZRTPSess
+    kdf(s0,(uint8_t*)"ZRTP Session Key",16, kdfContext,SHA256_DIGEST_LENGTH, zrtpSess);
+
+    //generate sashash and sasvalue
+    kdf(s0,(uint8_t*)"SAS",3,kdfContext,SHA256_DIGEST_LENGTH, sasHash);
+    memcpy(sasValue,sasHash,32);
+
+    //generate ExportedKey
+    kdf(s0,(uint8_t*)"Exported key",12,kdfContext,SHA256_DIGEST_LENGTH, exportedKey);
+
+    //generate srtpkeys
+    kdf(s0,(uint8_t*)"Initiator SRTP master key",25,kdfContext,AES1_KEY_LENGTH,srtpKeyI);
+    kdf(s0,(uint8_t*)"Responder SRTP master key",25,kdfContext,AES1_KEY_LENGTH,srtpKeyR);
+
+    //generate srtpsalts
+    kdf(s0,(uint8_t*)"Initiator SRTP master salt",26,kdfContext,SALT_KEY_LENGTH,srtpSaltI);
+    kdf(s0,(uint8_t*)"Responder SRTP master salt",26,kdfContext,SALT_KEY_LENGTH,srtpSaltR);
+
+    //generate mackeys
+    kdf(s0,(uint8_t*)"Initiator HMAC key",18,kdfContext,SHA256_DIGEST_LENGTH,macKeyI);
+    kdf(s0,(uint8_t*)"Responder HMAC key",18,kdfContext,SHA256_DIGEST_LENGTH,macKeyR);
+
+    //generate zrtpkeys
+    kdf(s0,(uint8_t*)"Initiator ZRTP key",18,kdfContext,AES1_KEY_LENGTH,zrtpKeyI);
+    kdf(s0,(uint8_t*)"Responder ZRTP key",18,kdfContext,AES1_KEY_LENGTH,zrtpKeyR);
 }
 
 void Zrtp::setPv(PacketDHPart *packet)

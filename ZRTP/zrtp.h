@@ -2,6 +2,8 @@
 #define ZRTP_H
 
 #define KDF_CONTEXT_LENGTH  2 * ZID_SIZE + SHA256_DIGEST_LENGTH
+#define AES1_KEY_LENGTH     16
+#define SALT_KEY_LENGTH     14
 
 #include <stdexcept>
 #include <assert.h>
@@ -23,6 +25,7 @@
 #include <openssl/hmac.h>
 #include <openssl/rand.h>
 #include <openssl/dh.h>
+#include <openssl/aes.h>
 
 typedef enum
 {
@@ -55,16 +58,21 @@ private:
     void createDHPart1Packet();
     void createDHPart2Packet();
     void createConfirm1Packet();
+    void createConfirm2Packet();
 
     void createHashImages();
     void generateIds(PacketDHPart *packet);
     void createMac(Packet *packet);
+    void createConfirmMac(PacketConfirm *packet);
     void diffieHellman();
     void generateHvi();
     void createTotalHash();
     void createDHResult();
+    void sharedSecretCalculation();
     void createKDFContext();
     void createS0();
+    void kdf(uint8_t *key, uint8_t *label, int32_t labelLength, uint8_t *context, int32_t lengthL, uint8_t *derivedKey);
+    void keyDerivation();
 
     void setPv(PacketDHPart *packet);
 
@@ -107,10 +115,25 @@ private:
     BIGNUM *p;
     BIGNUM *dhResult;
 
+    uint8_t totalHash[SHA256_DIGEST_LENGTH];
     uint8_t s0[SHA256_DIGEST_LENGTH];
     uint8_t kdfContext[KDF_CONTEXT_LENGTH];
-    uint8_t totalHash[SHA256_DIGEST_LENGTH];
+
     uint8_t zrtpSess[SHA256_DIGEST_LENGTH];
+    uint8_t sasHash[SHA256_DIGEST_LENGTH];
+    uint8_t sasValue[32];
+    uint8_t exportedKey[SHA256_DIGEST_LENGTH];
+
+    uint8_t srtpKeyI[AES1_KEY_LENGTH];
+    uint8_t srtpSaltI[SALT_KEY_LENGTH];
+    uint8_t srtpKeyR[AES1_KEY_LENGTH];
+    uint8_t srtpSaltR[SALT_KEY_LENGTH];
+
+    uint8_t macKeyI[SHA256_DIGEST_LENGTH];
+    uint8_t macKeyR[SHA256_DIGEST_LENGTH];
+
+    uint8_t zrtpKeyI[AES1_KEY_LENGTH];
+    uint8_t zrtpKeyR[AES1_KEY_LENGTH];
 };
 
 #endif // ZRTP_H
