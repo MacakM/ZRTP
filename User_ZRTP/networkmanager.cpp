@@ -29,7 +29,7 @@ NetworkManager::NetworkManager(int argc, char *argv[], QObject *parent) :
 
 void NetworkManager::processPendingDatagram()
 {
-    uint8_t randValue = rand() % 10;
+    uint8_t randValue = rand() % 5;
 
     QByteArray datagram;
     QHostAddress sender;
@@ -40,6 +40,7 @@ void NetworkManager::processPendingDatagram()
     datagram.resize(readSocket->pendingDatagramSize());
     readSocket->readDatagram(datagram.data(), datagram.size(), &sender, &senderPort);
 
+    // simulated 20% packet loss
     if(randValue == 0)
     {
         return;

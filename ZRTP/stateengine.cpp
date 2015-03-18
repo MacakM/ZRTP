@@ -258,9 +258,7 @@ void StateEngine::handleWaitCommit()
             zrtp->commit->parse(msg);
             zrtp->createDHPart1Packet();
 
-            uint8_t *message = (uint8_t*) malloc(zrtp->dhPart1->getLength() * WORD_SIZE);
-            memcpy(message,zrtp->dhPart1->toBytes(),zrtp->dhPart1->getLength() * WORD_SIZE);
-
+            uint8_t *message = zrtp->dhPart1->toBytes();
             uint16_t messageLength = zrtp->dhPart1->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
             actualState = WaitDHPart2;
