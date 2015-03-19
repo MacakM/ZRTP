@@ -57,6 +57,11 @@ void PacketConfirm::parse(uint8_t *data)
 
 }
 
+uint8_t *PacketConfirm::getVector()
+{
+    return initVector;
+}
+
 void PacketConfirm::setConfirmMac(uint8_t mac[])
 {
     memcpy(confirmMac,mac,MAC_SIZE);

@@ -165,6 +165,7 @@ void Zrtp::createConfirm2Packet()
     uint8_t vector[VECTOR_SIZE];
     RAND_bytes(vector,VECTOR_SIZE);
     confirm2->setInitVector(vector);
+    encryptConfirmData();
 
     createConfirmMac(confirm2);
 }
@@ -544,6 +545,42 @@ void Zrtp::keyDerivation()
     //generate zrtpkeys
     kdf(s0,(uint8_t*)"Initiator ZRTP key",18,kdfContext,AES1_KEY_LENGTH,zrtpKeyI);
     kdf(s0,(uint8_t*)"Responder ZRTP key",18,kdfContext,AES1_KEY_LENGTH,zrtpKeyR);
+}
+
+void Zrtp::encryptConfirmData()
+{
+    uint8_t started[40] = {0};
+    AES_KEY encryptKey;
+    uint8_t encrypted[40] = {0};
+    AES_KEY decryptKey;
+    uint8_t decrypted[40] = {0};
+    int num = 0;
+
+    if (myRole == Initiator)
+    {
+        AES_set_encrypt_key(zrtpKeyI,AES1_KEY_LENGTH*8,&encryptKey);
+
+        uint8_t *buffer = confirm2->toBytes();
+
+        uint8_t iv[VECTOR_SIZE];
+        memcpy(iv,confirm2->getVector(),VECTOR_SIZE);
+
+        uint8_t *pos = &(buffer[36]);
+
+        memcpy(started,pos,40);
+
+
+        AES_cfb128_encrypt(started, encrypted, 40, &encryptKey, iv, &num, AES_ENCRYPT);
+
+        memcpy(iv,confirm2->getVector(),VECTOR_SIZE);
+
+        AES_set_decrypt_key(zrtpKeyI, AES1_KEY_LENGTH*8, &decryptKey);
+        num = 0;
+
+        AES_cfb128_encrypt(encrypted, decrypted, 40, &decryptKey, iv, &num, AES_DECRYPT);
+
+    }
+
 }
 
 void Zrtp::setPv(PacketDHPart *packet)
