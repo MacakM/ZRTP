@@ -13,6 +13,7 @@ public:
 
     uint8_t *getVector();
 
+    void setEncryptedPart(uint8_t data[40]);
     void setConfirmMac(uint8_t mac[MAC_SIZE]);
     void setInitVector(uint8_t vector[VECTOR_SIZE]);
     void setH0(uint8_t *hash);
@@ -24,12 +25,14 @@ public:
     void setExpInterval(uint32_t interval);
 
 private:
+    bool encryptionDone;
     uint8_t confirmMac[MAC_SIZE];
     uint8_t initVector[VECTOR_SIZE];
     uint8_t h0[HASHIMAGE_SIZE];
     uint16_t sigLen;
     uint8_t flags;
     uint32_t expInterval;
+    uint8_t encryptedPart[40];
 
     uint8_t data[MAX_CONFIRM_LENGTH];
 };

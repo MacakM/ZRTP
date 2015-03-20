@@ -74,6 +74,7 @@ private:
     void kdf(uint8_t *key, uint8_t *label, int32_t labelLength, uint8_t *context, int32_t lengthL, uint8_t *derivedKey);
     void keyDerivation();
     void encryptConfirmData();
+    void decryptConfirmData(uint8_t *data);
 
     void setPv(PacketDHPart *packet);
 

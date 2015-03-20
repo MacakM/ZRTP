@@ -6,6 +6,7 @@ PacketConfirm::PacketConfirm()
     setZrtpIdentifier();
     setLength(19);
     flags = 0;
+    encryptionDone = false;
 }
 
 uint8_t *PacketConfirm::toBytes()
@@ -33,33 +34,73 @@ uint8_t *PacketConfirm::toBytes()
     {
         *(++pos) = initVector[i];
     }
-    for (uint8_t i = 0; i < HASHIMAGE_SIZE; i++)
+    if(encryptionDone)
     {
-        *(++pos) = h0[i];
+        for(uint8_t i = 0; i < 40; i++)
+        {
+            *(++pos) = encryptedPart[i];
+        }
     }
-    *(++pos) = 0;
+    else
+    {
+        for (uint8_t i = 0; i < HASHIMAGE_SIZE; i++)
+        {
+            *(++pos) = h0[i];
+        }
+        *(++pos) = 0;
 
-    *(++pos) = sigLen >> 8;
-    *(++pos) = sigLen >> 0;
+        *(++pos) = sigLen >> 8;
+        *(++pos) = sigLen >> 0;
 
-    *(++pos) = flags;
+        *(++pos) = flags;
 
-    *(++pos) = expInterval >> 24;
-    *(++pos) = expInterval >> 16;
-    *(++pos) = expInterval >> 8;
-    *(++pos) = expInterval;
+        *(++pos) = expInterval >> 24;
+        *(++pos) = expInterval >> 16;
+        *(++pos) = expInterval >> 8;
+        *(++pos) = expInterval;
+    }
 
     return data;
 }
 
 void PacketConfirm::parse(uint8_t *data)
 {
+    uint8_t *pos = data;
 
+    packetHeader->identifier = *pos << 8 | *(pos + 1);
+    pos += 2;
+
+    uint16_t zrtpId = (uint16_t)ZRTP_IDENTIFIER;
+    if(memcmp(&packetHeader->identifier,&zrtpId,WORD_SIZE) != 0)
+    {
+        std::cout << "CHYBA";
+    }
+
+    packetHeader->length = *pos << 8 | *(pos + 1);
+    pos += 2;
+    for(uint8_t i = 0; i < TYPE_SIZE; i++)
+    {
+        packetHeader->type[i] = *(pos++);
+    }
+    for(uint8_t i = 0; i < MAC_SIZE; i++)
+    {
+        confirmMac[i] = *(pos++);
+    }
+    for(uint8_t i = 0; i < VECTOR_SIZE; i++)
+    {
+        initVector[i] = *(pos++);
+    }
 }
 
 uint8_t *PacketConfirm::getVector()
 {
     return initVector;
+}
+
+void PacketConfirm::setEncryptedPart(uint8_t data[])
+{
+    memcpy(encryptedPart,data,40);
+    encryptionDone = true;
 }
 
 void PacketConfirm::setConfirmMac(uint8_t mac[])

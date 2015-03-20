@@ -150,6 +150,7 @@ void Zrtp::createConfirm1Packet()
     uint8_t vector[VECTOR_SIZE];
     RAND_bytes(vector,VECTOR_SIZE);
     confirm1->setInitVector(vector);
+    encryptConfirmData();
 
     createConfirmMac(confirm1);
 }
@@ -345,13 +346,13 @@ void Zrtp::createTotalHash()
                     dhPart1->getLength() + dhPart2->getLength()) * WORD_SIZE, hash);
     memcpy(totalHash,hash,SHA256_DIGEST_LENGTH);
     free(buffer);
-
+/*
     std::cout << "Total hash:" << std::endl;
     for(int i = 0; i < SHA256_DIGEST_LENGTH; i++)
     {
         std::cout << totalHash[i];
     }
-    std::cout << std::endl;
+    std::cout << std::endl;*/
 }
 
 void Zrtp::createDHResult()
@@ -379,14 +380,14 @@ void Zrtp::createDHResult()
     buffer = (uint8_t*)calloc(BN_num_bytes(dhResult), sizeof(uint8_t));
 
     BN_bn2bin(dhResult,buffer);
-
+/*
     std::cout << std::endl;
     std::cout << "DHResult:" << std::endl;
     for(int i = 0; i < BN_num_bytes(dhResult); i++)
     {
         std::cout << buffer[i];
     }
-    std::cout << std::endl;
+    std::cout << std::endl;*/
     free(buffer);
 }
 
@@ -421,14 +422,14 @@ void Zrtp::createKDFContext()
     pos = &context[2*ZID_SIZE];
     memcpy(pos,totalHash,SHA256_DIGEST_LENGTH);
     memcpy(kdfContext,context,KDF_CONTEXT_LENGTH);
-
+/*
     std::cout << std::endl;
     std::cout << "KDF_Context:" << std::endl;
     for(int i = 0; i < KDF_CONTEXT_LENGTH; i++)
     {
         std::cout << kdfContext[i];
     }
-    std::cout << std::endl;
+    std::cout << std::endl;*/
 }
 
 void Zrtp::createS0()
@@ -475,13 +476,13 @@ void Zrtp::createS0()
     memcpy(s0,hash,SHA256_DIGEST_LENGTH);
     BN_clear(dhResult);
 
-    std::cout << std::endl;
+    /*std::cout << std::endl;
     std::cout << "S0:" << std::endl;
     for(int i = 0; i < SHA256_DIGEST_LENGTH; i++)
     {
         std::cout << s0[i];
     }
-    std::cout << std::endl;
+    std::cout << std::endl;*/
 }
 
 void Zrtp::kdf(uint8_t *key, uint8_t *label, int32_t labelLength, uint8_t *context, int32_t lengthL, uint8_t *derivedKey)
@@ -550,37 +551,130 @@ void Zrtp::keyDerivation()
 void Zrtp::encryptConfirmData()
 {
     uint8_t started[40] = {0};
-    AES_KEY encryptKey;
     uint8_t encrypted[40] = {0};
-    AES_KEY decryptKey;
-    uint8_t decrypted[40] = {0};
-    int num = 0;
+    int outputLength;
+    int cipherTextLen;
+    uint8_t iv[VECTOR_SIZE];
+
+    EVP_CIPHER_CTX *ctx;
+    ctx = EVP_CIPHER_CTX_new();
 
     if (myRole == Initiator)
     {
-        AES_set_encrypt_key(zrtpKeyI,AES1_KEY_LENGTH*8,&encryptKey);
-
         uint8_t *buffer = confirm2->toBytes();
 
-        uint8_t iv[VECTOR_SIZE];
         memcpy(iv,confirm2->getVector(),VECTOR_SIZE);
 
         uint8_t *pos = &(buffer[36]);
-
         memcpy(started,pos,40);
 
+        EVP_EncryptInit_ex(ctx, EVP_aes_128_cfb128(), 0, zrtpKeyI, iv);
 
-        AES_cfb128_encrypt(started, encrypted, 40, &encryptKey, iv, &num, AES_ENCRYPT);
+        EVP_EncryptUpdate(ctx, encrypted, &outputLength, started, 40);
 
+        cipherTextLen = outputLength;
+
+        EVP_EncryptFinal_ex(ctx, encrypted + outputLength, &outputLength);
+
+        cipherTextLen += outputLength;
+
+        assert(cipherTextLen == 40);
+
+        EVP_CIPHER_CTX_free(ctx);
+
+        confirm2->setEncryptedPart(encrypted);
+    }
+    else    //Responder
+    {
+        uint8_t *buffer = confirm1->toBytes();
+
+        memcpy(iv,confirm1->getVector(),VECTOR_SIZE);
+
+        uint8_t *pos = &(buffer[36]);
+        memcpy(started,pos,40);
+
+        EVP_EncryptInit_ex(ctx, EVP_aes_128_cfb128(), 0, zrtpKeyR, iv);
+
+        EVP_EncryptUpdate(ctx, encrypted, &outputLength, started, 40);
+
+        cipherTextLen = outputLength;
+
+        EVP_EncryptFinal_ex(ctx, encrypted + outputLength, &outputLength);
+
+        cipherTextLen += outputLength;
+
+        assert(cipherTextLen == 40);
+
+        EVP_CIPHER_CTX_free(ctx);
+
+        confirm1->setEncryptedPart(encrypted);
+    }
+}
+
+void Zrtp::decryptConfirmData(uint8_t *data)
+{
+    uint8_t *pos = &(data[36]);
+
+    uint8_t encrypted[40] = {0};
+    memcpy(encrypted,pos,40);
+    uint8_t decrypted[40] = {0};
+    int outputLength;
+    int plainTextLen;
+    uint8_t iv[VECTOR_SIZE];
+
+    EVP_CIPHER_CTX *ctx;
+    ctx = EVP_CIPHER_CTX_new();
+
+    if (myRole == Initiator)
+    {
+        memcpy(iv,confirm1->getVector(),VECTOR_SIZE);
+
+        EVP_DecryptInit_ex(ctx, EVP_aes_128_cfb128(), 0, zrtpKeyR, iv);
+    }
+    else
+    {
         memcpy(iv,confirm2->getVector(),VECTOR_SIZE);
 
-        AES_set_decrypt_key(zrtpKeyI, AES1_KEY_LENGTH*8, &decryptKey);
-        num = 0;
-
-        AES_cfb128_encrypt(encrypted, decrypted, 40, &decryptKey, iv, &num, AES_DECRYPT);
-
+        EVP_DecryptInit_ex(ctx, EVP_aes_128_cfb128(), 0, zrtpKeyI, iv);
     }
+    EVP_DecryptUpdate(ctx, decrypted, &outputLength, encrypted, 40);
 
+    plainTextLen = outputLength;
+
+    EVP_DecryptFinal_ex(ctx, decrypted + outputLength, &outputLength);
+
+    plainTextLen += outputLength;
+
+    assert(plainTextLen == 40);
+
+    EVP_CIPHER_CTX_free(ctx);
+    //parsing of encrypted part
+    uint8_t hashH0[HASHIMAGE_SIZE];
+    uint16_t sigLen;
+    uint32_t expInterval;
+
+    pos = &(decrypted[0]);
+    for (uint8_t i = 0; i < HASHIMAGE_SIZE; i++)
+    {
+        hashH0[i] = *(pos++);
+    }
+    pos ++;
+
+    sigLen = *pos << 8 | *(pos + 1);
+    pos += 3;
+    expInterval = *pos << 24 | *(pos + 1) << 16 | *(pos + 2) << 8 | *(pos + 3);
+    if(myRole == Initiator)
+    {
+        confirm1->setH0(hashH0);
+        confirm1->setSigLen(sigLen);
+        confirm1->setExpInterval(expInterval);
+    }
+    else
+    {
+        confirm2->setH0(hashH0);
+        confirm2->setSigLen(sigLen);
+        confirm2->setExpInterval(expInterval);
+    }
 }
 
 void Zrtp::setPv(PacketDHPart *packet)

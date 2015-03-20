@@ -316,6 +316,9 @@ void StateEngine::handleWaitConfirm1()
         if(memcmp(type,"Confirm1", TYPE_SIZE) == 0)
         {
             zrtp->cancelTimer();
+            zrtp->confirm1 = new PacketConfirm();
+            zrtp->confirm1->parse(msg);
+            zrtp->decryptConfirmData(msg);
             zrtp->createConfirm2Packet();
             uint8_t *message = zrtp->confirm2->toBytes();
             uint16_t messageLength = zrtp->confirm2->getLength() * WORD_SIZE;
@@ -344,6 +347,9 @@ void StateEngine::handleWaitConfirm2()
         }
         if(memcmp(type,"Confirm2", TYPE_SIZE) == 0)
         {
+            zrtp->confirm2 = new PacketConfirm();
+            zrtp->confirm2->parse(msg);
+            zrtp->decryptConfirmData(msg);
             uint8_t *message = zrtp->conf2Ack->toBytes();
             uint16_t messageLength = zrtp->conf2Ack->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
