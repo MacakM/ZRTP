@@ -4,9 +4,12 @@
 #include <QObject>
 #include <QUdpSocket>
 #include <QTimer>
+#include <QMutex>
 #include "zrtp.h"
 #include "mycallbacks.h"
 #include "parser.h"
+#include "zrtpmessage.h"
+#include "zrtptimeout.h"
 
 //just for testing
 #include <windows.h>
@@ -51,6 +54,7 @@ private:
     ZrtpCallback *callbacks;
 
     std::ofstream myFile;
+    QMutex *mutex;
 
     void setArguments(Arguments args);
 };

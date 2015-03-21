@@ -16,6 +16,8 @@ public:
     virtual bool sendData (const uint8_t* data, int32_t length);
     virtual bool activateTimer(int32_t time);
     virtual bool cancelTimer();
+    virtual void enterCriticalSection();
+    virtual void leaveCriticalSection();
 
 private:
     NetworkManager *manager;

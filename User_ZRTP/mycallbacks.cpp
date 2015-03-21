@@ -27,3 +27,13 @@ bool MyCallbacks::cancelTimer()
     manager->timer.stop();
     return true;
 }
+
+void MyCallbacks::enterCriticalSection()
+{
+    manager->mutex->lock();
+}
+
+void MyCallbacks::leaveCriticalSection()
+{
+    manager->mutex->unlock();
+}

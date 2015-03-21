@@ -3,6 +3,7 @@
 NetworkManager::NetworkManager(int argc, char *argv[], QObject *parent) :
     QObject(parent)
 {
+    mutex = new QMutex();
     srand (time(NULL));
     sendSocket = new QUdpSocket();
     readSocket = new QUdpSocket();
@@ -61,6 +62,7 @@ void NetworkManager::processPendingDatagram()
     myFile << " Port: " << senderPort;
     myFile << std::endl << std::endl;
     myFile.close();
+
     processZrtpMessage((uint8_t*)datagram.data(), size);
 }
 
