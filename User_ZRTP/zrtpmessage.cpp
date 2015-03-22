@@ -1,10 +1,14 @@
 #include "zrtpmessage.h"
 
-ZrtpMessage::ZrtpMessage()
+ZrtpMessage::ZrtpMessage(NetworkManager *manager, uint8_t *msg, int32_t length)
 {
+    this->manager = manager;
+    this->msg = msg;
+    this->length = length;
 }
 
 void ZrtpMessage::run()
 {
-    qDebug()<<"From worker thread: "<<currentThreadId();
+    manager->processZrtpMessage(msg,length);
+    return;
 }

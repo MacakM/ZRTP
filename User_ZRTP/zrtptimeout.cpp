@@ -1,10 +1,12 @@
 #include "zrtptimeout.h"
 
-ZrtpTimeout::ZrtpTimeout()
+ZrtpTimeout::ZrtpTimeout(NetworkManager *manager)
 {
+    this->manager = manager;
 }
 
 void ZrtpTimeout::run()
 {
-    qDebug()<<"From worker thread: "<<currentThreadId();
+    manager->processZrtpTimeout();
+    return;
 }

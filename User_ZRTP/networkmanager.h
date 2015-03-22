@@ -5,6 +5,7 @@
 #include <QUdpSocket>
 #include <QTimer>
 #include <QMutex>
+#include <vector>
 #include "zrtp.h"
 #include "mycallbacks.h"
 #include "parser.h"
@@ -18,31 +19,48 @@
 #include <stdlib.h>
 #include <time.h>
 
+typedef std::vector<QThread*> threadVector;
+
 class NetworkManager : public QObject
 {
     Q_OBJECT
+    typedef enum
+    {
+        activate = 1,
+        stop = 2
+    } Signal;
 
     friend class MyCallbacks;
 
 public:
     explicit NetworkManager(int argc, char *argv[], QObject *parent = 0);
 
+    void setActualSignal(uint8_t signalNumber, int32_t time = 0);
+
 signals:
+    void signalReceived();
 
 public slots:
     void processPendingDatagram();
-    void processZrtpTimeout();
-    void processZrtpMessage(uint8_t *msg, int32_t length);
+    void createTimeoutThread();
+    void processSignal();
 
 public:
     uint8_t getMyZid();
+    void processZrtpTimeout();
+    void processZrtpMessage(uint8_t *msg, int32_t length);
 
 private:
+    threadVector threads;
+
+    Signal actualSignal;
+    int32_t actualTime;
+
     uint8_t myZid;
 
     QUdpSocket *sendSocket;
     QUdpSocket *readSocket;
-    QTimer timer;
+    QTimer *timer;
 
     Role myRole;
     QHostAddress sendIp;

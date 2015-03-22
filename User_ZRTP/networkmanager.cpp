@@ -3,6 +3,10 @@
 NetworkManager::NetworkManager(int argc, char *argv[], QObject *parent) :
     QObject(parent)
 {
+    threads.reserve(15);
+    actualSignal = (Signal)0;
+    actualTime = 0;
+    connect(this,SIGNAL(signalReceived()),this,SLOT(processSignal()));
     mutex = new QMutex();
     srand (time(NULL));
     sendSocket = new QUdpSocket();
@@ -16,16 +20,23 @@ NetworkManager::NetworkManager(int argc, char *argv[], QObject *parent) :
     connect(readSocket, SIGNAL(readyRead()),
                 this, SLOT(processPendingDatagram()));
 
-    timer.setSingleShot(true);
-    connect(&timer, SIGNAL(timeout()), this, SLOT(processZrtpTimeout()));
+    timer = new QTimer();
+    timer->setSingleShot(true);
+    connect(timer, SIGNAL(timeout()), this, SLOT(createTimeoutThread()));
 
     callbacks = new MyCallbacks(this);
-
     //testing
     (myRole == Initiator) ? Sleep(10000) : Sleep(5000);
 
     zrtp = new Zrtp(callbacks, myRole, "MacakM");
     myZid = zrtp->getZid();
+}
+
+void NetworkManager::setActualSignal(uint8_t signalNumber, int32_t time)
+{
+    actualSignal = (Signal)signalNumber;
+    actualTime = time;
+    emit signalReceived();
 }
 
 void NetworkManager::processPendingDatagram()
@@ -63,7 +74,10 @@ void NetworkManager::processPendingDatagram()
     myFile << std::endl << std::endl;
     myFile.close();
 
-    processZrtpMessage((uint8_t*)datagram.data(), size);
+    ZrtpMessage *t = new ZrtpMessage(this,(uint8_t*)datagram.data(),size);
+    threads.push_back(t);
+    t->start();
+    std::cout << "Hi" << std::endl;
 }
 
 void NetworkManager::processZrtpTimeout()
@@ -74,6 +88,18 @@ void NetworkManager::processZrtpTimeout()
 void NetworkManager::processZrtpMessage(uint8_t *msg, int32_t length)
 {
     zrtp->processMessage(msg, length);
+}
+
+void NetworkManager::processSignal()
+{
+    if (actualSignal == activate)
+    {
+        timer->start(actualTime);
+    }
+    else if (actualSignal == stop)
+    {
+        timer->stop();
+    }
 }
 
 uint8_t NetworkManager::getMyZid()
@@ -139,4 +165,11 @@ void NetworkManager::setArguments(Arguments args)
             sendPort = 41001;
         }
     }
+}
+
+void NetworkManager::createTimeoutThread()
+{
+    ZrtpTimeout *t = new ZrtpTimeout(this);
+    threads.push_back(t);
+    t->start();
 }

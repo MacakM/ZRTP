@@ -18,13 +18,13 @@ bool MyCallbacks::sendData (const uint8_t* data, int32_t length)
 
 bool MyCallbacks::activateTimer(int32_t time)
 {
-    manager->timer.start(time);
+    manager->setActualSignal(1, time);
     return true;
 }
 
 bool MyCallbacks::cancelTimer()
 {
-    manager->timer.stop();
+    manager->setActualSignal(2);
     return true;
 }
 
