@@ -29,7 +29,7 @@ uint8_t *PacketConf2Ack::toBytes()
     return data;
 }
 
-void PacketConf2Ack::parse(uint8_t *data)
+bool PacketConf2Ack::parse(uint8_t *data)
 {
     uint8_t *pos = data;
 
@@ -44,4 +44,5 @@ void PacketConf2Ack::parse(uint8_t *data)
 
     packetHeader->length = *pos << 8 | *(pos + 1);
     setType((uint8_t*)"Conf2ACK");
+    return true;
 }

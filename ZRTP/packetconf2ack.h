@@ -6,10 +6,25 @@
 class PacketConf2Ack : public Packet
 {
 public:
+    /**
+     * Constructor of Conf2Ack packet.
+     */
     PacketConf2Ack();
 
+    /**
+     * Creates array of bytes from class attributes according to RFC.
+     *
+     * @return  array of bytes
+     */
     virtual uint8_t *toBytes();
-    virtual void parse(uint8_t *data);
+
+    /**
+     * Parses received data into PacketHelloAck class.
+     *
+     * @param data  received data
+     * @return      true = successful, false = otherwise
+     */
+    virtual bool parse(uint8_t *data);
 
 private:
     uint8_t data[MAX_CONF2ACK_LENGTH];

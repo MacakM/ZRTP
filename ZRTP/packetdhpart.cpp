@@ -56,7 +56,7 @@ uint8_t *PacketDHPart::toBytes()
     return data;
 }
 
-void PacketDHPart::parse(uint8_t *data)
+bool PacketDHPart::parse(uint8_t *data)
 {
     uint8_t *pos = data;
 
@@ -105,6 +105,7 @@ void PacketDHPart::parse(uint8_t *data)
     {
         mac[i] = *(pos++);
     }
+    return true;
 }
 
 uint8_t *PacketDHPart::getPv()

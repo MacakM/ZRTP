@@ -30,11 +30,29 @@ typedef enum
 class PacketError : public Packet
 {
 public:
+    /**
+     * Constructor of Error packet.
+     *
+     * @param code  error code
+     */
     PacketError(ErrorCode code);
 
+    /**
+     * Creates array of bytes from class attributes according to RFC.
+     *
+     * @return  array of bytes
+     */
     virtual uint8_t *toBytes();
-    virtual void parse(uint8_t *data);
 
+    /**
+     * Parses received data into PacketHelloAck class.
+     *
+     * @param data  received data
+     * @return      true = successful, false = otherwise
+     */
+    virtual bool parse(uint8_t *data);
+
+private:
     ErrorCode *errorCode;
 
     uint8_t data[MAX_ERROR_LENGTH];

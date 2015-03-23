@@ -63,7 +63,7 @@ uint8_t *PacketConfirm::toBytes()
     return data;
 }
 
-void PacketConfirm::parse(uint8_t *data)
+bool PacketConfirm::parse(uint8_t *data)
 {
     uint8_t *pos = data;
 
@@ -90,6 +90,7 @@ void PacketConfirm::parse(uint8_t *data)
     {
         initVector[i] = *(pos++);
     }
+    return true;
 }
 
 uint8_t *PacketConfirm::getVector()

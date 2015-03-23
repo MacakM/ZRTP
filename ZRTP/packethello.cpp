@@ -104,7 +104,7 @@ uint8_t *PacketHello::toBytes()
     return data;
 }
 
-void PacketHello::parse(uint8_t *data)
+bool PacketHello::parse(uint8_t *data)
 {
     uint8_t *pos = data;
 
@@ -189,6 +189,7 @@ void PacketHello::parse(uint8_t *data)
     {
         mac[i] = *(pos++);
     }
+    return true;
 }
 
 uint8_t *PacketHello::getZid()

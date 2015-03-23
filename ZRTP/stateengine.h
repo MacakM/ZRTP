@@ -55,8 +55,19 @@ typedef std::map<States, Handler> handlerMap;
 class StateEngine
 {
 public:
+    /**
+     * StateEngine constructor.
+     *
+     * Zrtp class that cooperates with StateEngine
+     */
     StateEngine(Zrtp *zrtp);
 
+    /**
+     * Process given event from Zrtp.
+     * Then calls state handler according to actual state.
+     *
+     * @param event
+     */
     void processEvent(Event *event);
 
 private:
@@ -71,21 +82,85 @@ private:
     zrtpTimer T1;
     zrtpTimer T2;
 
+    /**
+     * Initializes all function pointers to map.
+     */
     void initHandlers();
-    void timerStart(zrtpTimer *timer);
+
+    /**
+     * Activate chosen timer for the first time.
+     *
+     * @param timer     timer
+     * @return          true = successful, false = otherwise
+     */
+    bool timerStart(zrtpTimer *timer);
+
+    /**
+     * Activate chosen timer again.
+     *
+     * @param timer     timer
+     * @return          true = successful, false = otherwise
+     */
     bool timerNext(zrtpTimer *timer);
 
+    /**
+     * Handles Initial state of created state machine.
+     */
     void handleInitial();
+
+    /**
+     * Handles SentHello state of created state machine.
+     */
     void handleSentHello();
+
+    /**
+     * Handles SentHelloAck state of created state machine.
+     */
     void handleSentHelloAck();
+
+    /**
+     * Handles ReceivedHelloAck state of created state machine.
+     */
     void handleReceivedHelloAck();
+
+    /**
+     * Handles SentCommit state of created state machine.
+     */
     void handleSentCommit();
+
+    /**
+     * Handles WaitCommit state of created state machine.
+     */
     void handleWaitCommit();
+
+    /**
+     * Handles WaitDHPart2 state of created state machine.
+     */
     void handleWaitDHPart2();
+
+    /**
+     * Handles WaitConfirm1 state of created state machine.
+     */
     void handleWaitConfirm1();
+
+    /**
+     * Handles WaitConfirm2 state of created state machine.
+     */
     void handleWaitConfirm2();
+
+    /**
+     * Handles WaitConf2Ack state of created state machine.
+     */
     void handleWaitConf2Ack();
+
+    /**
+     * Handles Secured state of created state machine.
+     */
     void handleSecured();
+
+    /**
+     * Handles WaitErrorAck state of created state machine.
+     */
     void handleWaitErrorAck();
 };
 

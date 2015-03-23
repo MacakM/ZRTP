@@ -12,27 +12,114 @@ typedef struct
 class PacketHello : public Packet
 {
 public:
+    /**
+     * Constructor of Hello packet.
+     */
     PacketHello();
 
+    /**
+     * Creates array of bytes from class attributes according to RFC.
+     *
+     * @return  array of bytes
+     */
     virtual uint8_t *toBytes();
-    virtual void parse(uint8_t *data);
 
+    /**
+     * Parses received data into PacketHelloAck class.
+     *
+     * @param data  received data
+     * @return      true = successful, false = otherwise
+     */
+    virtual bool parse(uint8_t *data);
+
+    /**
+     * Returns user's ZID.
+     *
+     * @return ZID
+     */
     uint8_t *getZid();
 
+    /**
+     * Sets protocol version.
+     *
+     * @param version   version
+     */
     void setVersion(uint8_t *version);
+
+    /**
+     * Sets clientID.
+     *
+     * @param id   clientID
+     */
     void setClientId(std::string id);
+
+    /**
+     * Sets hash image H3.
+     *
+     * @param hash   H3
+     */
     void setH3(uint8_t *hash);
+
+    /**
+     * Sets ZID.
+     *
+     * @param zid   ZID
+     */
     void setZid(uint8_t *zid);
+
+    /**
+     * Sets Signature-capable flag
+     */
     void setFlagS();
+
+    /**
+     * Sets MiTM flag
+     */
     void setFlagM();
+
+    /**
+     * Sets Passive flag
+     */
     void setFlagP();
 
+    /**
+     * Adds hash algorithm option.
+     *
+     * @param hash  hash algorithm
+     */
     void addHash(uint8_t hash[4]);
+
+    /**
+     * Adds cipher algorithm option.
+     *
+     * @param cipher  cipher algorithm
+     */
     void addCipher(uint8_t cipher[4]);
+
+    /**
+     * Adds authTag type option.
+     *
+     * @param authTag  authTag type
+     */
     void addAuthTag(uint8_t authTag[4]);
+
+    /**
+     * Adds keyAgreement type option.
+     *
+     * @param keyAgreement  keyAgreement type
+     */
     void addKeyAgreement(uint8_t keyAgreement[4]);
+
+    /**
+     * Adds sas type option.
+     *
+     * @param sas  sas type
+     */
     void addSas(uint8_t sas[4]);
 
+    /**
+     * Sets MAC of packet.
+     */
     void setMac(uint8_t mac[MAC_SIZE]);
 
 private:

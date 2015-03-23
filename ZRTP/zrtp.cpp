@@ -10,13 +10,14 @@ Zrtp::Zrtp(ZrtpCallback *cb, Role role, std::string clientId)
     myRole = role;
 
     RAND_bytes(myZID,ZID_SIZE);
-    createHashImages();
+    generateHashImages();
 
     RAND_bytes(rs1,ID_SIZE);
     RAND_bytes(rs2,ID_SIZE);
     RAND_bytes(auxsecret,ID_SIZE);
     RAND_bytes(pbxsecret,ID_SIZE);
 
+    //generate private and public key
     diffieHellman();
 
     assert(publicKey);
@@ -79,6 +80,16 @@ bool Zrtp::cancelTimer()
     return callback->cancelTimer();
 }
 
+void Zrtp::enterCriticalSection()
+{
+    callback->enterCriticalSection();
+}
+
+void Zrtp::leaveCriticalSection()
+{
+    callback->leaveCriticalSection();
+}
+
 void Zrtp::createHelloPacket(std::string clientId)
 {
     hello = new PacketHello();
@@ -87,7 +98,6 @@ void Zrtp::createHelloPacket(std::string clientId)
     hello->setH3(h3);
     hello->setZid(myZID);
     hello->addHash((uint8_t*)"S256");
-    hello->addHash((uint8_t*)"S386");
     hello->addCipher((uint8_t*)"AES1");
     hello->addAuthTag((uint8_t*)"HS32");
     hello->addKeyAgreement((uint8_t*)"DH3K");
@@ -150,8 +160,8 @@ void Zrtp::createConfirm1Packet()
     uint8_t vector[VECTOR_SIZE];
     RAND_bytes(vector,VECTOR_SIZE);
     confirm1->setInitVector(vector);
-    encryptConfirmData();
 
+    encryptConfirmData();
     createConfirmMac(confirm1);
 }
 
@@ -166,12 +176,12 @@ void Zrtp::createConfirm2Packet()
     uint8_t vector[VECTOR_SIZE];
     RAND_bytes(vector,VECTOR_SIZE);
     confirm2->setInitVector(vector);
-    encryptConfirmData();
 
+    encryptConfirmData();
     createConfirmMac(confirm2);
 }
 
-void Zrtp::createHashImages()
+void Zrtp::generateHashImages()
 {
     RAND_bytes(h0,HASHIMAGE_SIZE);
 
@@ -188,7 +198,7 @@ void Zrtp::generateIds(PacketDHPart *packet)
         SHA256(rs1,ID_SIZE,id);
         packet->setRs1Id(id);
         SHA256(rs2,ID_SIZE,id);
-        packet->setRs1Id(id);
+        packet->setRs2Id(id);
         SHA256(auxsecret,ID_SIZE,id);
         packet->setAuxsecretId(id);
         SHA256(pbxsecret,ID_SIZE,id);
@@ -324,6 +334,18 @@ void Zrtp::generateHvi()
     free(buffer);
 }
 
+void Zrtp::setPv(PacketDHPart *packet)
+{
+    assert(publicKey);
+    uint8_t *buffer = (uint8_t*)malloc((BN_num_bytes(publicKey)+1) * sizeof(uint8_t));
+    buffer[BN_num_bytes(publicKey)] = '\0';
+
+    BN_bn2bin(publicKey,buffer);
+
+    packet->setPv(buffer);
+    free(buffer);
+}
+
 void Zrtp::createTotalHash()
 {
     PacketHello *helloR;
@@ -391,13 +413,6 @@ void Zrtp::createDHResult()
     free(buffer);
 }
 
-void Zrtp::sharedSecretCalculation()
-{
-    createTotalHash();
-    createS0();
-    createKDFContext();
-}
-
 void Zrtp::createKDFContext()
 {
     bool initiator = (myRole == Initiator);
@@ -430,6 +445,13 @@ void Zrtp::createKDFContext()
         std::cout << kdfContext[i];
     }
     std::cout << std::endl;*/
+}
+
+void Zrtp::sharedSecretCalculation()
+{
+    createTotalHash();
+    createS0();
+    createKDFContext();
 }
 
 void Zrtp::createS0()
@@ -631,7 +653,7 @@ void Zrtp::decryptConfirmData(uint8_t *data)
 
         EVP_DecryptInit_ex(ctx, EVP_aes_128_cfb128(), 0, zrtpKeyR, iv);
     }
-    else
+    else //Responder
     {
         memcpy(iv,confirm2->getVector(),VECTOR_SIZE);
 
@@ -669,22 +691,10 @@ void Zrtp::decryptConfirmData(uint8_t *data)
         confirm1->setSigLen(sigLen);
         confirm1->setExpInterval(expInterval);
     }
-    else
+    else //Responder
     {
         confirm2->setH0(hashH0);
         confirm2->setSigLen(sigLen);
         confirm2->setExpInterval(expInterval);
     }
-}
-
-void Zrtp::setPv(PacketDHPart *packet)
-{
-    assert(publicKey);
-    uint8_t *buffer = (uint8_t*)malloc((BN_num_bytes(publicKey)+1) * sizeof(uint8_t));
-    buffer[BN_num_bytes(publicKey)] = '\0';
-
-    BN_bn2bin(publicKey,buffer);
-
-    packet->setPv(buffer);
-    free(buffer);
 }

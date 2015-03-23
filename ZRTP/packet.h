@@ -38,19 +38,60 @@ typedef struct
 class Packet {
 
 public:
-    Packet();
+    Packet() {}
 
+    /**
+     * Returns length of packet in WORDs. WORD = 4 bytes.
+     *
+     * @return  packet length
+     */
     uint16_t getLength();
+
+    /**
+     * Returns type of packet.
+     *
+     * @return  packet type
+     */
     uint8_t *getType();
 
+    /**
+     * Sets length of packet in WORDs.
+     *
+     * @param length    packet length
+     */
     void setLength(uint16_t length);
+
+    /**
+     * Sets type of packet.
+     *
+     * @param type      packet type
+     */
     void setType(uint8_t *type);
+
+    /**
+     * Sets zrtp identifier 0x505a.
+     */
     void setZrtpIdentifier();
 
+    /**
+     * Sets MAC of packet. Only implemented for Hello, Commit and DHPart packets.
+     */
     virtual void setMac(uint8_t [MAC_SIZE]) {}
 
+    /**
+     * Creates array of bytes from class attributes according to RFC.
+     *
+     * @return  array of bytes
+     */
     virtual uint8_t *toBytes() = 0;
-    virtual void parse(uint8_t *data) = 0;
+
+    /**
+     * Parses received data into PacketHelloAck class.
+     *
+     * @param data  received data
+     * @return      true = successful, false = otherwise
+     */
+    virtual bool parse(uint8_t *data) = 0;
 
 protected:
     Header *packetHeader;

@@ -13,6 +13,7 @@ StateEngine::StateEngine(Zrtp *zrtp)
     T2.cap = 1200;
     T2.maxResend = 10;
 
+    std::cout << "Actual state: Initial" << std::endl;
     actualState = Initial;
 }
 
@@ -32,11 +33,11 @@ void StateEngine::initHandlers()
     handlers[WaitErrorAck] = &StateEngine::handleWaitErrorAck;
 }
 
-void StateEngine::timerStart(zrtpTimer *timer)
+bool StateEngine::timerStart(zrtpTimer *timer)
 {
     timer->actualTime = timer->start;
     timer->resendCounter = 0;
-    zrtp->activateTimer(timer->start);
+    return zrtp->activateTimer(timer->start);
 }
 
 bool StateEngine::timerNext(zrtpTimer *timer)
@@ -56,8 +57,11 @@ bool StateEngine::timerNext(zrtpTimer *timer)
 
 void StateEngine::processEvent(Event *event)
 {
+    assert(event);
+    zrtp->enterCriticalSection();
     actualEvent = event;
     (this->*handlers[actualState])();
+    zrtp->leaveCriticalSection();
 }
 
 void StateEngine::handleInitial()
@@ -73,6 +77,7 @@ void StateEngine::handleInitial()
     sentMessage = message;
     sentMessageLength = messageLength;
     timerStart(&T1);
+    std::cout << "Actual state: SentHello" << std::endl;
     actualState = SentHello;
 }
 
@@ -99,6 +104,7 @@ void StateEngine::handleSentHello()
             uint8_t *message = zrtp->helloAck->toBytes();
             uint16_t messageLength = zrtp->helloAck->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
+            std::cout << "Actual state: SentHelloAck" << std::endl;
             actualState = SentHelloAck;
         }
         if(memcmp(type,"HelloACK", TYPE_SIZE) == 0)
@@ -106,6 +112,7 @@ void StateEngine::handleSentHello()
             zrtp->peerHelloAck = new PacketHelloAck();
             zrtp->peerHelloAck->parse(msg);
             zrtp->cancelTimer();
+            std::cout << "Actual state: ReceivedHelloAck" << std::endl;
             actualState = ReceivedHelloAck;
         }
     }
@@ -141,6 +148,7 @@ void StateEngine::handleSentHelloAck()
             zrtp->cancelTimer();
             if(zrtp->myRole == Responder)
             {
+                std::cout << "Actual state: WaitCommit" << std::endl;
                 actualState = WaitCommit;
             }
             else
@@ -152,6 +160,7 @@ void StateEngine::handleSentHelloAck()
                 sentMessage = message;
                 sentMessageLength = messageLength;
                 timerStart(&T2);
+                std::cout << "Actual state: SentCommit" << std::endl;
                 actualState = SentCommit;
             }
         }
@@ -163,6 +172,7 @@ void StateEngine::handleSentHelloAck()
             uint8_t *message = zrtp->dhPart1->toBytes();
             uint16_t messageLength = zrtp->dhPart1->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
+            std::cout << "Actual state: WaitDHPart2" << std::endl;
             actualState = WaitDHPart2;
         }
     }
@@ -185,6 +195,7 @@ void StateEngine::handleReceivedHelloAck()
                 uint8_t *message = zrtp->helloAck->toBytes();
                 uint16_t messageLength = zrtp->helloAck->getLength() * WORD_SIZE;
                 zrtp->sendData(message,messageLength);
+                std::cout << "Actual state: WaitCommit" << std::endl;
                 actualState = WaitCommit;
             }
             else
@@ -196,6 +207,7 @@ void StateEngine::handleReceivedHelloAck()
                 sentMessage = message;
                 sentMessageLength = messageLength;
                 timerStart(&T2);
+                std::cout << "Actual state: SentCommit" << std::endl;
                 actualState = SentCommit;
             }
         }
@@ -233,6 +245,7 @@ void StateEngine::handleSentCommit()
             zrtp->keyDerivation();
 
             timerStart(&T2);
+            std::cout << "Actual state: WaitConfirm1" << std::endl;
             actualState = WaitConfirm1;
         }
     }
@@ -261,6 +274,7 @@ void StateEngine::handleWaitCommit()
             uint8_t *message = zrtp->dhPart1->toBytes();
             uint16_t messageLength = zrtp->dhPart1->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
+            std::cout << "Actual state: WaitDHPart2" << std::endl;
             actualState = WaitDHPart2;
         }
     }
@@ -293,6 +307,7 @@ void StateEngine::handleWaitDHPart2()
             uint8_t *message = zrtp->confirm1->toBytes();
             uint16_t messageLength = zrtp->confirm1->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
+            std::cout << "Actual state: WaitConfirm2" << std::endl;
             actualState = WaitConfirm2;
         }
     }
@@ -326,6 +341,7 @@ void StateEngine::handleWaitConfirm1()
             sentMessage = message;
             sentMessageLength = messageLength;
             timerStart(&T2);
+            std::cout << "Actual state: WaitConf2Ack" << std::endl;
             actualState = WaitConf2Ack;
         }
     }
@@ -353,7 +369,7 @@ void StateEngine::handleWaitConfirm2()
             uint8_t *message = zrtp->conf2Ack->toBytes();
             uint16_t messageLength = zrtp->conf2Ack->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
-            std::cout << "DONE";
+            std::cout << "Actual state: Secured" << std::endl;
             actualState = Secured;
         }
     }
@@ -377,7 +393,7 @@ void StateEngine::handleWaitConf2Ack()
         if(memcmp(type,"Conf2ACK", TYPE_SIZE) == 0)
         {
             zrtp->cancelTimer();
-            std::cout << "DONE";
+            std::cout << "Actual state: Secured" << std::endl;
             actualState = Secured;
         }
     }
@@ -417,6 +433,7 @@ void StateEngine::handleWaitErrorAck()
         if(memcmp(type,"ErrorACK", TYPE_SIZE) == 0)
         {
             zrtp->cancelTimer();
+            std::cout << "Actual state: Initial" << std::endl;
             actualState = Initial;
         }
     }

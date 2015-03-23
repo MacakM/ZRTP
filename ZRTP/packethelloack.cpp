@@ -29,7 +29,7 @@ uint8_t *PacketHelloAck::toBytes()
 
 }
 
-void PacketHelloAck::parse(uint8_t *data)
+bool PacketHelloAck::parse(uint8_t *data)
 {
     uint8_t *pos = data;
 
@@ -44,4 +44,5 @@ void PacketHelloAck::parse(uint8_t *data)
 
     packetHeader->length = *pos << 8 | *(pos + 1);
     setType((uint8_t*)"HelloACK");
+    return true;
 }

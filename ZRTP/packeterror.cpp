@@ -30,7 +30,7 @@ uint8_t *PacketError::toBytes()
     return data;
 }
 
-void PacketError::parse(uint8_t *data)
+bool PacketError::parse(uint8_t *data)
 {
     uint8_t *pos = data;
 
@@ -47,4 +47,5 @@ void PacketError::parse(uint8_t *data)
     setType((uint8_t*)"Error   ");
     pos += 10;
     memcpy(errorCode,pos,WORD_SIZE);
+    return true;
 }

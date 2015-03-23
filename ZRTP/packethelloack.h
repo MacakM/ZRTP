@@ -6,10 +6,25 @@
 class PacketHelloAck : public Packet
 {
 public:
+    /**
+     * Constructor of HelloAck packet.
+     */
     PacketHelloAck();
 
+    /**
+     * Creates array of bytes from class attributes according to RFC.
+     *
+     * @return  array of bytes
+     */
     virtual uint8_t *toBytes();
-    virtual void parse(uint8_t *data);
+
+    /**
+     * Parses received data into PacketHelloAck class.
+     *
+     * @param data  received data
+     * @return      true = successful, false = otherwise
+     */
+    virtual bool parse(uint8_t *data);
 
 private:
     uint8_t data[MAX_HELLOACK_LENGTH];

@@ -65,7 +65,7 @@ uint8_t *PacketCommit::toBytes()
     return data;
 }
 
-void PacketCommit::parse(uint8_t *data)
+bool PacketCommit::parse(uint8_t *data)
 {
     uint8_t *pos = data;
 
@@ -117,6 +117,7 @@ void PacketCommit::parse(uint8_t *data)
     {
         mac[i] = *(pos++);
     }
+    return true;
 }
 
 void PacketCommit::setH2(uint8_t *hash)
