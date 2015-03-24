@@ -1,11 +1,12 @@
 #include "zrtp.h"
 
-Zrtp::Zrtp(ZrtpCallback *cb, Role role, std::string clientId)
+Zrtp::Zrtp(ZrtpCallback *cb, Role role, std::string clientId, UserInfo *info)
 {
     if(!cb)
     {
         throw std::invalid_argument("NULL callback");
     }
+    userInfo = info;
     callback = cb;
     myRole = role;
 
@@ -93,15 +94,11 @@ void Zrtp::leaveCriticalSection()
 void Zrtp::createHelloPacket(std::string clientId)
 {
     hello = new PacketHello();
-    hello->setVersion((uint8_t*)"1.10");
+    hello->setVersion((uint8_t*)chooseHighestVersion().c_str());
     hello->setClientId(clientId);
     hello->setH3(h3);
     hello->setZid(myZID);
-    hello->addHash((uint8_t*)"S256");
-    hello->addCipher((uint8_t*)"AES1");
-    hello->addAuthTag((uint8_t*)"HS32");
-    hello->addKeyAgreement((uint8_t*)"DH3K");
-    hello->addSas((uint8_t*)"B32 ");
+    hello->AddSupportedTypes(userInfo);
     createMac(hello);
 }
 
@@ -697,4 +694,18 @@ void Zrtp::decryptConfirmData(uint8_t *data)
         confirm2->setSigLen(sigLen);
         confirm2->setExpInterval(expInterval);
     }
+}
+
+std::string Zrtp::chooseHighestVersion()
+{
+    std::string max = userInfo->versions.at(0);
+    for(uint8_t i = 0; i < userInfo->versions.size();i++)
+    {
+        std::string value = userInfo->versions.at(i);
+        if (strcmp(value.c_str(),max.c_str()) > 0)
+        {
+            max = value;
+        }
+    }
+    return max;
 }

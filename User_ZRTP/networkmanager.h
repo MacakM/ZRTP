@@ -6,6 +6,7 @@
 #include <QTimer>
 #include <QMutex>
 #include <vector>
+
 #include "zrtp.h"
 #include "mycallbacks.h"
 #include "parser.h"
@@ -52,6 +53,7 @@ public:
 
 private:
     threadVector threads;
+    UserInfo info;
 
     Signal actualSignal;
     int32_t actualTime;

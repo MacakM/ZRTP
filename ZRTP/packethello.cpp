@@ -233,6 +233,40 @@ void PacketHello::setFlagP()
     flags |= 16;
 }
 
+void PacketHello::AddSupportedTypes(UserInfo *info)
+{
+    for(uint8_t i = 0; i < info->hashTypes.size(); i++)
+    {
+        std::string value = info->hashTypes.at(i);
+        addHash((uint8_t*)value.c_str());
+    }
+    for(uint8_t i = 0; i < info->cipherTypes.size(); i++)
+    {
+        std::string value = info->cipherTypes.at(i);
+        addCipher((uint8_t*)value.c_str());
+    }
+    for(uint8_t i = 0; i < info->authTagTypes.size(); i++)
+    {
+        std::string value = info->authTagTypes.at(i);
+        addAuthTag((uint8_t*)value.c_str());
+    }
+    for(uint8_t i = 0; i < info->keyAgreementTypes.size(); i++)
+    {
+        std::string value = info->keyAgreementTypes.at(i);
+        addKeyAgreement((uint8_t*)value.c_str());
+    }
+    for(uint8_t i = 0; i < info->sasTypes.size(); i++)
+    {
+        std::string value = info->sasTypes.at(i);
+        addSas((uint8_t*)value.c_str());
+    }
+}
+
+void PacketHello::setMac(uint8_t mac[])
+{
+    memcpy(this->mac, mac, MAC_SIZE);
+}
+
 void PacketHello::addHash(uint8_t hash[])
 {
     counts.hc++;
@@ -266,9 +300,4 @@ void PacketHello::addSas(uint8_t sas[])
     counts.sc++;
     memcpy(&sasTypes[(counts.sc - 1) * WORD_SIZE], sas, WORD_SIZE);
     setLength(getLength() + 1);
-}
-
-void PacketHello::setMac(uint8_t mac[])
-{
-    memcpy(this->mac, mac, MAC_SIZE);
 }

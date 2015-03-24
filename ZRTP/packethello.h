@@ -2,6 +2,7 @@
 #define PACKETHELLO_H
 
 #include "packet.h"
+#include "userinfo.h"
 
 //bit field
 typedef struct
@@ -83,6 +84,36 @@ public:
     void setFlagP();
 
     /**
+     * Adds all user supported algorithms and types.
+     *
+     * @param info  user's info
+     */
+    void AddSupportedTypes(UserInfo *info);
+
+    /**
+     * Sets MAC of packet.
+     */
+    void setMac(uint8_t mac[MAC_SIZE]);
+
+private:
+    uint8_t version[VERSION_SIZE];
+    uint8_t clientId[CLIENTID_SIZE];
+    uint8_t h3[HASHIMAGE_SIZE];
+    uint8_t zid[ZID_SIZE];
+    uint8_t flags;
+    Counts counts;
+    uint8_t mac[MAC_SIZE];
+
+    uint8_t hashTypes[WORD_SIZE * 7];
+    uint8_t cipherTypes[WORD_SIZE * 7];
+    uint8_t authTagTypes[WORD_SIZE * 7];
+    uint8_t keyAgreementTypes[WORD_SIZE * 7];
+    uint8_t sasTypes[WORD_SIZE * 7];
+
+    uint8_t data[MAX_HELLO_LENGTH];
+
+
+    /**
      * Adds hash algorithm option.
      *
      * @param hash  hash algorithm
@@ -116,28 +147,6 @@ public:
      * @param sas  sas type
      */
     void addSas(uint8_t sas[4]);
-
-    /**
-     * Sets MAC of packet.
-     */
-    void setMac(uint8_t mac[MAC_SIZE]);
-
-private:
-    uint8_t version[VERSION_SIZE];
-    uint8_t clientId[CLIENTID_SIZE];
-    uint8_t h3[HASHIMAGE_SIZE];
-    uint8_t zid[ZID_SIZE];
-    uint8_t flags;
-    Counts counts;
-    uint8_t mac[MAC_SIZE];
-
-    uint8_t hashTypes[WORD_SIZE * 7];
-    uint8_t cipherTypes[WORD_SIZE * 7];
-    uint8_t authTagTypes[WORD_SIZE * 7];
-    uint8_t keyAgreementTypes[WORD_SIZE * 7];
-    uint8_t sasTypes[WORD_SIZE * 7];
-
-    uint8_t data[MAX_HELLO_LENGTH];
 };
 
 #endif // PACKETHELLO_H

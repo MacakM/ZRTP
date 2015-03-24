@@ -6,6 +6,15 @@ NetworkManager::NetworkManager(int argc, char *argv[], QObject *parent) :
     threads.reserve(15);
     actualSignal = (Signal)0;
     actualTime = 0;
+
+    info.versions.push_back("1.10");
+    info.versions.push_back("1.20");
+    info.hashTypes.push_back("S256");
+    info.cipherTypes.push_back("AES1");
+    info.authTagTypes.push_back("HS32");
+    info.keyAgreementTypes.push_back("DH3K");
+    info.sasTypes.push_back("B32 ");
+
     connect(this,SIGNAL(signalReceived()),this,SLOT(processSignal()));
     mutex = new QMutex();
     srand (time(NULL));
@@ -28,7 +37,7 @@ NetworkManager::NetworkManager(int argc, char *argv[], QObject *parent) :
     //testing
     (myRole == Initiator) ? Sleep(10000) : Sleep(5000);
 
-    zrtp = new Zrtp(callbacks, myRole, "MacakM");
+    zrtp = new Zrtp(callbacks, myRole, "MacakM", &info);
     myZid = zrtp->getZid();
 }
 
@@ -77,7 +86,7 @@ void NetworkManager::processPendingDatagram()
     ZrtpMessage *t = new ZrtpMessage(this,(uint8_t*)datagram.data(),size);
     threads.push_back(t);
     t->start();
-    std::cout << "Hi" << std::endl;
+    Sleep(1);
 }
 
 void NetworkManager::processZrtpTimeout()

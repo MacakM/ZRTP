@@ -11,7 +11,7 @@
 #include "Integers.h"
 #include "ZrtpCallback.h"
 #include "stateengine.h"
-
+#include "userinfo.h"
 #include "packethello.h"
 #include "packethelloack.h"
 #include "packetcommit.h"
@@ -57,8 +57,9 @@ public:
      * @param cb        callback class
      * @param role      role of user
      * @param clientId  identifies the vendor and release of the ZRTP software
+     * @param info      information about user's supported versions and algorithms
      */
-    Zrtp(ZrtpCallback *cb, Role role, std::string clientId);
+    Zrtp(ZrtpCallback *cb, Role role, std::string clientId, UserInfo *info);
 
     /**
      * Method called by user when ZRTP message arrives.
@@ -256,9 +257,17 @@ private:
      */
     void decryptConfirmData(uint8_t *data);
 
+    /**
+     * Chooses highest supported version from given versions.
+     *
+     * @return  highest supported version
+     */
+    std::string chooseHighestVersion();
+
     uint8_t myZID[ZID_SIZE];
     ZrtpCallback *callback;
     Role myRole;
+    UserInfo *userInfo;
     StateEngine *engine;
 
     //important packets
