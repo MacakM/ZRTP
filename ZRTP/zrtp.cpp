@@ -709,3 +709,38 @@ std::string Zrtp::chooseHighestVersion()
     }
     return max;
 }
+
+bool Zrtp::compareVersions()
+{
+    char buffer[5];
+    memcpy(buffer,peerHello->getVersion(),4);
+    buffer[4] = '\0';
+    std::string peerVersion(buffer);
+    std::string myVersion = chooseHighestVersion();
+    if(myVersion.compare(peerVersion) > 0)
+    {
+        for(uint8_t i = 0; i < userInfo->versions.size(); i++)
+        {
+            std::string value = userInfo->versions.at(i);
+            //erase all versions higher then peerVersion
+            if(strcmp(value.c_str(),peerVersion.c_str()) > 0)
+            {
+                userInfo->versions.erase(userInfo->versions.begin() + i);
+            }
+        }
+        if(userInfo->versions.size() == 0)
+        {
+            std::cout << "Chyba";
+        }
+        else
+        {
+            hello->setVersion((uint8_t*)chooseHighestVersion().c_str());
+        }
+        return false;
+    }
+    else if(myVersion.compare(peerVersion) == 0)
+    {
+        return true;
+    }
+    return false;
+}

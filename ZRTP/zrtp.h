@@ -264,6 +264,8 @@ private:
      */
     std::string chooseHighestVersion();
 
+    bool compareVersions();
+
     uint8_t myZID[ZID_SIZE];
     ZrtpCallback *callback;
     Role myRole;

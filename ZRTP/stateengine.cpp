@@ -91,7 +91,7 @@ void StateEngine::handleSentHello()
             zrtp->cancelTimer();
         }
     }
-    if(actualEvent->type == Message)
+    else if(actualEvent->type == Message)
     {
         uint8_t *msg = actualEvent->message;
         uint8_t type[TYPE_SIZE];
@@ -100,14 +100,26 @@ void StateEngine::handleSentHello()
         {
             zrtp->peerHello = new PacketHello();
             zrtp->peerHello->parse(msg);
-            zrtp->createHelloAckPacket();
-            uint8_t *message = zrtp->helloAck->toBytes();
-            uint16_t messageLength = zrtp->helloAck->getLength() * WORD_SIZE;
-            zrtp->sendData(message,messageLength);
-            std::cout << "Actual state: SentHelloAck" << std::endl;
-            actualState = SentHelloAck;
+            if(zrtp->compareVersions())
+            {
+                zrtp->createHelloAckPacket();
+                uint8_t *message = zrtp->helloAck->toBytes();
+                uint16_t messageLength = zrtp->helloAck->getLength() * WORD_SIZE;
+                zrtp->sendData(message,messageLength);
+                std::cout << "Actual state: SentHelloAck" << std::endl;
+                actualState = SentHelloAck;
+            }
+            else
+            {
+                uint8_t *message = zrtp->hello->toBytes();
+                uint16_t messageLength = zrtp->hello->getLength() * WORD_SIZE;
+                zrtp->sendData(message,messageLength);
+                sentMessage = message;
+                sentMessageLength = messageLength;
+                timerStart(&T1);
+            }
         }
-        if(memcmp(type,"HelloACK", TYPE_SIZE) == 0)
+        else if(memcmp(type,"HelloACK", TYPE_SIZE) == 0)
         {
             zrtp->peerHelloAck = new PacketHelloAck();
             zrtp->peerHelloAck->parse(msg);
@@ -129,7 +141,7 @@ void StateEngine::handleSentHelloAck()
         }
     }
 
-    if(actualEvent->type == Message)
+    else if(actualEvent->type == Message)
     {
         uint8_t *msg = actualEvent->message;
         uint8_t type[TYPE_SIZE];
@@ -137,11 +149,23 @@ void StateEngine::handleSentHelloAck()
         if(memcmp(type,"Hello   ", TYPE_SIZE) == 0)
         {
             zrtp->peerHello->parse(msg);
-            uint8_t *message = zrtp->helloAck->toBytes();
-            uint16_t messageLength = zrtp->helloAck->getLength() * WORD_SIZE;
-            zrtp->sendData(message,messageLength);
+            if(zrtp->compareVersions())
+            {
+                uint8_t *message = zrtp->helloAck->toBytes();
+                uint16_t messageLength = zrtp->helloAck->getLength() * WORD_SIZE;
+                zrtp->sendData(message,messageLength);
+            }
+            else
+            {
+                uint8_t *message = zrtp->hello->toBytes();
+                uint16_t messageLength = zrtp->hello->getLength() * WORD_SIZE;
+                zrtp->sendData(message,messageLength);
+                sentMessage = message;
+                sentMessageLength = messageLength;
+                timerStart(&T1);
+            }
         }
-        if(memcmp(type,"HelloACK", TYPE_SIZE) == 0)
+        else if(memcmp(type,"HelloACK", TYPE_SIZE) == 0)
         {
             zrtp->peerHelloAck = new PacketHelloAck();
             zrtp->peerHelloAck->parse(msg);
@@ -164,7 +188,7 @@ void StateEngine::handleSentHelloAck()
                 actualState = SentCommit;
             }
         }
-        if(memcmp(type,"Commit  ", TYPE_SIZE) == 0)
+        else if(memcmp(type,"Commit  ", TYPE_SIZE) == 0)
         {
             zrtp->commit = new PacketCommit();
             zrtp->commit->parse(msg);
@@ -189,7 +213,16 @@ void StateEngine::handleReceivedHelloAck()
         {
             zrtp->peerHello = new PacketHello();
             zrtp->peerHello->parse(msg);
-            if(zrtp->myRole == Responder)
+            if(!zrtp->compareVersions())
+            {
+                uint8_t *message = zrtp->hello->toBytes();
+                uint16_t messageLength = zrtp->hello->getLength() * WORD_SIZE;
+                zrtp->sendData(message,messageLength);
+                sentMessage = message;
+                sentMessageLength = messageLength;
+                timerStart(&T1);
+            }
+            else if(zrtp->myRole == Responder)
             {
                 zrtp->createHelloAckPacket();
                 uint8_t *message = zrtp->helloAck->toBytes();
@@ -224,7 +257,7 @@ void StateEngine::handleSentCommit()
             zrtp->cancelTimer();
         }
     }
-    if(actualEvent->type == Message)
+    else if(actualEvent->type == Message)
     {
         uint8_t *msg = actualEvent->message;
         uint8_t type[TYPE_SIZE];
@@ -260,12 +293,12 @@ void StateEngine::handleWaitCommit()
         memcpy(type,(msg+4),TYPE_SIZE);
         if(memcmp(type,"Hello   ", TYPE_SIZE) == 0)
         {
-            zrtp->peerHello->parse(msg);
+            (msg);
             uint8_t *message = zrtp->helloAck->toBytes();
             uint16_t messageLength = zrtp->helloAck->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
         }
-        if(memcmp(type,"Commit  ", TYPE_SIZE) == 0)
+        else if(memcmp(type,"Commit  ", TYPE_SIZE) == 0)
         {
             zrtp->commit = new PacketCommit();
             zrtp->commit->parse(msg);
@@ -294,7 +327,7 @@ void StateEngine::handleWaitDHPart2()
             uint16_t messageLength = zrtp->dhPart1->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
         }
-        if(memcmp(type,"DHPart2 ", TYPE_SIZE) == 0)
+        else if(memcmp(type,"DHPart2 ", TYPE_SIZE) == 0)
         {
             zrtp->dhPart2 = new PacketDHPart();
             zrtp->dhPart2->parse(msg);
@@ -323,7 +356,7 @@ void StateEngine::handleWaitConfirm1()
             zrtp->cancelTimer();
         }
     }
-    if(actualEvent->type == Message)
+    else if(actualEvent->type == Message)
     {
         uint8_t *msg = actualEvent->message;
         uint8_t type[TYPE_SIZE];
@@ -361,7 +394,7 @@ void StateEngine::handleWaitConfirm2()
             uint16_t messageLength = zrtp->confirm1->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
         }
-        if(memcmp(type,"Confirm2", TYPE_SIZE) == 0)
+        else if(memcmp(type,"Confirm2", TYPE_SIZE) == 0)
         {
             zrtp->confirm2 = new PacketConfirm();
             zrtp->confirm2->parse(msg);
@@ -385,7 +418,7 @@ void StateEngine::handleWaitConf2Ack()
             zrtp->cancelTimer();
         }
     }
-    if(actualEvent->type == Message)
+    else if(actualEvent->type == Message)
     {
         uint8_t *msg = actualEvent->message;
         uint8_t type[TYPE_SIZE];
@@ -425,7 +458,7 @@ void StateEngine::handleWaitErrorAck()
             zrtp->cancelTimer();
         }
     }
-    if(actualEvent->type == Message)
+    else if(actualEvent->type == Message)
     {
         uint8_t *msg = actualEvent->message;
         uint8_t type[TYPE_SIZE];

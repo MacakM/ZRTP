@@ -41,6 +41,13 @@ public:
     uint8_t *getZid();
 
     /**
+     * Returns protocol version.
+     *
+     * @return      version
+     */
+    uint8_t *getVersion();
+
+    /**
      * Sets protocol version.
      *
      * @param version   version

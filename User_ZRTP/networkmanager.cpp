@@ -7,14 +7,6 @@ NetworkManager::NetworkManager(int argc, char *argv[], QObject *parent) :
     actualSignal = (Signal)0;
     actualTime = 0;
 
-    info.versions.push_back("1.10");
-    info.versions.push_back("1.20");
-    info.hashTypes.push_back("S256");
-    info.cipherTypes.push_back("AES1");
-    info.authTagTypes.push_back("HS32");
-    info.keyAgreementTypes.push_back("DH3K");
-    info.sasTypes.push_back("B32 ");
-
     connect(this,SIGNAL(signalReceived()),this,SLOT(processSignal()));
     mutex = new QMutex();
     srand (time(NULL));
@@ -22,6 +14,15 @@ NetworkManager::NetworkManager(int argc, char *argv[], QObject *parent) :
     readSocket = new QUdpSocket();
 
     setArguments(Parser::getArguments(argc,argv));
+
+    info.versions.push_back("1.10");
+    //demonstration of version negotiation
+    if(myRole == Responder) info.versions.push_back("1.20");
+    info.hashTypes.push_back("S256");
+    info.cipherTypes.push_back("AES1");
+    info.authTagTypes.push_back("HS32");
+    info.keyAgreementTypes.push_back("DH3K");
+    info.sasTypes.push_back("B32 ");
 
     (myRole == Initiator) ? myFile.open("Alice.txt") : myFile.open("Bob.txt");
     myFile.close();
