@@ -495,13 +495,13 @@ void Zrtp::createS0()
     memcpy(s0,hash,SHA256_DIGEST_LENGTH);
     BN_clear(dhResult);
 
-    /*std::cout << std::endl;
+    std::cout << std::endl;
     std::cout << "S0:" << std::endl;
     for(int i = 0; i < SHA256_DIGEST_LENGTH; i++)
     {
         std::cout << s0[i];
     }
-    std::cout << std::endl;*/
+    std::cout << std::endl;
 }
 
 void Zrtp::kdf(uint8_t *key, uint8_t *label, int32_t labelLength, uint8_t *context, int32_t lengthL, uint8_t *derivedKey)
@@ -580,6 +580,7 @@ void Zrtp::encryptConfirmData()
 
     if (myRole == Initiator)
     {
+        assert(confirm2);
         uint8_t *buffer = confirm2->toBytes();
 
         memcpy(iv,confirm2->getVector(),VECTOR_SIZE);
@@ -605,6 +606,7 @@ void Zrtp::encryptConfirmData()
     }
     else    //Responder
     {
+        assert(confirm1);
         uint8_t *buffer = confirm1->toBytes();
 
         memcpy(iv,confirm1->getVector(),VECTOR_SIZE);
@@ -736,7 +738,6 @@ bool Zrtp::compareVersions()
         {
             hello->setVersion((uint8_t*)chooseHighestVersion().c_str());
         }
-        return false;
     }
     else if(myVersion.compare(peerVersion) == 0)
     {

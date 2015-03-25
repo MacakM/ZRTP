@@ -120,6 +120,11 @@ bool PacketCommit::parse(uint8_t *data)
     return true;
 }
 
+uint8_t *PacketCommit::getHvi()
+{
+    return hvi;
+}
+
 void PacketCommit::setH2(uint8_t *hash)
 {
     memcpy(h2,hash,HASHIMAGE_SIZE);
@@ -158,6 +163,15 @@ void PacketCommit::setSas(uint8_t sas[])
 void PacketCommit::setHvi(uint8_t hvi[])
 {
     memcpy(this->hvi, hvi, HVI_SIZE);
+}
+
+bool PacketCommit::hasGreaterHvi(PacketCommit *packet)
+{
+    if(memcmp(this->hvi,packet->getHvi(),HVI_SIZE) > 0)
+    {
+        return true;
+    }
+    return false;
 }
 
 void PacketCommit::setMac(uint8_t mac[])

@@ -27,6 +27,13 @@ public:
     virtual bool parse(uint8_t *data);
 
     /**
+     * Returns hvi.
+     *
+     * @return  hvi
+     */
+    uint8_t *getHvi();
+
+    /**
      * Sets hash image H2.
      *
      * @param hash  H2
@@ -80,6 +87,16 @@ public:
      * @param hvi   hvi
      */
     void setHvi(uint8_t hvi[HVI_SIZE]);
+
+    /**
+     * Returns whether this packet has greater hvi than peer commit packet.
+     * Important when choosing Initiator from two Initiator endpoints.
+     *
+     * @param packet    peer commit packet
+     *
+     * @return          true = this packet has greater hvi, false = lower hvi
+     */
+    bool hasGreaterHvi(PacketCommit *packet);
 
     /**
      * Sets MAC of packet.

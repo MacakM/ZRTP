@@ -15,6 +15,9 @@ NetworkManager::NetworkManager(int argc, char *argv[], QObject *parent) :
 
     setArguments(Parser::getArguments(argc,argv));
 
+    //demonstration of commit contention
+    myRole = Initiator;
+
     info.versions.push_back("1.10");
     //demonstration of version negotiation
     if(myRole == Responder) info.versions.push_back("1.20");

@@ -190,8 +190,29 @@ void StateEngine::handleSentHelloAck()
         }
         else if(memcmp(type,"Commit  ", TYPE_SIZE) == 0)
         {
-            zrtp->commit = new PacketCommit();
-            zrtp->commit->parse(msg);
+            zrtp->createCommitPacket();
+
+            PacketCommit *peerCommit = new PacketCommit();
+            peerCommit->parse(msg);
+            if(zrtp->commit->hasGreaterHvi(peerCommit))
+            {
+                free(peerCommit);
+                uint8_t *message = zrtp->commit->toBytes();
+                uint16_t messageLength = zrtp->commit->getLength() * WORD_SIZE;
+                zrtp->sendData(message,messageLength);
+                sentMessage = message;
+                sentMessageLength = messageLength;
+                timerStart(&T2);
+                std::cout << "Actual state: SentCommit" << std::endl;
+                actualState = SentCommit;
+                return;
+            }
+            free(zrtp->commit);
+            zrtp->commit = peerCommit;
+            zrtp->myRole = Responder;
+
+            free(zrtp->dhPart2);
+
             zrtp->createDHPart1Packet();
             uint8_t *message = zrtp->dhPart1->toBytes();
             uint16_t messageLength = zrtp->dhPart1->getLength() * WORD_SIZE;
@@ -281,6 +302,28 @@ void StateEngine::handleSentCommit()
             std::cout << "Actual state: WaitConfirm1" << std::endl;
             actualState = WaitConfirm1;
         }
+        else if(memcmp(type,"Commit  ",TYPE_SIZE) == 0)
+        {
+            PacketCommit *peerCommit = new PacketCommit();
+            peerCommit->parse(msg);
+            if(zrtp->commit->hasGreaterHvi(peerCommit))
+            {
+                free(peerCommit);
+                return;
+            }
+            free(zrtp->commit);
+            zrtp->commit = peerCommit;
+            zrtp->myRole = Responder;
+            zrtp->cancelTimer();
+
+            free(zrtp->dhPart2);
+            zrtp->createDHPart1Packet();
+            uint8_t *message = zrtp->dhPart1->toBytes();
+            uint16_t messageLength = zrtp->dhPart1->getLength() * WORD_SIZE;
+            zrtp->sendData(message,messageLength);
+            std::cout << "Actual state: WaitDHPart2" << std::endl;
+            actualState = WaitDHPart2;
+        }
     }
 }
 
@@ -322,7 +365,9 @@ void StateEngine::handleWaitDHPart2()
         memcpy(type,(msg+4),TYPE_SIZE);
         if(memcmp(type,"Commit  ", TYPE_SIZE) == 0)
         {
-            zrtp->commit->parse(msg);
+            PacketCommit *peerCommit = new PacketCommit();
+            peerCommit->parse(msg);
+            free(peerCommit);
             uint8_t *message = zrtp->dhPart1->toBytes();
             uint16_t messageLength = zrtp->dhPart1->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
