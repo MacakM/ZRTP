@@ -293,7 +293,7 @@ void StateEngine::handleWaitCommit()
         memcpy(type,(msg+4),TYPE_SIZE);
         if(memcmp(type,"Hello   ", TYPE_SIZE) == 0)
         {
-            (msg);
+            zrtp->peerHello->parse(msg);
             uint8_t *message = zrtp->helloAck->toBytes();
             uint16_t messageLength = zrtp->helloAck->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);

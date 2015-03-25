@@ -77,6 +77,9 @@ public:
      */
     void setPv(uint8_t publicValue[]);
 
+    /**
+     * Sets MAC of packet.
+     */
     void setMac(uint8_t mac[MAC_SIZE]);
 private:
     uint8_t h1[HASHIMAGE_SIZE];

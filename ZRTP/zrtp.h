@@ -264,6 +264,11 @@ private:
      */
     std::string chooseHighestVersion();
 
+    /**
+     * Compares Hello versions of packets from both sides.
+     *
+     * @return  true = equal, false = unequal
+     */
     bool compareVersions();
 
     uint8_t myZID[ZID_SIZE];

@@ -84,10 +84,11 @@ void NetworkManager::processPendingDatagram()
     myFile << std::endl << std::endl;
     myFile.close();
 
-    ZrtpMessage *t = new ZrtpMessage(this,(uint8_t*)datagram.data(),size);
+    uint8_t *message = (uint8_t*)malloc(size);
+    memcpy(message,datagram.data(),size);
+    ZrtpMessage *t = new ZrtpMessage(this,message,size);
     threads.push_back(t);
     t->start();
-    Sleep(1);
 }
 
 void NetworkManager::processZrtpTimeout()

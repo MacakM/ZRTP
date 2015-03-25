@@ -1,10 +1,5 @@
 #include "packet.h"
 
-Packet::Packet()
-{
-}
-
-
 uint16_t Packet::getLength()
 {
     return packetHeader->length;

@@ -7,7 +7,10 @@ MyCallbacks::MyCallbacks(NetworkManager *manager)
 
 bool MyCallbacks::sendData (const uint8_t* data, int32_t length)
 {
+    assert(data);
     QByteArray datagram((char*)data, length);
+
+    std::cout << "Sending " << data[4] << data[5] << data[6] << data[7] << data[8] << data[9] << data[10] << data[11] << std::endl;
 
     if (manager->sendSocket->writeDatagram(datagram, manager->sendIp, manager->sendPort) == -1)
     {
