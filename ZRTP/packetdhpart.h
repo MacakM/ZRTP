@@ -75,12 +75,12 @@ public:
      *
      * @param publicValue   public key
      */
-    void setPv(uint8_t publicValue[]);
+    void setPv(uint8_t *publicValue);
 
     /**
      * Sets MAC of packet.
      */
-    void setMac(uint8_t mac[MAC_SIZE]);
+    void setMac(uint8_t *mac);
 private:
     uint8_t h1[HASHIMAGE_SIZE];
     uint8_t rs1Id[ID_SIZE];

@@ -35,7 +35,7 @@ public:
      *
      * @param code  error code
      */
-    PacketError(ErrorCode code);
+    PacketError(ErrorCode *code);
 
     /**
      * Creates array of bytes from class attributes according to RFC.

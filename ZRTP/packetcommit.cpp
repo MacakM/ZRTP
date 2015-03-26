@@ -79,8 +79,10 @@ bool PacketCommit::parse(uint8_t *data)
     }
 
     packetHeader->length = *pos << 8 | *(pos + 1);
+    //type has been checked in StateEngine
     setType((uint8_t*)"Commit  ");
     pos += 10;
+
     for(uint8_t i = 0; i < HASHIMAGE_SIZE; i++)
     {
         h2[i] = *(pos++);
@@ -135,32 +137,32 @@ void PacketCommit::setZid(uint8_t *zid)
     memcpy(this->zid,zid,ZID_SIZE);
 }
 
-void PacketCommit::setHash(uint8_t hash[])
+void PacketCommit::setHash(uint8_t *hash)
 {
     memcpy(this->hash,hash,HASHIMAGE_SIZE);
 }
 
-void PacketCommit::setCipher(uint8_t cipher[])
+void PacketCommit::setCipher(uint8_t *cipher)
 {
     memcpy(this->cipher, cipher, WORD_SIZE);
 }
 
-void PacketCommit::setAuthTag(uint8_t authTag[])
+void PacketCommit::setAuthTag(uint8_t *authTag)
 {
     memcpy(this->authTag, authTag, WORD_SIZE);
 }
 
-void PacketCommit::setKeyAgreement(uint8_t keyAgreement[])
+void PacketCommit::setKeyAgreement(uint8_t *keyAgreement)
 {
     memcpy(this->keyAgreement, keyAgreement, WORD_SIZE);
 }
 
-void PacketCommit::setSas(uint8_t sas[])
+void PacketCommit::setSas(uint8_t *sas)
 {
     memcpy(this->sas, sas, WORD_SIZE);
 }
 
-void PacketCommit::setHvi(uint8_t hvi[])
+void PacketCommit::setHvi(uint8_t *hvi)
 {
     memcpy(this->hvi, hvi, HVI_SIZE);
 }
@@ -174,7 +176,7 @@ bool PacketCommit::hasGreaterHvi(PacketCommit *packet)
     return false;
 }
 
-void PacketCommit::setMac(uint8_t mac[])
+void PacketCommit::setMac(uint8_t *mac)
 {
     memcpy(this->mac, mac, MAC_SIZE);
 }

@@ -138,12 +138,12 @@ void PacketDHPart::setPbxsecretId(uint8_t *pbxsecretId)
     memcpy(this->pbxsecretId,pbxsecretId,ID_SIZE);
 }
 
-void PacketDHPart::setPv(uint8_t publicValue[])
+void PacketDHPart::setPv(uint8_t *publicValue)
 {
     memcpy(pv,publicValue,DH3K_LENGTH);
 }
 
-void PacketDHPart::setMac(uint8_t mac[])
+void PacketDHPart::setMac(uint8_t *mac)
 {
     memcpy(this->mac, mac, MAC_SIZE);
 }

@@ -1,12 +1,12 @@
 #include "packeterror.h"
 
-PacketError::PacketError(ErrorCode code)
+PacketError::PacketError(ErrorCode *code)
 {
     packetHeader = new Header();
     setZrtpIdentifier();
     setType((uint8_t*)"Error   ");
     setLength(4);
-    errorCode = &code;
+    errorCode = code;
 }
 
 uint8_t *PacketError::toBytes()
@@ -44,6 +44,7 @@ bool PacketError::parse(uint8_t *data)
     }
 
     packetHeader->length = *pos << 8 | *(pos + 1);
+    //type has been checked in StateEngine
     setType((uint8_t*)"Error   ");
     pos += 10;
     memcpy(errorCode,pos,WORD_SIZE);

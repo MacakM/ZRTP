@@ -76,7 +76,7 @@ public:
     /**
      * Sets MAC of packet. Only implemented for Hello, Commit and DHPart packets.
      */
-    virtual void setMac(uint8_t [MAC_SIZE]) {}
+    virtual void setMac(uint8_t *) {}
 
     /**
      * Creates array of bytes from class attributes according to RFC.

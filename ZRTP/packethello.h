@@ -100,7 +100,7 @@ public:
     /**
      * Sets MAC of packet.
      */
-    void setMac(uint8_t mac[MAC_SIZE]);
+    void setMac(uint8_t *mac);
 
 private:
     uint8_t version[VERSION_SIZE];
@@ -125,35 +125,35 @@ private:
      *
      * @param hash  hash algorithm
      */
-    void addHash(uint8_t hash[4]);
+    void addHash(uint8_t *hash);
 
     /**
      * Adds cipher algorithm option.
      *
      * @param cipher  cipher algorithm
      */
-    void addCipher(uint8_t cipher[4]);
+    void addCipher(uint8_t *cipher);
 
     /**
      * Adds authTag type option.
      *
      * @param authTag  authTag type
      */
-    void addAuthTag(uint8_t authTag[4]);
+    void addAuthTag(uint8_t *authTag);
 
     /**
      * Adds keyAgreement type option.
      *
      * @param keyAgreement  keyAgreement type
      */
-    void addKeyAgreement(uint8_t keyAgreement[4]);
+    void addKeyAgreement(uint8_t *keyAgreement);
 
     /**
      * Adds sas type option.
      *
      * @param sas  sas type
      */
-    void addSas(uint8_t sas[4]);
+    void addSas(uint8_t *sas);
 };
 
 #endif // PACKETHELLO_H

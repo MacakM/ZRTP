@@ -43,6 +43,7 @@ bool PacketHelloAck::parse(uint8_t *data)
     }
 
     packetHeader->length = *pos << 8 | *(pos + 1);
+    //type has been checked in StateEngine
     setType((uint8_t*)"HelloACK");
     return true;
 }

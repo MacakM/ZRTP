@@ -118,6 +118,7 @@ bool PacketHello::parse(uint8_t *data)
     }
 
     packetHeader->length = *pos << 8 | *(pos + 1);
+    //type has been checked in StateEngine
     setType((uint8_t*)"Hello   ");
     pos += 10;
 
@@ -267,40 +268,40 @@ void PacketHello::AddSupportedTypes(UserInfo *info)
     }
 }
 
-void PacketHello::setMac(uint8_t mac[])
+void PacketHello::setMac(uint8_t *mac)
 {
     memcpy(this->mac, mac, MAC_SIZE);
 }
 
-void PacketHello::addHash(uint8_t hash[])
+void PacketHello::addHash(uint8_t *hash)
 {
     counts.hc++;
     memcpy(&hashTypes[(counts.hc - 1) * WORD_SIZE],hash,WORD_SIZE);
     setLength(getLength() + 1);
 }
 
-void PacketHello::addCipher(uint8_t cipher[])
+void PacketHello::addCipher(uint8_t *cipher)
 {
     counts.cc++;
     memcpy(&cipherTypes[(counts.cc - 1) * WORD_SIZE], cipher, WORD_SIZE);
     setLength(getLength() + 1);
 }
 
-void PacketHello::addAuthTag(uint8_t authTag[])
+void PacketHello::addAuthTag(uint8_t *authTag)
 {
     counts.ac++;
     memcpy(&authTagTypes[(counts.ac - 1) * WORD_SIZE], authTag, WORD_SIZE);
     setLength(getLength() + 1);
 }
 
-void PacketHello::addKeyAgreement(uint8_t keyAgreement[])
+void PacketHello::addKeyAgreement(uint8_t *keyAgreement)
 {
     counts.kc++;
     memcpy(&keyAgreementTypes[(counts.kc - 1) * WORD_SIZE], keyAgreement, WORD_SIZE);
     setLength(getLength() + 1);
 }
 
-void PacketHello::addSas(uint8_t sas[])
+void PacketHello::addSas(uint8_t *sas)
 {
     counts.sc++;
     memcpy(&sasTypes[(counts.sc - 1) * WORD_SIZE], sas, WORD_SIZE);

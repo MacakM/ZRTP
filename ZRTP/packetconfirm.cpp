@@ -41,7 +41,7 @@ uint8_t *PacketConfirm::toBytes()
             *(++pos) = encryptedPart[i];
         }
     }
-    else
+    else    //not encrypted yet
     {
         for (uint8_t i = 0; i < HASHIMAGE_SIZE; i++)
         {
@@ -98,18 +98,18 @@ uint8_t *PacketConfirm::getVector()
     return initVector;
 }
 
-void PacketConfirm::setEncryptedPart(uint8_t data[])
+void PacketConfirm::setEncryptedPart(uint8_t *data)
 {
-    memcpy(encryptedPart,data,40);
+    memcpy(encryptedPart,data,ENCRYPTED_PART_LENGTH);
     encryptionDone = true;
 }
 
-void PacketConfirm::setConfirmMac(uint8_t mac[])
+void PacketConfirm::setConfirmMac(uint8_t *mac)
 {
     memcpy(confirmMac,mac,MAC_SIZE);
 }
 
-void PacketConfirm::setInitVector(uint8_t vector[])
+void PacketConfirm::setInitVector(uint8_t *vector)
 {
     memcpy(initVector,vector,VECTOR_SIZE);
 }

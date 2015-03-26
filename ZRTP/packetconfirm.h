@@ -3,6 +3,8 @@
 
 #include "packet.h"
 
+#define ENCRYPTED_PART_LENGTH   40
+
 class PacketConfirm : public Packet
 {
 public:
@@ -38,21 +40,21 @@ public:
      *
      * @param data  encrypted data
      */
-    void setEncryptedPart(uint8_t data[40]);
+    void setEncryptedPart(uint8_t *data);
 
     /**
      * Sets confirm mac
      *
      * @param mac   MAC
      */
-    void setConfirmMac(uint8_t mac[MAC_SIZE]);
+    void setConfirmMac(uint8_t *mac);
 
     /**
      * Sets initialization vector.
      *
      * @param vector    IV
      */
-    void setInitVector(uint8_t vector[VECTOR_SIZE]);
+    void setInitVector(uint8_t *vector);
 
     /**
      * Sets hash image H0
@@ -103,7 +105,7 @@ private:
     uint16_t sigLen;
     uint8_t flags;
     uint32_t expInterval;
-    uint8_t encryptedPart[40];
+    uint8_t encryptedPart[ENCRYPTED_PART_LENGTH];
 
     uint8_t data[MAX_CONFIRM_LENGTH];
 };

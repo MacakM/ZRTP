@@ -52,41 +52,41 @@ public:
      *
      * @param hash  hash algorithm
      */
-    void setHash(uint8_t hash[4]);
+    void setHash(uint8_t *hash);
 
     /**
      * Sets chosen cipher algorithm.
      *
      * @param cipher  cipher algorithm
      */
-    void setCipher(uint8_t cipher[4]);
+    void setCipher(uint8_t *cipher);
 
     /**
      * Sets chosen authTag type.
      *
      * @param authTag  authTag type
      */
-    void setAuthTag(uint8_t authTag[4]);
+    void setAuthTag(uint8_t *authTag);
 
     /**
      * Sets chosen keyAgreement type.
      *
      * @param keyAgreement  keyAgreement type
      */
-    void setKeyAgreement(uint8_t keyAgreement[4]);
+    void setKeyAgreement(uint8_t *keyAgreement);
 
     /**
      * Sets chosen SAS type.
      *
      * @param sas  SAS type
      */
-    void setSas(uint8_t sas[4]);
+    void setSas(uint8_t *sas);
 
     /**
      * Sets calculated hvi.
      * @param hvi   hvi
      */
-    void setHvi(uint8_t hvi[HVI_SIZE]);
+    void setHvi(uint8_t *hvi);
 
     /**
      * Returns whether this packet has greater hvi than peer commit packet.
@@ -101,7 +101,7 @@ public:
     /**
      * Sets MAC of packet.
      */
-    virtual void setMac(uint8_t mac[MAC_SIZE]);
+    virtual void setMac(uint8_t *mac);
 private:
     uint8_t h2[HASHIMAGE_SIZE];
     uint8_t zid[ZID_SIZE];
