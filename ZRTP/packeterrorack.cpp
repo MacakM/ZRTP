@@ -1,16 +1,14 @@
-#include "packeterror.h"
+#include "packeterrorack.h"
 
-PacketError::PacketError(uint32_t code)
+PacketErrorAck::PacketErrorAck()
 {
     packetHeader = new Header();
     setZrtpIdentifier();
-    setType((uint8_t*)"Error   ");
-    setLength(4);
-    memcpy(&errorCode,&code,WORD_SIZE);
-    std::cout << "Created" << std::endl;
+    setType((uint8_t*)"ErrorACK");
+    setLength((sizeof(Header) / WORD_SIZE) - 1);
 }
 
-uint8_t *PacketError::toBytes()
+uint8_t *PacketErrorAck::toBytes()
 {
     uint8_t *pos = data;
 
@@ -27,12 +25,11 @@ uint8_t *PacketError::toBytes()
     {
         *(++pos) = packetHeader->type[i];
     }
-    pos++;
-    memcpy(pos,&errorCode,WORD_SIZE);
+
     return data;
 }
 
-bool PacketError::parse(uint8_t *data)
+bool PacketErrorAck::parse(uint8_t *data)
 {
     uint8_t *pos = data;
 
@@ -47,8 +44,6 @@ bool PacketError::parse(uint8_t *data)
 
     packetHeader->length = *pos << 8 | *(pos + 1);
     //type has been checked in StateEngine
-    setType((uint8_t*)"Error   ");
-    pos += 10;
-    memcpy(&errorCode,pos,WORD_SIZE);
+    setType((uint8_t*)"Conf2ACK");
     return true;
 }

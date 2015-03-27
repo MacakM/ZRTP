@@ -59,6 +59,19 @@ void StateEngine::processEvent(Event *event)
 {
     assert(event);
     zrtp->enterCriticalSection();
+    if(event->messageLength > 0)
+    {
+        if(memcmp(event->message + 4,"Error   ",TYPE_SIZE) == 0)
+        {
+            PacketErrorAck *packet = new PacketErrorAck();
+            uint8_t *message = packet->toBytes();
+            uint16_t messageLength = packet->getLength() * WORD_SIZE;
+            zrtp->sendData(message,messageLength);
+            std::cout << "Actual state: Initial" << std::endl;
+            actualState = Initial;
+            delete(packet);
+        }
+    }
     actualEvent = event;
     (this->*handlers[actualState])();
     zrtp->leaveCriticalSection();
@@ -116,6 +129,11 @@ void StateEngine::handleSentHello()
             }
             else
             {
+                if(zrtp->userInfo->versions.size() == 0)
+                {
+                    sendError(UnsupportedVersion);
+                    return;
+                }
                 //different versions
                 uint8_t *message = zrtp->hello->toBytes();
                 uint16_t messageLength = zrtp->hello->getLength() * WORD_SIZE;
@@ -483,11 +501,14 @@ void StateEngine::handleWaitConfirm2()
             zrtp->confirm2 = new PacketConfirm();
             zrtp->confirm2->parse(msg);
             zrtp->decryptConfirmData(msg);
-            uint8_t *message = zrtp->conf2Ack->toBytes();
-            uint16_t messageLength = zrtp->conf2Ack->getLength() * WORD_SIZE;
+
+            PacketConf2Ack *packet = new PacketConf2Ack();
+            uint8_t *message = packet->toBytes();
+            uint16_t messageLength = packet->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
             std::cout << "Actual state: Secured" << std::endl;
             actualState = Secured;
+            delete(packet);
         }
     }
 }
@@ -528,9 +549,11 @@ void StateEngine::handleSecured()
 
         if(memcmp(type,"Confirm2", TYPE_SIZE) == 0)
         {
-            uint8_t *message = zrtp->conf2Ack->toBytes();
-            uint16_t messageLength = zrtp->conf2Ack->getLength() * WORD_SIZE;
+            PacketConf2Ack *packet = new PacketConf2Ack();
+            uint8_t *message = packet->toBytes();
+            uint16_t messageLength = packet->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
+            delete(packet);
         }
     }
 }
@@ -559,4 +582,20 @@ void StateEngine::handleWaitErrorAck()
             actualState = Initial;
         }
     }
+}
+
+void StateEngine::sendError(uint32_t code)
+{
+    PacketError *error = new PacketError(code);
+    uint8_t *message = error->toBytes();
+    uint16_t messageLength = error->getLength() * WORD_SIZE;
+    zrtp->sendData(message,messageLength);
+
+    sentMessage = message;
+    sentMessageLength = messageLength;
+    timerStart(&T2);
+    std::cout << "Actual state: WaitErrorAck" << std::endl;
+    actualState = WaitErrorAck;
+    delete(error);
+    return;
 }

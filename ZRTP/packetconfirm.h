@@ -21,7 +21,7 @@ public:
     virtual uint8_t *toBytes();
 
     /**
-     * Parses received data into PacketHelloAck class.
+     * Parses received data into PacketConfirm class.
      *
      * @param data  received data
      * @return      true = successful, false = otherwise

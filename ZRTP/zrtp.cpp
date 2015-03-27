@@ -33,10 +33,9 @@ Zrtp::Zrtp(ZrtpCallback *cb, Role role, std::string clientId, UserInfo *info)
 
     assert(hello);
 
-    conf2Ack = new PacketConf2Ack();
-
     Event event;
     event.type = Start;
+    event.messageLength = 0;
     engine->processEvent(&event);
 }
 
@@ -58,6 +57,7 @@ void Zrtp::processTimeout()
 {
     Event event;
     event.type = Timeout;
+    event.messageLength = 0;
     engine->processEvent(&event);
 }
 
@@ -730,11 +730,7 @@ bool Zrtp::compareVersions()
                 userInfo->versions.erase(userInfo->versions.begin() + i);
             }
         }
-        if(userInfo->versions.size() == 0)
-        {
-            std::cout << "Chyba";
-        }
-        else
+        if(userInfo->versions.size() != 0)
         {
             hello->setVersion((uint8_t*)chooseHighestVersion().c_str());
         }

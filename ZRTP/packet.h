@@ -15,6 +15,7 @@
 #define MAX_CONFIRM_LENGTH  76
 #define MAX_CONF2ACK_LENGTH 12
 #define MAX_ERROR_LENGTH    16
+#define MAX_ERRORACK_LENGTH 12
 
 #define WORD_SIZE           4
 
@@ -39,6 +40,8 @@ class Packet {
 
 public:
     Packet() {}
+
+    virtual~Packet() {}
 
     /**
      * Returns length of packet in WORDs. WORD = 4 bytes.
@@ -86,7 +89,7 @@ public:
     virtual uint8_t *toBytes() = 0;
 
     /**
-     * Parses received data into PacketHelloAck class.
+     * Parses received data into Packet class.
      *
      * @param data  received data
      * @return      true = successful, false = otherwise

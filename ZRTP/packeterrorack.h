@@ -1,15 +1,15 @@
-#ifndef PACKETCONF2ACK_H
-#define PACKETCONF2ACK_H
+#ifndef PACKETERRORACK_H
+#define PACKETERRORACK_H
 
 #include "packet.h"
 
-class PacketConf2Ack : public Packet
+class PacketErrorAck : public Packet
 {
 public:
     /**
-     * Constructor of Conf2Ack packet.
+     * Constructor of ErrorAck packet.
      */
-    PacketConf2Ack();
+    PacketErrorAck();
 
     /**
      * Creates array of bytes from class attributes according to RFC.
@@ -19,7 +19,7 @@ public:
     virtual uint8_t *toBytes();
 
     /**
-     * Parses received data into PacketConf2Ack class.
+     * Parses received data into PacketErrorAck class.
      *
      * @param data  received data
      * @return      true = successful, false = otherwise
@@ -27,7 +27,7 @@ public:
     virtual bool parse(uint8_t *data);
 
 private:
-    uint8_t data[MAX_CONF2ACK_LENGTH];
+    uint8_t data[MAX_ERRORACK_LENGTH];
 };
 
-#endif // PACKETCONF2ACK_H
+#endif // PACKETERRORACK_H

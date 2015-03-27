@@ -35,7 +35,7 @@ public:
      *
      * @param code  error code
      */
-    PacketError(ErrorCode *code);
+    PacketError(uint32_t code);
 
     /**
      * Creates array of bytes from class attributes according to RFC.
@@ -45,7 +45,7 @@ public:
     virtual uint8_t *toBytes();
 
     /**
-     * Parses received data into PacketHelloAck class.
+     * Parses received data into PacketError class.
      *
      * @param data  received data
      * @return      true = successful, false = otherwise
@@ -53,7 +53,7 @@ public:
     virtual bool parse(uint8_t *data);
 
 private:
-    ErrorCode *errorCode;
+    ErrorCode errorCode;
 
     uint8_t data[MAX_ERROR_LENGTH];
 };

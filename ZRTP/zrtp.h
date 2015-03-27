@@ -19,6 +19,7 @@
 #include "packetconfirm.h"
 #include "packetconf2ack.h"
 #include "packeterror.h"
+#include "packeterrorack.h"
 
 #include <openssl/sha.h>
 #include <openssl/hmac.h>
@@ -287,7 +288,6 @@ private:
     PacketDHPart *dhPart2;
     PacketConfirm *confirm1;
     PacketConfirm *confirm2;
-    PacketConf2Ack *conf2Ack;
     PacketError *error;
 
     uint8_t h0[HASHIMAGE_SIZE];

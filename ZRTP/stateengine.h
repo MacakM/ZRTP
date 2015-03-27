@@ -162,6 +162,12 @@ private:
      * Handles WaitErrorAck state of created state machine.
      */
     void handleWaitErrorAck();
+
+    /**
+     * When something's wrong, sends error with given error code.
+     * @param code  error code
+     */
+    void sendError(uint32_t code);
 };
 
 #endif // STATEENGINE_H
