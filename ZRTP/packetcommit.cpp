@@ -8,6 +8,13 @@ PacketCommit::PacketCommit()
     setLength(29);
 }
 
+PacketCommit::~PacketCommit()
+{
+    std::cout << "Commit destructing" << std::endl;
+    delete(packetHeader);
+    memset(data,0,MAX_COMMIT_LENGTH);
+}
+
 uint8_t *PacketCommit::toBytes()
 {
     uint8_t *pos = data;

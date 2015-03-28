@@ -9,6 +9,13 @@ PacketConfirm::PacketConfirm()
     encryptionDone = false;
 }
 
+PacketConfirm::~PacketConfirm()
+{
+    std::cout << "Confirm destructing" << std::endl;
+    delete(packetHeader);
+    memset(data,0,MAX_CONFIRM_LENGTH);
+}
+
 uint8_t *PacketConfirm::toBytes()
 {
     uint8_t *pos = data;

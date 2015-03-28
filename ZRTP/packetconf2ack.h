@@ -12,6 +12,11 @@ public:
     PacketConf2Ack();
 
     /**
+     * Destructor of Conf2Ack packet.
+     */
+    virtual ~PacketConf2Ack();
+
+    /**
      * Creates array of bytes from class attributes according to RFC.
      *
      * @return  array of bytes

@@ -8,6 +8,13 @@ PacketConf2Ack::PacketConf2Ack()
     setLength((sizeof(Header) / WORD_SIZE) - 1);
 }
 
+PacketConf2Ack::~PacketConf2Ack()
+{
+    std::cout << "Conf2ACK destructing" << std::endl;
+    delete(packetHeader);
+    memset(data,0,MAX_CONF2ACK_LENGTH);
+}
+
 uint8_t *PacketConf2Ack::toBytes()
 {
     uint8_t *pos = data;

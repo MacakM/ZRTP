@@ -8,6 +8,13 @@ PacketErrorAck::PacketErrorAck()
     setLength((sizeof(Header) / WORD_SIZE) - 1);
 }
 
+PacketErrorAck::~PacketErrorAck()
+{
+    std::cout << "ErrorAck destructing" << std::endl;
+    delete(packetHeader);
+    memset(data,0,MAX_ERRORACK_LENGTH);
+}
+
 uint8_t *PacketErrorAck::toBytes()
 {
     uint8_t *pos = data;

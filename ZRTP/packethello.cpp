@@ -17,6 +17,13 @@ PacketHello::PacketHello()
     counts.sc = 0;
 }
 
+PacketHello::~PacketHello()
+{
+    std::cout << "Hello destructing" << std::endl;
+    delete(packetHeader);
+    memset(data,0,MAX_HELLO_LENGTH);
+}
+
 uint8_t *PacketHello::toBytes()
 {
     uint8_t *pos = data;

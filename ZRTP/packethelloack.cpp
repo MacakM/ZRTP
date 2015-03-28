@@ -8,6 +8,13 @@ PacketHelloAck::PacketHelloAck()
     setLength((sizeof(Header) / WORD_SIZE) - 1);
 }
 
+PacketHelloAck::~PacketHelloAck()
+{
+    std::cout << "HelloAck destructing" << std::endl;
+    delete(packetHeader);
+    memset(data,0,MAX_HELLOACK_LENGTH);
+}
+
 uint8_t *PacketHelloAck::toBytes()
 {
     uint8_t *pos = data;

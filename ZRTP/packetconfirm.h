@@ -14,6 +14,11 @@ public:
     PacketConfirm();
 
     /**
+     * Destructor of Confirm packet.
+     */
+    virtual ~PacketConfirm();
+
+    /**
      * Creates array of bytes from class attributes according to RFC.
      *
      * @return  array of bytes

@@ -7,7 +7,13 @@ PacketError::PacketError(uint32_t code)
     setType((uint8_t*)"Error   ");
     setLength(4);
     memcpy(&errorCode,&code,WORD_SIZE);
-    std::cout << "Created" << std::endl;
+}
+
+PacketError::~PacketError()
+{
+    std::cout << "Error destructing" << std::endl;
+    delete(packetHeader);
+    memset(data,0,MAX_ERROR_LENGTH);
 }
 
 uint8_t *PacketError::toBytes()

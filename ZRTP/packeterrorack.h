@@ -12,6 +12,11 @@ public:
     PacketErrorAck();
 
     /**
+     * Destructor of ErrorAck packet.
+     */
+    virtual ~PacketErrorAck();
+
+    /**
      * Creates array of bytes from class attributes according to RFC.
      *
      * @return  array of bytes

@@ -12,6 +12,11 @@ public:
     PacketCommit();
 
     /**
+     * Destructor of Commit packet.
+     */
+    virtual ~PacketCommit();
+
+    /**
      * Creates array of bytes from class attributes according to RFC.
      *
      * @return  array of bytes

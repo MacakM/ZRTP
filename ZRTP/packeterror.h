@@ -38,6 +38,11 @@ public:
     PacketError(uint32_t code);
 
     /**
+     * Destructor of Error packet.
+     */
+    virtual ~PacketError();
+
+    /**
      * Creates array of bytes from class attributes according to RFC.
      *
      * @return  array of bytes

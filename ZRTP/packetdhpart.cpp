@@ -8,6 +8,13 @@ PacketDHPart::PacketDHPart()
                 sizeof(uint8_t[DH3K_LENGTH]) + sizeof(uint8_t[MAC_SIZE])) / WORD_SIZE) - 1);
 }
 
+PacketDHPart::~PacketDHPart()
+{
+    std::cout << "DHPart destructing" << std::endl;
+    delete(packetHeader);
+    memset(data,0,MAX_DHPART_LENGTH);
+}
+
 uint8_t *PacketDHPart::toBytes()
 {
     uint8_t *pos = data;

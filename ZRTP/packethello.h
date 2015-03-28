@@ -19,6 +19,11 @@ public:
     PacketHello();
 
     /**
+     * Destructor of Hello packet.
+     */
+    virtual ~PacketHello();
+
+    /**
      * Creates array of bytes from class attributes according to RFC.
      *
      * @return  array of bytes

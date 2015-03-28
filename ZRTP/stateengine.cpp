@@ -215,21 +215,17 @@ void StateEngine::handleSentHelloAck()
                 actualState = WaitCommit;
             }
             else    //Initiator
-            {
-                if(zrtp->compareVersions())
-                {
-                    zrtp->createCommitPacket();
-                    uint8_t *message = zrtp->commit->toBytes();
-                    uint16_t messageLength = zrtp->commit->getLength() * WORD_SIZE;
-                    zrtp->sendData(message,messageLength);
+            {               
+                zrtp->createCommitPacket();
+                uint8_t *message = zrtp->commit->toBytes();
+                uint16_t messageLength = zrtp->commit->getLength() * WORD_SIZE;
+                zrtp->sendData(message,messageLength);
 
-                    sentMessage = message;
-                    sentMessageLength = messageLength;
-                    timerStart(&T2);
-                    std::cout << "Actual state: SentCommit" << std::endl;
-                    actualState = SentCommit;
-                }
-                else std::cout << std::endl << "NACHYTAL SI MA TY KOKOOOT" << std::endl;
+                sentMessage = message;
+                sentMessageLength = messageLength;
+                timerStart(&T2);
+                std::cout << "Actual state: SentCommit" << std::endl;
+                actualState = SentCommit;
             }
         }
 
@@ -326,21 +322,17 @@ void StateEngine::handleReceivedHelloAck()
             }
             else    //Initiator
             {
-                if(zrtp->compareVersions())
-                {
-                    //can send commit instead of helloACK
-                    zrtp->createCommitPacket();
-                    uint8_t *message = zrtp->commit->toBytes();
-                    uint16_t messageLength = zrtp->commit->getLength() * WORD_SIZE;
-                    zrtp->sendData(message,messageLength);
+                //can send commit instead of helloACK
+                zrtp->createCommitPacket();
+                uint8_t *message = zrtp->commit->toBytes();
+                uint16_t messageLength = zrtp->commit->getLength() * WORD_SIZE;
+                zrtp->sendData(message,messageLength);
 
-                    sentMessage = message;
-                    sentMessageLength = messageLength;
-                    timerStart(&T2);
-                    std::cout << "Actual state: SentCommit" << std::endl;
-                    actualState = SentCommit;
-                }
-                else std::cout << std::endl << "NACHYTAL SI MA TY PICAAA" << std::endl;
+                sentMessage = message;
+                sentMessageLength = messageLength;
+                timerStart(&T2);
+                std::cout << "Actual state: SentCommit" << std::endl;
+                actualState = SentCommit;
             }
         }
     }

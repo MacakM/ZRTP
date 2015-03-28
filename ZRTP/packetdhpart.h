@@ -14,6 +14,11 @@ public:
     PacketDHPart();
 
     /**
+     * Destructor of DHPart packet.
+     */
+    virtual ~PacketDHPart();
+
+    /**
      * Creates array of bytes from class attributes according to RFC.
      *
      * @return  array of bytes
