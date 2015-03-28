@@ -63,6 +63,11 @@ public:
     Zrtp(ZrtpCallback *cb, Role role, std::string clientId, UserInfo *info);
 
     /**
+     * Zrtp destructor.
+     */
+    ~Zrtp();
+
+    /**
      * Method called by user when ZRTP message arrives.
      *
      * @param msg       received message
@@ -123,11 +128,6 @@ private:
      * @param clientId  obtained from user in constructor
      */
     void createHelloPacket(std::string clientId);
-
-    /**
-     * Prepares HelloAck packet for sending.
-     */
-    void createHelloAckPacket();
 
     /**
      * Prepares Commit packet for sending.
@@ -281,8 +281,6 @@ private:
     //important packets
     PacketHello *hello;
     PacketHello *peerHello;
-    PacketHelloAck *helloAck;
-    PacketHelloAck *peerHelloAck;
     PacketCommit *commit;
     PacketDHPart *dhPart1;
     PacketDHPart *dhPart2;

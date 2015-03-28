@@ -48,6 +48,13 @@ public:
     uint8_t *getVersion();
 
     /**
+     * Returns client identifier.
+     *
+     * @return  client identifier
+     */
+    uint8_t *getClientId();
+
+    /**
      * Sets protocol version.
      *
      * @param version   version

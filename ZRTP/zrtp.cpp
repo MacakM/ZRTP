@@ -39,11 +39,21 @@ Zrtp::Zrtp(ZrtpCallback *cb, Role role, std::string clientId, UserInfo *info)
     engine->processEvent(&event);
 }
 
+Zrtp::~Zrtp()
+{
+    if(engine)
+    {
+        delete engine;
+    }
+}
+
 void Zrtp::processMessage(uint8_t *msg, int32_t length)
 {
+    enterCriticalSection();
     //ignore packet with shorter length than it should be
     if(length < (int32_t)sizeof(Header) - WORD_SIZE)
     {
+        leaveCriticalSection();
         return;
     }
     Event event;
@@ -51,6 +61,7 @@ void Zrtp::processMessage(uint8_t *msg, int32_t length)
     event.message = msg;
     event.messageLength = length;
     engine->processEvent(&event);
+    leaveCriticalSection();
 }
 
 void Zrtp::processTimeout()
@@ -100,11 +111,6 @@ void Zrtp::createHelloPacket(std::string clientId)
     hello->setZid(myZID);
     hello->AddSupportedTypes(userInfo);
     createMac(hello);
-}
-
-void Zrtp::createHelloAckPacket()
-{
-    helloAck = new PacketHelloAck();
 }
 
 void Zrtp::createCommitPacket()
@@ -316,17 +322,20 @@ void Zrtp::diffieHellman()
 
 void Zrtp::generateHvi()
 {
+    PacketHello *helloR;
+    (myRole == Initiator) ? helloR = peerHello : helloR = hello;
+
     createDHPart2Packet();
     assert(dhPart2);
-    uint8_t *buffer = (uint8_t*)malloc((dhPart2->getLength() + peerHello->getLength()) * WORD_SIZE);
+    uint8_t *buffer = (uint8_t*)malloc((dhPart2->getLength() + helloR->getLength()) * WORD_SIZE);
 
     memcpy(buffer, dhPart2->toBytes(), dhPart2->getLength() * WORD_SIZE);
     uint8_t *secondHalf = &(buffer[dhPart2->getLength() * WORD_SIZE]);
-    memcpy(secondHalf, peerHello->toBytes(), peerHello->getLength() * WORD_SIZE);
+    memcpy(secondHalf, helloR->toBytes(), helloR->getLength() * WORD_SIZE);
 
     uint8_t hash[SHA256_DIGEST_LENGTH];
     assert(buffer);
-    SHA256(buffer, (dhPart2->getLength() + peerHello->getLength()) * WORD_SIZE, hash);
+    SHA256(buffer, (dhPart2->getLength() + helloR->getLength()) * WORD_SIZE, hash);
     commit->setHvi(hash);
     free(buffer);
 }
@@ -399,7 +408,9 @@ void Zrtp::createDHResult()
     buffer = (uint8_t*)calloc(BN_num_bytes(dhResult), sizeof(uint8_t));
 
     BN_bn2bin(dhResult,buffer);
-/*
+
+    free(buffer);
+    /*
     std::cout << std::endl;
     std::cout << "DHResult:" << std::endl;
     for(int i = 0; i < BN_num_bytes(dhResult); i++)
@@ -407,7 +418,7 @@ void Zrtp::createDHResult()
         std::cout << buffer[i];
     }
     std::cout << std::endl;*/
-    free(buffer);
+
 }
 
 void Zrtp::createKDFContext()
@@ -714,11 +725,18 @@ std::string Zrtp::chooseHighestVersion()
 
 bool Zrtp::compareVersions()
 {
+    bool changedVersion = false;
     char buffer[5];
     memcpy(buffer,peerHello->getVersion(),4);
     buffer[4] = '\0';
     std::string peerVersion(buffer);
     std::string myVersion = chooseHighestVersion();
+
+    if(myVersion.compare(peerVersion) == 0)
+    {
+        return true;
+    }
+
     if(myVersion.compare(peerVersion) > 0)
     {
         for(uint8_t i = 0; i < userInfo->versions.size(); i++)
@@ -728,16 +746,18 @@ bool Zrtp::compareVersions()
             if(strcmp(value.c_str(),peerVersion.c_str()) > 0)
             {
                 userInfo->versions.erase(userInfo->versions.begin() + i);
+                changedVersion = true;
             }
         }
-        if(userInfo->versions.size() != 0)
+        if(userInfo->versions.size() != 0 && changedVersion)
         {
-            hello->setVersion((uint8_t*)chooseHighestVersion().c_str());
+            //get clientID from actual Hello in order to create new Hello
+            char *buffer = (char*)hello->getClientId();
+            std::string id(buffer, ID_SIZE);
+
+            delete(hello);
+            createHelloPacket(id);
         }
-    }
-    else if(myVersion.compare(peerVersion) == 0)
-    {
-        return true;
     }
     return false;
 }

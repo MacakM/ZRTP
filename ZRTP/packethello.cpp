@@ -203,6 +203,11 @@ uint8_t *PacketHello::getVersion()
     return version;
 }
 
+uint8_t *PacketHello::getClientId()
+{
+    return clientId;
+}
+
 void PacketHello::setVersion(uint8_t *version)
 {
     memcpy(this->version,version,VERSION_SIZE);
