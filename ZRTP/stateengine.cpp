@@ -231,6 +231,7 @@ void StateEngine::handleSentHelloAck()
 
         else if(memcmp(type,"Commit  ", TYPE_SIZE) == 0)
         {
+
             if(zrtp->myRole == Responder)
             {
                 zrtp->commit = new PacketCommit();
@@ -241,8 +242,9 @@ void StateEngine::handleSentHelloAck()
                 uint8_t *message = zrtp->dhPart1->toBytes();
                 uint16_t messageLength = zrtp->dhPart1->getLength() * WORD_SIZE;
                 zrtp->sendData(message,messageLength);
-
                 std::cout << "Actual state: SentCommit" << std::endl;
+                //after 10 seconds invoke protocol timeout error
+                zrtp->activateTimer(PROTOCOL_TIMEOUT);
                 actualState = WaitDHPart2;
                 return;
             }
@@ -279,6 +281,8 @@ void StateEngine::handleSentHelloAck()
             uint16_t messageLength = zrtp->dhPart1->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
             std::cout << "Actual state: WaitDHPart2" << std::endl;
+            //after 10 seconds invoke protocol timeout error
+            zrtp->activateTimer(PROTOCOL_TIMEOUT);
             actualState = WaitDHPart2;
         }
     }
@@ -380,6 +384,7 @@ void StateEngine::handleSentCommit()
         {
             PacketCommit *peerCommit = new PacketCommit();
             peerCommit->parse(msg);
+            //discard commit with lower hvi
             if(zrtp->commit->hasGreaterHvi(peerCommit))
             {
                 //Initiator
@@ -398,6 +403,8 @@ void StateEngine::handleSentCommit()
             uint16_t messageLength = zrtp->dhPart1->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
             std::cout << "Actual state: WaitDHPart2" << std::endl;
+            //after 10 seconds invoke protocol timeout error
+            zrtp->activateTimer(PROTOCOL_TIMEOUT);
             actualState = WaitDHPart2;
         }
     }
@@ -450,6 +457,8 @@ void StateEngine::handleWaitCommit()
             uint16_t messageLength = zrtp->dhPart1->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
             std::cout << "Actual state: WaitDHPart2" << std::endl;
+            //after 10 seconds invoke protocol timeout error
+            zrtp->activateTimer(PROTOCOL_TIMEOUT);
             actualState = WaitDHPart2;
         }
     }
@@ -457,8 +466,14 @@ void StateEngine::handleWaitCommit()
 
 void StateEngine::handleWaitDHPart2()
 {
+    if(actualEvent->type == Timeout)
+    {
+        sendError(ProtocolTimeout);
+        return;
+    }
     if(actualEvent->type == Message)
     {
+        zrtp->cancelTimer();
         uint8_t *msg = actualEvent->message;
         uint8_t type[TYPE_SIZE];
         memcpy(type,(msg+4),TYPE_SIZE);
@@ -486,6 +501,7 @@ void StateEngine::handleWaitDHPart2()
             std::cout << "Actual state: WaitConfirm2" << std::endl;
             actualState = WaitConfirm2;
         }
+        zrtp->activateTimer(PROTOCOL_TIMEOUT);
     }
 }
 
@@ -528,8 +544,14 @@ void StateEngine::handleWaitConfirm1()
 
 void StateEngine::handleWaitConfirm2()
 {
+    if(actualEvent->type == Timeout)
+    {
+        sendError(ProtocolTimeout);
+        return;
+    }
     if(actualEvent->type == Message)
     {
+        zrtp->cancelTimer();
         uint8_t *msg = actualEvent->message;
         uint8_t type[TYPE_SIZE];
         memcpy(type,(msg+4),TYPE_SIZE);
@@ -540,6 +562,7 @@ void StateEngine::handleWaitConfirm2()
             uint8_t *message = zrtp->confirm1->toBytes();
             uint16_t messageLength = zrtp->confirm1->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
+            zrtp->activateTimer(PROTOCOL_TIMEOUT);
         }
 
         else if(memcmp(type,"Confirm2", TYPE_SIZE) == 0)
@@ -632,9 +655,9 @@ void StateEngine::handleWaitErrorAck()
 
 void StateEngine::sendError(uint32_t code)
 {
-    PacketError *error = new PacketError(code);
-    uint8_t *message = error->toBytes();
-    uint16_t messageLength = error->getLength() * WORD_SIZE;
+    zrtp->error = new PacketError(code);
+    uint8_t *message = zrtp->error->toBytes();
+    uint16_t messageLength = zrtp->error->getLength() * WORD_SIZE;
     zrtp->sendData(message,messageLength);
 
     sentMessage = message;
@@ -642,6 +665,5 @@ void StateEngine::sendError(uint32_t code)
     timerStart(&T2);
     std::cout << "Actual state: WaitErrorAck" << std::endl;
     actualState = WaitErrorAck;
-    delete(error);
     return;
 }

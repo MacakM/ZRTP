@@ -1,6 +1,8 @@
 #ifndef STATEENGINE_H
 #define STATEENGINE_H
 
+#define PROTOCOL_TIMEOUT    10000
+
 #include "zrtp.h"
 #include "Integers.h"
 #include <map>
