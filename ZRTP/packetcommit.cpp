@@ -135,6 +135,11 @@ uint8_t *PacketCommit::getHvi()
     return hvi;
 }
 
+uint8_t *PacketCommit::getH2()
+{
+    return h2;
+}
+
 void PacketCommit::setH2(uint8_t *hash)
 {
     memcpy(h2,hash,HASHIMAGE_SIZE);

@@ -69,6 +69,13 @@ public:
     void setVersion(uint8_t *version);
 
     /**
+     * Returns hash image H3.
+     *
+     * @return  h3
+     */
+    uint8_t *getH3();
+
+    /**
      * Sets clientID.
      *
      * @param id   clientID

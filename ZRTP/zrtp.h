@@ -160,6 +160,21 @@ private:
     void generateHashImages();
 
     /**
+     * Calculates responder's h2 because responder doesn't send Commit.
+     */
+    void calculateRespondersH2(uint8_t *peerH1);
+
+    /**
+     * Checks whether the previous hash image is hash of actual hash image.
+     *
+     * @param previousH         previous hash image
+     * @param actualH           actual hash image
+     *
+     * @return          true = correct, false = otherwise
+     */
+    bool isCorrectHashImage(uint8_t *previousH, uint8_t *actualH);
+
+    /**
      * Generates rs1ID, rs2ID, auxsecretID, pbxsecretID and sets it to DHPart packet.
      *
      * @param packet    DHPart packet
@@ -186,10 +201,10 @@ private:
     void diffieHellman();
 
     /**
-     * Generates hvi in commit packet. Have to create DHPart2 packet first.
+     * Returns hvi from a commit packet. Have to create DHPart2 packet first.
      * hvi = hash(initiator's DHPart2 message || responder's Hello message)
      */
-    void generateHvi();
+    uint8_t *generateHvi();
 
     /**
      * Sets public value to DHPart packet
@@ -197,6 +212,13 @@ private:
      * @param packet    DHPart packet
      */
     void setPv(PacketDHPart *packet);
+
+    /**
+     * Checks whether the peer public value is not 1 or p-1
+     *
+     * @return      true = all right, false = bad value
+     */
+    bool isValidPeerPv();
 
     /**
      * Creates total_hash.
@@ -292,6 +314,8 @@ private:
     uint8_t h1[HASHIMAGE_SIZE];
     uint8_t h2[HASHIMAGE_SIZE];
     uint8_t h3[HASHIMAGE_SIZE];
+
+    uint8_t peerH2[HASHIMAGE_SIZE];
 
     uint8_t hash[WORD_SIZE];
     uint8_t cipher[WORD_SIZE];

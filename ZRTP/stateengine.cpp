@@ -65,8 +65,8 @@ void StateEngine::processEvent(Event *event)
             zrtp->error = new PacketError();
             zrtp->error->parse(event->message, &errorCode);
 
-            //check length of the message
-            if(zrtp->error->getLength() * WORD_SIZE != actualEvent->messageLength)
+            //check whether the packet length fits declared length
+            if(zrtp->error->getLength() * WORD_SIZE != event->messageLength)
             {
                 sendError(MalformedPacket);
                 return;
@@ -128,13 +128,12 @@ void StateEngine::handleSentHello()
                 return;
             }
 
-            //check length of the message
+            //check whether the packet length fits declared length
             if(zrtp->peerHello->getLength() * WORD_SIZE != actualEvent->messageLength)
             {
                 sendError(MalformedPacket);
                 return;
             }
-
             //equal ZID check
             if(memcmp(zrtp->peerHello->getZid(),zrtp->hello->getZid(),ZID_SIZE) == 0)
             {
@@ -180,7 +179,7 @@ void StateEngine::handleSentHello()
                 return;
             }
 
-            //check length of the message
+            //check whether the packet length fits declared length
             if(packet->getLength() * WORD_SIZE != actualEvent->messageLength)
             {
                 sendError(MalformedPacket);
@@ -223,8 +222,7 @@ void StateEngine::handleSentHelloAck()
                     sendError(errorCode);
                     return;
                 }
-
-                //check length of the message
+                //check whether the packet length fits declared length
                 if(zrtp->peerHello->getLength() * WORD_SIZE != actualEvent->messageLength)
                 {
                     sendError(MalformedPacket);
@@ -262,7 +260,7 @@ void StateEngine::handleSentHelloAck()
                 return;
             }
 
-            //check length of the message
+            //check whether the packet length fits declared length
             if(packet->getLength() * WORD_SIZE != actualEvent->messageLength)
             {
                 sendError(MalformedPacket);
@@ -302,10 +300,16 @@ void StateEngine::handleSentHelloAck()
                     return;
                 }
 
-                //check length of the message
+                //check whether the packet length fits declared length
                 if(zrtp->commit->getLength() * WORD_SIZE != actualEvent->messageLength)
                 {
                     sendError(MalformedPacket);
+                    return;
+                }
+                //check hash image h3
+                if(!zrtp->isCorrectHashImage(zrtp->peerHello->getH3(),zrtp->commit->getH2()))
+                {
+                    sendError(CriticalSoftwareError);
                     return;
                 }
 
@@ -330,12 +334,19 @@ void StateEngine::handleSentHelloAck()
                 return;
             }
 
-            //check length of the message
+            //check whether the packet length fits declared length
             if(peerCommit->getLength() * WORD_SIZE != actualEvent->messageLength)
             {
                 sendError(MalformedPacket);
                 return;
             }
+            //check hash image h3
+            if(!zrtp->isCorrectHashImage(zrtp->peerHello->getH3(),peerCommit->getH2()))
+            {
+                sendError(CriticalSoftwareError);
+                return;
+            }
+
             //discard commit with lower hvi
             if(zrtp->commit->hasGreaterHvi(peerCommit))
             {
@@ -388,7 +399,7 @@ void StateEngine::handleReceivedHelloAck()
                 return;
             }
 
-            //check length of the message
+            //check whether the packet length fits declared length
             if(zrtp->peerHello->getLength() * WORD_SIZE != actualEvent->messageLength)
             {
                 sendError(MalformedPacket);
@@ -470,12 +481,26 @@ void StateEngine::handleSentCommit()
                 return;
             }
 
-            //check length of the message
+            //check whether the packet length fits declared length
             if(zrtp->dhPart1->getLength() * WORD_SIZE != actualEvent->messageLength)
             {
                 sendError(MalformedPacket);
                 return;
             }
+            //check whether the public value is valid
+            if(!zrtp->isValidPeerPv())
+            {
+                sendError(BadDhPublicValue);
+                return;
+            }
+            //calculate hash image h2 and check hash image h3
+            zrtp->calculateRespondersH2(zrtp->dhPart1->getH1());
+            if(!zrtp->isCorrectHashImage(zrtp->peerHello->getH3(),zrtp->peerH2))
+            {
+                sendError(CriticalSoftwareError);
+                return;
+            }
+
             zrtp->cancelTimer();
             uint8_t *message = zrtp->dhPart2->toBytes();
             uint16_t messageLength = zrtp->dhPart2->getLength() * WORD_SIZE;
@@ -502,12 +527,19 @@ void StateEngine::handleSentCommit()
                 return;
             }
 
-            //check length of the message
+            //check whether the packet length fits declared length
             if(peerCommit->getLength() * WORD_SIZE != actualEvent->messageLength)
             {
                 sendError(MalformedPacket);
                 return;
+            }            
+            //check hash image h3
+            if(!zrtp->isCorrectHashImage(zrtp->peerHello->getH3(),peerCommit->getH2()))
+            {
+                sendError(CriticalSoftwareError);
+                return;
             }
+
             //discard commit with lower hvi
             if(zrtp->commit->hasGreaterHvi(peerCommit))
             {
@@ -553,7 +585,7 @@ void StateEngine::handleWaitCommit()
                     return;
                 }
 
-                //check length of the message
+                //check whether the packet length fits declared length
                 if(zrtp->peerHello->getLength() * WORD_SIZE != actualEvent->messageLength)
                 {
                     sendError(MalformedPacket);
@@ -591,12 +623,19 @@ void StateEngine::handleWaitCommit()
                 return;
             }
 
-            //check length of the message
+            //check whether the packet length fits declared length
             if(zrtp->commit->getLength() * WORD_SIZE != actualEvent->messageLength)
             {
                 sendError(MalformedPacket);
                 return;
             }
+            //check hash image h3
+            if(!zrtp->isCorrectHashImage(zrtp->peerHello->getH3(),zrtp->commit->getH2()))
+            {
+                sendError(CriticalSoftwareError);
+                return;
+            }
+
             zrtp->createDHPart1Packet();
 
             uint8_t *message = zrtp->dhPart1->toBytes();
@@ -640,10 +679,31 @@ void StateEngine::handleWaitDHPart2()
                 return;
             }
 
-            //check length of the message
+            //check whether the packet length fits declared length
             if(zrtp->dhPart2->getLength() * WORD_SIZE != actualEvent->messageLength)
             {
                 sendError(MalformedPacket);
+                return;
+            }
+            //check whether the calculated hvi is equaled received hvi
+            uint8_t *calculatedHvi = zrtp->generateHvi();
+            if(memcmp(zrtp->commit->getHvi(),calculatedHvi,HVI_SIZE) != 0)
+            {
+                delete(calculatedHvi);
+                sendError(DhHviError);
+                return;
+            }
+            delete(calculatedHvi);
+            //check whether the public value is valid
+            if(!zrtp->isValidPeerPv())
+            {
+                sendError(BadDhPublicValue);
+                return;
+            }
+            //check hash image h2
+            if(!zrtp->isCorrectHashImage(zrtp->commit->getH2(),zrtp->dhPart2->getH1()))
+            {
+                sendError(CriticalSoftwareError);
                 return;
             }
 
@@ -689,13 +749,20 @@ void StateEngine::handleWaitConfirm1()
                 return;
             }
 
-            //check length of the message
+            //check whether the packet length fits declared length
             if(zrtp->confirm1->getLength() * WORD_SIZE != actualEvent->messageLength)
             {
                 sendError(MalformedPacket);
                 return;
             }
             zrtp->decryptConfirmData(msg);
+            //check hash image h1
+            if(!zrtp->isCorrectHashImage(zrtp->dhPart1->getH1(),zrtp->confirm1->getH0()))
+            {
+                sendError(CriticalSoftwareError);
+                return;
+            }
+
             zrtp->createConfirm2Packet();
             uint8_t *message = zrtp->confirm2->toBytes();
             uint16_t messageLength = zrtp->confirm2->getLength() * WORD_SIZE;
@@ -732,12 +799,34 @@ void StateEngine::handleWaitConfirm2()
                 return;
             }
 
-            //check length of the message
+            //check whether the packet length fits declared length
             if(zrtp->dhPart2->getLength() * WORD_SIZE != actualEvent->messageLength)
             {
                 sendError(MalformedPacket);
                 return;
             }
+            //check whether the calculated hvi is equaled received hvi
+            uint8_t *calculatedHvi = zrtp->generateHvi();
+            if(memcmp(zrtp->commit->getHvi(),calculatedHvi,HVI_SIZE) != 0)
+            {
+                delete(calculatedHvi);
+                sendError(DhHviError);
+                return;
+            }
+            delete(calculatedHvi);
+            //check whether the public value is valid
+            if(!zrtp->isValidPeerPv())
+            {
+                sendError(BadDhPublicValue);
+                return;
+            }
+            //check hash image h2
+            if(!zrtp->isCorrectHashImage(zrtp->commit->getH2(),zrtp->dhPart2->getH1()))
+            {
+                sendError(CriticalSoftwareError);
+                return;
+            }
+
             uint8_t *message = zrtp->confirm1->toBytes();
             uint16_t messageLength = zrtp->confirm1->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
@@ -753,13 +842,19 @@ void StateEngine::handleWaitConfirm2()
                 return;
             }
 
-            //check length of the message
+            //check whether the packet length fits declared length
             if(zrtp->confirm2->getLength() * WORD_SIZE != actualEvent->messageLength)
             {
                 sendError(MalformedPacket);
                 return;
             }
             zrtp->decryptConfirmData(msg);
+            //check hash image h1
+            if(!zrtp->isCorrectHashImage(zrtp->dhPart2->getH1(),zrtp->confirm2->getH0()))
+            {
+                sendError(CriticalSoftwareError);
+                return;
+            }
 
             PacketConf2Ack *packet = new PacketConf2Ack();
             uint8_t *message = packet->toBytes();

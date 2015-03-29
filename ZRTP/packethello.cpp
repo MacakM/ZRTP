@@ -221,6 +221,11 @@ void PacketHello::setVersion(uint8_t *version)
     memcpy(this->version,version,VERSION_SIZE);
 }
 
+uint8_t *PacketHello::getH3()
+{
+    return h3;
+}
+
 void PacketHello::setClientId(std::string id)
 {
     memset(clientId,0,CLIENTID_SIZE);

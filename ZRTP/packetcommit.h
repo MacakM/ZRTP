@@ -41,6 +41,13 @@ public:
     uint8_t *getHvi();
 
     /**
+     * Returns hash image H2.
+     *
+     * @return  h2
+     */
+    uint8_t *getH2();
+
+    /**
      * Sets hash image H2.
      *
      * @param hash  H2

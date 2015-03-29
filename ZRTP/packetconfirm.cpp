@@ -106,6 +106,11 @@ uint8_t *PacketConfirm::getVector()
     return initVector;
 }
 
+uint8_t *PacketConfirm::getH0()
+{
+    return h0;
+}
+
 void PacketConfirm::setEncryptedPart(uint8_t *data)
 {
     memcpy(encryptedPart,data,ENCRYPTED_PART_LENGTH);

@@ -109,6 +109,7 @@ bool PacketDHPart::parse(uint8_t *data, uint32_t *errorCode)
     {
         pv[i] = *(pos++);
     }
+
     for(uint8_t i = 0; i < MAC_SIZE; i++)
     {
         mac[i] = *(pos++);
@@ -119,6 +120,11 @@ bool PacketDHPart::parse(uint8_t *data, uint32_t *errorCode)
 uint8_t *PacketDHPart::getPv()
 {
     return pv;
+}
+
+uint8_t *PacketDHPart::getH1()
+{
+    return h1;
 }
 
 void PacketDHPart::setH1(uint8_t *hash)

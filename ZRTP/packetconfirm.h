@@ -43,6 +43,13 @@ public:
     uint8_t *getVector();
 
     /**
+     * Returns hash image H0.
+     *
+     * @return  h0
+     */
+    uint8_t *getH0();
+
+    /**
      * Sets encrypted part of packet instead of decrypted part.
      *
      * @param data  encrypted data

@@ -128,7 +128,10 @@ void Zrtp::createCommitPacket()
     memcpy(keyAgreement,(uint8_t*)"DH3K",WORD_SIZE);
     commit->setSas((uint8_t*)"B32 ");
     memcpy(sas,(uint8_t*)"B32 ",WORD_SIZE);
-    generateHvi();
+    createDHPart2Packet();
+    uint8_t *myHvi = generateHvi();
+    commit->setHvi(myHvi);
+    delete(myHvi);
     createMac(commit);
 }
 
@@ -191,6 +194,24 @@ void Zrtp::generateHashImages()
     SHA256(h0,HASHIMAGE_SIZE,h1);
     SHA256(h1,HASHIMAGE_SIZE,h2);
     SHA256(h2,HASHIMAGE_SIZE,h3);
+    return;
+}
+
+void Zrtp::calculateRespondersH2(uint8_t *peerH1)
+{
+    SHA256(peerH1,HASHIMAGE_SIZE,peerH2);
+    return;
+}
+
+bool Zrtp::isCorrectHashImage(uint8_t *previousH, uint8_t *actualH)
+{
+    uint8_t computedHash[HASHIMAGE_SIZE];
+    SHA256(actualH,HASHIMAGE_SIZE,computedHash);
+    if(memcmp(previousH,computedHash,HASHIMAGE_SIZE) == 0)
+    {
+        return true;
+    }
+    return false;
 }
 
 void Zrtp::generateIds(PacketDHPart *packet)
@@ -320,12 +341,11 @@ void Zrtp::diffieHellman()
     DH_free(dh);
 }
 
-void Zrtp::generateHvi()
+uint8_t *Zrtp::generateHvi()
 {
     PacketHello *helloR;
     (myRole == Initiator) ? helloR = peerHello : helloR = hello;
 
-    createDHPart2Packet();
     assert(dhPart2);
     uint8_t *buffer = (uint8_t*)malloc((dhPart2->getLength() + helloR->getLength()) * WORD_SIZE);
 
@@ -333,11 +353,11 @@ void Zrtp::generateHvi()
     uint8_t *secondHalf = &(buffer[dhPart2->getLength() * WORD_SIZE]);
     memcpy(secondHalf, helloR->toBytes(), helloR->getLength() * WORD_SIZE);
 
-    uint8_t hash[SHA256_DIGEST_LENGTH];
+    uint8_t *hash = new uint8_t[SHA256_DIGEST_LENGTH];
     assert(buffer);
     SHA256(buffer, (dhPart2->getLength() + helloR->getLength()) * WORD_SIZE, hash);
-    commit->setHvi(hash);
     free(buffer);
+    return hash;
 }
 
 void Zrtp::setPv(PacketDHPart *packet)
@@ -350,6 +370,41 @@ void Zrtp::setPv(PacketDHPart *packet)
 
     packet->setPv(buffer);
     free(buffer);
+}
+
+bool Zrtp::isValidPeerPv()
+{
+    PacketDHPart *packet;
+    (myRole == Initiator) ? packet = dhPart1 : packet = dhPart2;
+
+    BIGNUM *peerPublicKey = BN_new();
+    BIGNUM *testingNumber = BN_new();
+
+    BN_bin2bn(packet->getPv(),DH3K_LENGTH,peerPublicKey);
+
+    BN_hex2bn(&testingNumber,"1");
+
+    //check publicKey != 1
+    if(BN_cmp(peerPublicKey,testingNumber) == 0)
+    {
+        BN_free(peerPublicKey);
+        BN_free(testingNumber);
+        return false;
+    }
+
+    BN_add(testingNumber,p,testingNumber);
+
+    //check publicKey != p - 1
+    if(BN_cmp(peerPublicKey,testingNumber) == 0)
+    {
+        BN_free(peerPublicKey);
+        BN_free(testingNumber);
+        return false;
+    }
+
+    BN_free(peerPublicKey);
+    BN_free(testingNumber);
+    return true;
 }
 
 void Zrtp::createTotalHash()
