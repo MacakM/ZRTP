@@ -26,10 +26,12 @@ public:
     /**
      * Parses received data into PacketErrorAck class.
      *
-     * @param data  received data
-     * @return      true = successful, false = otherwise
+     * @param data          received data
+     * @param errorCode     code of occurred error in parsing
+     *
+     * @return              true = successful, false = error occurred
      */
-    virtual bool parse(uint8_t *data);
+    virtual bool parse(uint8_t *data, uint32_t *errorCode);
 
 private:
     uint8_t data[MAX_ERRORACK_LENGTH];

@@ -72,7 +72,7 @@ uint8_t *PacketCommit::toBytes()
     return data;
 }
 
-bool PacketCommit::parse(uint8_t *data)
+bool PacketCommit::parse(uint8_t *data, uint32_t *errorCode)
 {
     uint8_t *pos = data;
 
@@ -82,7 +82,8 @@ bool PacketCommit::parse(uint8_t *data)
     uint16_t zrtpId = (uint16_t)ZRTP_IDENTIFIER;
     if(memcmp(&packetHeader->identifier,&zrtpId,WORD_SIZE) != 0)
     {
-        std::cout << "CHYBA";
+        *errorCode = MalformedPacket;
+        return false;
     }
 
     packetHeader->length = *pos << 8 | *(pos + 1);

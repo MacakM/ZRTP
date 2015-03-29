@@ -1,5 +1,13 @@
 #include "packeterror.h"
 
+PacketError::PacketError()
+{
+    packetHeader = new Header();
+    setZrtpIdentifier();
+    setType((uint8_t*)"Error   ");
+    setLength(4);
+}
+
 PacketError::PacketError(uint32_t code)
 {
     packetHeader = new Header();
@@ -38,7 +46,7 @@ uint8_t *PacketError::toBytes()
     return data;
 }
 
-bool PacketError::parse(uint8_t *data)
+bool PacketError::parse(uint8_t *data, uint32_t *errorCode)
 {
     uint8_t *pos = data;
 
@@ -48,13 +56,14 @@ bool PacketError::parse(uint8_t *data)
     uint16_t zrtpId = (uint16_t)ZRTP_IDENTIFIER;
     if(memcmp(&packetHeader->identifier,&zrtpId,WORD_SIZE) != 0)
     {
-        std::cout << "CHYBA";
+        *errorCode = MalformedPacket;
+        return false;
     }
 
     packetHeader->length = *pos << 8 | *(pos + 1);
     //type has been checked in StateEngine
     setType((uint8_t*)"Error   ");
     pos += 10;
-    memcpy(&errorCode,pos,WORD_SIZE);
+    memcpy(&(this->errorCode),pos,WORD_SIZE);
     return true;
 }

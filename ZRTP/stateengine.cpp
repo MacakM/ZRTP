@@ -62,6 +62,15 @@ void StateEngine::processEvent(Event *event)
     {
         if(memcmp(event->message + 4,"Error   ",TYPE_SIZE) == 0)
         {
+            zrtp->error = new PacketError();
+            zrtp->error->parse(event->message, &errorCode);
+
+            //check length of the message
+            if(zrtp->error->getLength() * WORD_SIZE != actualEvent->messageLength)
+            {
+                sendError(MalformedPacket);
+                return;
+            }
             PacketErrorAck *packet = new PacketErrorAck();
             uint8_t *message = packet->toBytes();
             uint16_t messageLength = packet->getLength() * WORD_SIZE;
@@ -113,7 +122,25 @@ void StateEngine::handleSentHello()
         if(memcmp(type,"Hello   ", TYPE_SIZE) == 0)
         {
             zrtp->peerHello = new PacketHello();
-            zrtp->peerHello->parse(msg);
+            if(!zrtp->peerHello->parse(msg, &errorCode))
+            {
+                sendError(errorCode);
+                return;
+            }
+
+            //check length of the message
+            if(zrtp->peerHello->getLength() * WORD_SIZE != actualEvent->messageLength)
+            {
+                sendError(MalformedPacket);
+                return;
+            }
+
+            //equal ZID check
+            if(memcmp(zrtp->peerHello->getZid(),zrtp->hello->getZid(),ZID_SIZE) == 0)
+            {
+                sendError(EqualZid);
+                return;
+            }
 
             if(zrtp->compareVersions())
             {
@@ -147,7 +174,19 @@ void StateEngine::handleSentHello()
         else if(memcmp(type,"HelloACK", TYPE_SIZE) == 0)
         {
             PacketHelloAck *packet = new PacketHelloAck();
-            packet->parse(msg);
+            if(!packet->parse(msg, &errorCode))
+            {
+                sendError(errorCode);
+                return;
+            }
+
+            //check length of the message
+            if(packet->getLength() * WORD_SIZE != actualEvent->messageLength)
+            {
+                sendError(MalformedPacket);
+                return;
+            }
+
             zrtp->cancelTimer();
             delete(packet);
 
@@ -179,7 +218,18 @@ void StateEngine::handleSentHelloAck()
             //have to prevent parsing older Hello with greater version
             if(!zrtp->compareVersions())
             {
-                zrtp->peerHello->parse(msg);
+                if(!zrtp->peerHello->parse(msg, &errorCode))
+                {
+                    sendError(errorCode);
+                    return;
+                }
+
+                //check length of the message
+                if(zrtp->peerHello->getLength() * WORD_SIZE != actualEvent->messageLength)
+                {
+                    sendError(MalformedPacket);
+                    return;
+                }
             }
             //have to check if new Hello has same version
             if(zrtp->compareVersions())
@@ -206,7 +256,18 @@ void StateEngine::handleSentHelloAck()
         else if(memcmp(type,"HelloACK", TYPE_SIZE) == 0)
         {
             PacketHelloAck *packet = new PacketHelloAck();
-            packet->parse(msg);
+            if(!packet->parse(msg, &errorCode))
+            {
+                sendError(errorCode);
+                return;
+            }
+
+            //check length of the message
+            if(packet->getLength() * WORD_SIZE != actualEvent->messageLength)
+            {
+                sendError(MalformedPacket);
+                return;
+            }
             zrtp->cancelTimer();
             delete(packet);
             if(zrtp->myRole == Responder)
@@ -235,7 +296,18 @@ void StateEngine::handleSentHelloAck()
             if(zrtp->myRole == Responder)
             {
                 zrtp->commit = new PacketCommit();
-                zrtp->commit->parse(msg);
+                if(!zrtp->commit->parse(msg, &errorCode))
+                {
+                    sendError(errorCode);
+                    return;
+                }
+
+                //check length of the message
+                if(zrtp->commit->getLength() * WORD_SIZE != actualEvent->messageLength)
+                {
+                    sendError(MalformedPacket);
+                    return;
+                }
 
                 zrtp->createDHPart1Packet();
 
@@ -252,7 +324,18 @@ void StateEngine::handleSentHelloAck()
             zrtp->createCommitPacket();
 
             PacketCommit *peerCommit = new PacketCommit();
-            peerCommit->parse(msg);
+            if(!peerCommit->parse(msg, &errorCode))
+            {
+                sendError(errorCode);
+                return;
+            }
+
+            //check length of the message
+            if(peerCommit->getLength() * WORD_SIZE != actualEvent->messageLength)
+            {
+                sendError(MalformedPacket);
+                return;
+            }
             //discard commit with lower hvi
             if(zrtp->commit->hasGreaterHvi(peerCommit))
             {
@@ -299,7 +382,26 @@ void StateEngine::handleReceivedHelloAck()
         if(memcmp(type,"Hello   ", TYPE_SIZE) == 0)
         {
             zrtp->peerHello = new PacketHello();
-            zrtp->peerHello->parse(msg);
+            if(!zrtp->peerHello->parse(msg, &errorCode))
+            {
+                sendError(errorCode);
+                return;
+            }
+
+            //check length of the message
+            if(zrtp->peerHello->getLength() * WORD_SIZE != actualEvent->messageLength)
+            {
+                sendError(MalformedPacket);
+                return;
+            }
+
+            //equal ZID check
+            if(memcmp(zrtp->peerHello->getZid(),zrtp->hello->getZid(),ZID_SIZE) == 0)
+            {
+                sendError(EqualZid);
+                return;
+            }
+
             if(!zrtp->compareVersions())
             {
                 //different versions
@@ -362,7 +464,18 @@ void StateEngine::handleSentCommit()
         if(memcmp(type,"DHPart1 ", TYPE_SIZE) == 0)
         {
             zrtp->dhPart1 = new PacketDHPart();
-            zrtp->dhPart1->parse(msg);
+            if(!zrtp->dhPart1->parse(msg, &errorCode))
+            {
+                sendError(errorCode);
+                return;
+            }
+
+            //check length of the message
+            if(zrtp->dhPart1->getLength() * WORD_SIZE != actualEvent->messageLength)
+            {
+                sendError(MalformedPacket);
+                return;
+            }
             zrtp->cancelTimer();
             uint8_t *message = zrtp->dhPart2->toBytes();
             uint16_t messageLength = zrtp->dhPart2->getLength() * WORD_SIZE;
@@ -383,7 +496,18 @@ void StateEngine::handleSentCommit()
         else if(memcmp(type,"Commit  ",TYPE_SIZE) == 0)
         {
             PacketCommit *peerCommit = new PacketCommit();
-            peerCommit->parse(msg);
+            if(!peerCommit->parse(msg, &errorCode))
+            {
+                sendError(errorCode);
+                return;
+            }
+
+            //check length of the message
+            if(peerCommit->getLength() * WORD_SIZE != actualEvent->messageLength)
+            {
+                sendError(MalformedPacket);
+                return;
+            }
             //discard commit with lower hvi
             if(zrtp->commit->hasGreaterHvi(peerCommit))
             {
@@ -423,7 +547,18 @@ void StateEngine::handleWaitCommit()
             //have to prevent parsing older Hello with greater version
             if(!zrtp->compareVersions())
             {
-                zrtp->peerHello->parse(msg);
+                if(!zrtp->peerHello->parse(msg, &errorCode))
+                {
+                    sendError(errorCode);
+                    return;
+                }
+
+                //check length of the message
+                if(zrtp->peerHello->getLength() * WORD_SIZE != actualEvent->messageLength)
+                {
+                    sendError(MalformedPacket);
+                    return;
+                }
             }
             //have to check if new Hello has same version
             if(zrtp->compareVersions())
@@ -450,7 +585,18 @@ void StateEngine::handleWaitCommit()
         else if(memcmp(type,"Commit  ", TYPE_SIZE) == 0)
         {
             zrtp->commit = new PacketCommit();
-            zrtp->commit->parse(msg);
+            if(!zrtp->commit->parse(msg, &errorCode))
+            {
+                sendError(errorCode);
+                return;
+            }
+
+            //check length of the message
+            if(zrtp->commit->getLength() * WORD_SIZE != actualEvent->messageLength)
+            {
+                sendError(MalformedPacket);
+                return;
+            }
             zrtp->createDHPart1Packet();
 
             uint8_t *message = zrtp->dhPart1->toBytes();
@@ -488,7 +634,18 @@ void StateEngine::handleWaitDHPart2()
         else if(memcmp(type,"DHPart2 ", TYPE_SIZE) == 0)
         {
             zrtp->dhPart2 = new PacketDHPart();
-            zrtp->dhPart2->parse(msg);
+            if(!zrtp->dhPart2->parse(msg, &errorCode))
+            {
+                sendError(errorCode);
+                return;
+            }
+
+            //check length of the message
+            if(zrtp->dhPart2->getLength() * WORD_SIZE != actualEvent->messageLength)
+            {
+                sendError(MalformedPacket);
+                return;
+            }
 
             zrtp->createDHResult();
             zrtp->sharedSecretCalculation();
@@ -526,7 +683,18 @@ void StateEngine::handleWaitConfirm1()
         {
             zrtp->cancelTimer();
             zrtp->confirm1 = new PacketConfirm();
-            zrtp->confirm1->parse(msg);
+            if(!zrtp->confirm1->parse(msg, &errorCode))
+            {
+                sendError(errorCode);
+                return;
+            }
+
+            //check length of the message
+            if(zrtp->confirm1->getLength() * WORD_SIZE != actualEvent->messageLength)
+            {
+                sendError(MalformedPacket);
+                return;
+            }
             zrtp->decryptConfirmData(msg);
             zrtp->createConfirm2Packet();
             uint8_t *message = zrtp->confirm2->toBytes();
@@ -558,7 +726,18 @@ void StateEngine::handleWaitConfirm2()
 
         if(memcmp(type,"DHPart2 ", TYPE_SIZE) == 0)
         {
-            zrtp->dhPart2->parse(msg);
+            if(!zrtp->dhPart2->parse(msg, &errorCode))
+            {
+                sendError(errorCode);
+                return;
+            }
+
+            //check length of the message
+            if(zrtp->dhPart2->getLength() * WORD_SIZE != actualEvent->messageLength)
+            {
+                sendError(MalformedPacket);
+                return;
+            }
             uint8_t *message = zrtp->confirm1->toBytes();
             uint16_t messageLength = zrtp->confirm1->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
@@ -568,7 +747,18 @@ void StateEngine::handleWaitConfirm2()
         else if(memcmp(type,"Confirm2", TYPE_SIZE) == 0)
         {
             zrtp->confirm2 = new PacketConfirm();
-            zrtp->confirm2->parse(msg);
+            if(!zrtp->confirm2->parse(msg, &errorCode))
+            {
+                sendError(errorCode);
+                return;
+            }
+
+            //check length of the message
+            if(zrtp->confirm2->getLength() * WORD_SIZE != actualEvent->messageLength)
+            {
+                sendError(MalformedPacket);
+                return;
+            }
             zrtp->decryptConfirmData(msg);
 
             PacketConf2Ack *packet = new PacketConf2Ack();

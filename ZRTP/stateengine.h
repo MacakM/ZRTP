@@ -40,7 +40,7 @@ typedef enum
 typedef struct {
     EventType type;
     uint8_t *message;
-    int32_t messageLength;
+    uint16_t messageLength;
 } Event;
 
 typedef struct {
@@ -83,6 +83,8 @@ private:
 
     zrtpTimer T1;
     zrtpTimer T2;
+
+    uint32_t errorCode;
 
     /**
      * Initializes all function pointers to map.

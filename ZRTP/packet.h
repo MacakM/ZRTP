@@ -29,6 +29,30 @@
 #define ID_SIZE             2 * WORD_SIZE
 #define VECTOR_SIZE         4 * WORD_SIZE
 
+typedef enum
+{
+    MalformedPacket             = 0x10,
+    CriticalSoftwareError       = 0x20,
+    UnsupportedVersion          = 0x30,
+    HelloComponentsMismatch     = 0x40,
+    HashTypeNotSupported        = 0x51,
+    CipherTypeNotSupported      = 0x52,
+    KeyExchangeNotSupported     = 0x53,
+    AuthTagNotSupported         = 0x54,
+    SasNotSupported             = 0x55,
+    NoSharedSecret              = 0x56,
+    BadDhPublicValue            = 0x61,
+    DhHviError                  = 0x62,
+    ReceivedUntrustedSas        = 0x63,
+    BadConfirm                  = 0x70,
+    NonceReuse                  = 0x80,
+    EqualZid                    = 0x90,
+    ColissionSSRC               = 0x91,
+    ServiceUnavailable          = 0xA0,
+    ProtocolTimeout             = 0xB0,
+    ReceivedNotAllowedGoClear   = 0x100
+}ErrorCode;
+
 typedef struct
 {
     uint16_t identifier;
@@ -91,10 +115,12 @@ public:
     /**
      * Parses received data into Packet class.
      *
-     * @param data  received data
-     * @return      true = successful, false = otherwise
+     * @param data          received data
+     * @param errorCode     code of occurred error in parsing
+     *
+     * @return              true = successful, false = error occurred
      */
-    virtual bool parse(uint8_t *data) = 0;
+    virtual bool parse(uint8_t *data, uint32_t *errorCode) = 0;
 
 protected:
     Header *packetHeader;
