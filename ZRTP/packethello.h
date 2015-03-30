@@ -76,6 +76,20 @@ public:
     uint8_t *getH3();
 
     /**
+     * Returns all supported key agreement types from hello packet.
+     *
+     * @return  supported key agreement types
+     */
+    uint8_t *getKeyAgreementTypes();
+
+    /**
+     * Returns number of supported key agreement types.
+     *
+     * @return  key agreement count
+     */
+    uint8_t getKeyCount();
+
+    /**
      * Sets clientID.
      *
      * @param id   clientID

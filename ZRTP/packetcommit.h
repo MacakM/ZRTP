@@ -48,6 +48,41 @@ public:
     uint8_t *getH2();
 
     /**
+     * Returns chosen hash algorithm.
+     *
+     * @return  hash algorithm
+     */
+    uint8_t *getHash();
+
+    /**
+     * Returns chosen cipher algorithm.
+     *
+     * @return  cipher algorithm
+     */
+    uint8_t *getCipher();
+
+    /**
+     * Returns chosen authTag type.
+     *
+     * @return  authTag type
+     */
+    uint8_t *getAuthTag();
+
+    /**
+     * Returns chosen key agreement type.
+     *
+     * @return  key agreement type
+     */
+    uint8_t *getKeyAgreement();
+
+    /**
+     * Returns chosen SAS type.
+     *
+     * @return  SAS type
+     */
+    uint8_t *getSas();
+
+    /**
      * Sets hash image H2.
      *
      * @param hash  H2

@@ -149,6 +149,11 @@ void StateEngine::handleSentHello()
                 uint16_t messageLength = packet->getLength() * WORD_SIZE;
                 zrtp->sendData(message,messageLength);
                 delete(packet);
+                if(!zrtp->chooseAlgorithm())
+                {
+                    sendError(KeyExchangeNotSupported);
+                    return;
+                }
 
                 std::cout << "Actual state: SentHelloAck" << std::endl;
                 actualState = SentHelloAck;
@@ -313,6 +318,12 @@ void StateEngine::handleSentHelloAck()
                     return;
                 }
 
+                if(!zrtp->checkCompatibility(&errorCode))
+                {
+                    sendError(errorCode);
+                    return;
+                }
+
                 zrtp->createDHPart1Packet();
 
                 uint8_t *message = zrtp->dhPart1->toBytes();
@@ -369,6 +380,13 @@ void StateEngine::handleSentHelloAck()
             zrtp->myRole = Responder;
             //Free created DHPart2 and create new DHPart1
             free(zrtp->dhPart2);
+
+            if(!zrtp->checkCompatibility(&errorCode))
+            {
+                sendError(errorCode);
+                return;
+            }
+
             zrtp->createDHPart1Packet();
 
             uint8_t *message = zrtp->dhPart1->toBytes();
@@ -405,7 +423,6 @@ void StateEngine::handleReceivedHelloAck()
                 sendError(MalformedPacket);
                 return;
             }
-
             //equal ZID check
             if(memcmp(zrtp->peerHello->getZid(),zrtp->hello->getZid(),ZID_SIZE) == 0)
             {
@@ -423,6 +440,12 @@ void StateEngine::handleReceivedHelloAck()
                 sentMessage = message;
                 sentMessageLength = messageLength;
                 timerStart(&T1);
+                return;
+            }
+
+            if(!zrtp->chooseAlgorithm())
+            {
+                sendError(KeyExchangeNotSupported);
                 return;
             }
 
@@ -554,6 +577,13 @@ void StateEngine::handleSentCommit()
             zrtp->cancelTimer();
             //Free created DHPart2 and create new DHPart1
             free(zrtp->dhPart2);
+
+            if(!zrtp->checkCompatibility(&errorCode))
+            {
+                sendError(errorCode);
+                return;
+            }
+
             zrtp->createDHPart1Packet();
             uint8_t *message = zrtp->dhPart1->toBytes();
             uint16_t messageLength = zrtp->dhPart1->getLength() * WORD_SIZE;
@@ -633,6 +663,12 @@ void StateEngine::handleWaitCommit()
             if(!zrtp->isCorrectHashImage(zrtp->peerHello->getH3(),zrtp->commit->getH2()))
             {
                 sendError(CriticalSoftwareError);
+                return;
+            }
+
+            if(!zrtp->checkCompatibility(&errorCode))
+            {
+                sendError(errorCode);
                 return;
             }
 

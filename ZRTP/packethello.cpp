@@ -226,6 +226,16 @@ uint8_t *PacketHello::getH3()
     return h3;
 }
 
+uint8_t *PacketHello::getKeyAgreementTypes()
+{
+    return keyAgreementTypes;
+}
+
+uint8_t PacketHello::getKeyCount()
+{
+    return counts.kc;
+}
+
 void PacketHello::setClientId(std::string id)
 {
     memset(clientId,0,CLIENTID_SIZE);

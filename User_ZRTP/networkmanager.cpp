@@ -15,16 +15,16 @@ NetworkManager::NetworkManager(int argc, char *argv[], QObject *parent) :
 
     setArguments(Parser::getArguments(argc,argv));
 
-    //demonstration of commit contention
-    myRole = Initiator;
-
     info.versions.push_back("1.10");
     //demonstration of version negotiation
     if(myRole == Responder) info.versions.push_back("1.20");
     info.hashTypes.push_back("S256");
     info.cipherTypes.push_back("AES1");
     info.authTagTypes.push_back("HS32");
-    info.keyAgreementTypes.push_back("DH3K");
+    //demonstration of algorithm negotiation
+    if (myRole == Responder) info.keyAgreementTypes.push_back("EC52");
+    info.keyAgreementTypes.push_back("DH3k");
+    if (myRole == Initiator) info.keyAgreementTypes.push_back("EC52");
     info.sasTypes.push_back("B32 ");
 
     (myRole == Initiator) ? myFile.open("Alice.txt") : myFile.open("Bob.txt");

@@ -118,16 +118,15 @@ void Zrtp::createCommitPacket()
     commit = new PacketCommit();
     commit->setH2(h2);
     commit->setZid(myZID);
-    commit->setHash((uint8_t*)"S256");
+    commit->setKeyAgreement(keyAgreement);
     memcpy(hash,(uint8_t*)"S256",WORD_SIZE);
-    commit->setCipher((uint8_t*)"AES1");
+    commit->setHash(hash);
     memcpy(cipher,(uint8_t*)"AES1",WORD_SIZE);
-    commit->setAuthTag((uint8_t*)"HS32");
+    commit->setCipher(cipher);
     memcpy(authTag,(uint8_t*)"HS32",WORD_SIZE);
-    commit->setKeyAgreement((uint8_t*)"DH3K");
-    memcpy(keyAgreement,(uint8_t*)"DH3K",WORD_SIZE);
-    commit->setSas((uint8_t*)"B32 ");
+    commit->setAuthTag(authTag);
     memcpy(sas,(uint8_t*)"B32 ",WORD_SIZE);
+    commit->setSas(sas);
     createDHPart2Packet();
     uint8_t *myHvi = generateHvi();
     commit->setHvi(myHvi);
@@ -293,6 +292,183 @@ void Zrtp::createConfirmMac(PacketConfirm *packet)
         sprintf((char*)&computedMac[i*2], "%02x", (unsigned int)digest[i]);
     }
     packet->setConfirmMac(computedMac);
+}
+
+bool Zrtp::chooseAlgorithm()
+{
+    bool found = false;
+    uint8_t myKeyCount = hello->getKeyCount();
+    std::string myAlgorithms ((char*)hello->getKeyAgreementTypes(), myKeyCount * WORD_SIZE);
+
+    uint8_t peerKeyCount = peerHello->getKeyCount();
+    std::string peerAlgorithms ((char*)peerHello->getKeyAgreementTypes(),peerKeyCount * WORD_SIZE);
+
+    std::string myType;
+    std::string peerType;
+
+    //find my preferred type that peer supports
+    for(uint8_t i = 0; i < myKeyCount; i++)
+    {
+        myType = myAlgorithms.substr(i * WORD_SIZE, WORD_SIZE);
+        if(peerAlgorithms.find(myType) != std::string::npos)
+        {
+            found = true;
+            break;
+        }
+    }
+    if(found == false)
+    {
+        return false;
+    }
+    found = false;
+
+    //find peer preferred type that I support
+    for(uint8_t i = 0; i < peerKeyCount; i++)
+    {
+        peerType = peerAlgorithms.substr(i * WORD_SIZE, WORD_SIZE);
+        if(myAlgorithms.find(peerType) != std::string::npos)
+        {
+            found = true;
+            break;
+        }
+    }
+    if(found == false)
+    {
+        return false;
+    }
+
+    std::string chosenType = chooseFasterType(myType,peerType);
+    memcpy(keyAgreement,chosenType.c_str(),WORD_SIZE);
+    return true;
+}
+
+std::string Zrtp::chooseFasterType(std::string firstType, std::string secondType)
+{
+    if(strcmp(firstType.c_str(),secondType.c_str()) == 0)
+    {
+        return firstType;
+    }
+
+    uint8_t firstRating = 0;
+    uint8_t secondRating = 0;
+
+    if(strcmp(firstType.c_str(),"DH2k") == 0)
+    {
+        firstRating = 1;
+    }
+    else if(strcmp(firstType.c_str(),"EC25") == 0)
+    {
+        firstRating = 2;
+    }
+    else if(strcmp(firstType.c_str(),"DH3k") == 0)
+    {
+        firstRating = 3;
+    }
+    else if(strcmp(firstType.c_str(),"EC38") == 0)
+    {
+        firstRating = 4;
+    }
+    else if(strcmp(firstType.c_str(),"EC52") == 0)
+    {
+        firstRating = 5;
+    }
+
+    if(strcmp(secondType.c_str(),"DH2k") == 0)
+    {
+        secondRating = 1;
+    }
+    else if(strcmp(secondType.c_str(),"EC25") == 0)
+    {
+        secondRating = 2;
+    }
+    else if(strcmp(secondType.c_str(),"DH3k") == 0)
+    {
+        secondRating = 3;
+    }
+    else if(strcmp(secondType.c_str(),"EC38") == 0)
+    {
+        secondRating = 4;
+    }
+    else if(strcmp(secondType.c_str(),"EC52") == 0)
+    {
+        secondRating = 5;
+    }
+
+    if(firstRating > secondRating)
+    {
+        return secondType;
+    }
+    return firstType;
+}
+
+bool Zrtp::checkCompatibility(uint32_t *errorCode)
+{
+    //check hash algorithm
+    std::string receivedHash ((char*)commit->getHash(),WORD_SIZE);
+
+    if(std::find(userInfo->hashTypes.begin(), userInfo->hashTypes.end(), receivedHash)
+            == userInfo->hashTypes.end())
+    {
+        *errorCode = HashTypeNotSupported;
+        return false;
+    }
+    else
+    {
+        memcpy(hash,commit->getHash(),WORD_SIZE);
+    }
+    //check cipher algorithm
+    std::string receivedCipher ((char*)commit->getCipher(),WORD_SIZE);
+
+    if(std::find(userInfo->cipherTypes.begin(), userInfo->cipherTypes.end(), receivedCipher)
+            == userInfo->cipherTypes.end())
+    {
+        *errorCode = CipherTypeNotSupported;
+        return false;
+    }
+    else
+    {
+        memcpy(cipher,commit->getCipher(),WORD_SIZE);
+    }
+    //check authTag type
+    std::string receivedAuthTag ((char*)commit->getAuthTag(),WORD_SIZE);
+
+    if(std::find(userInfo->authTagTypes.begin(), userInfo->authTagTypes.end(), receivedAuthTag)
+            == userInfo->authTagTypes.end())
+    {
+        *errorCode = AuthTagNotSupported;
+        return false;
+    }
+    else
+    {
+        memcpy(authTag,commit->getAuthTag(),WORD_SIZE);
+    }
+    //check key agreemenet type
+    std::string receivedKeyAgreement ((char*)commit->getKeyAgreement(),WORD_SIZE);
+
+    if(std::find(userInfo->keyAgreementTypes.begin(), userInfo->keyAgreementTypes.end(), receivedKeyAgreement)
+            == userInfo->keyAgreementTypes.end())
+    {
+        *errorCode = KeyExchangeNotSupported;
+        return false;
+    }
+    else
+    {
+        memcpy(keyAgreement,commit->getKeyAgreement(),WORD_SIZE);
+    }
+    //check sas type
+    std::string receivedSas ((char*)commit->getSas(),WORD_SIZE);
+
+    if(std::find(userInfo->sasTypes.begin(), userInfo->sasTypes.end(), receivedSas)
+            == userInfo->sasTypes.end())
+    {
+        *errorCode = SasNotSupported;
+        return false;
+    }
+    else
+    {
+        memcpy(sas,commit->getSas(),WORD_SIZE);
+    }
+    return true;
 }
 
 void Zrtp::diffieHellman()

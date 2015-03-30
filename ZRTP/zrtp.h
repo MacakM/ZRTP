@@ -6,6 +6,7 @@
 #define SALT_KEY_LENGTH     14
 
 #include <iostream>
+#include <algorithm>
 #include <stdexcept>
 #include <assert.h>
 #include "Integers.h"
@@ -26,6 +27,17 @@
 #include <openssl/rand.h>
 #include <openssl/dh.h>
 #include <openssl/aes.h>
+
+#define KEY_TYPE_COUNT  5
+
+typedef enum
+{
+    DH2k = 0,
+    EC25 = 1,
+    DH3k = 2,
+    EC38 = 3,
+    EC52 = 4
+}KeyType;
 
 typedef enum
 {
@@ -194,6 +206,32 @@ private:
      * @param packet    confirm packet
      */
     void createConfirmMac(PacketConfirm *packet);
+
+    /**
+     * Chooses DH key agreement algorithm based on RFC.
+     *
+     * @return  true = successful, false = not supported key agreement algorithm
+     */
+    bool chooseAlgorithm();
+
+    /**
+     * Returns faster of two types.
+     *
+     * @param firstType     first type
+     * @param secondType    second type
+     *
+     * @return              faster type
+     */
+    std::string chooseFasterType(std::string firstType, std::string secondType);
+
+    /**
+     * Checks whether the commit packet algorithms and types are supported.
+     *
+     * @param errorCode     error code of type that is not supported
+     *
+     * @return              true = supported, false = something is not supported
+     */
+    bool checkCompatibility(uint32_t *errorCode);
 
     /**
      * Computes the DH and sets public key, private key and prime.

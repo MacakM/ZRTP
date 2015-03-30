@@ -140,6 +140,31 @@ uint8_t *PacketCommit::getH2()
     return h2;
 }
 
+uint8_t *PacketCommit::getHash()
+{
+    return hash;
+}
+
+uint8_t *PacketCommit::getCipher()
+{
+    return cipher;
+}
+
+uint8_t *PacketCommit::getAuthTag()
+{
+    return authTag;
+}
+
+uint8_t *PacketCommit::getKeyAgreement()
+{
+    return keyAgreement;
+}
+
+uint8_t *PacketCommit::getSas()
+{
+    return sas;
+}
+
 void PacketCommit::setH2(uint8_t *hash)
 {
     memcpy(h2,hash,HASHIMAGE_SIZE);
@@ -152,7 +177,7 @@ void PacketCommit::setZid(uint8_t *zid)
 
 void PacketCommit::setHash(uint8_t *hash)
 {
-    memcpy(this->hash,hash,HASHIMAGE_SIZE);
+    memcpy(this->hash,hash, WORD_SIZE);
 }
 
 void PacketCommit::setCipher(uint8_t *cipher)
