@@ -110,7 +110,9 @@ void Zrtp::createHelloPacket(std::string clientId)
     hello->setH3(h3);
     hello->setZid(myZID);
     hello->AddSupportedTypes(userInfo);
-    createMac(hello);
+    uint8_t *mac = generateMac(hello);
+    hello->setMac(mac);
+    delete(mac);
 }
 
 void Zrtp::createCommitPacket()
@@ -131,7 +133,9 @@ void Zrtp::createCommitPacket()
     uint8_t *myHvi = generateHvi();
     commit->setHvi(myHvi);
     delete(myHvi);
-    createMac(commit);
+    uint8_t *mac = generateMac(commit);
+    commit->setMac(mac);
+    delete(mac);
 }
 
 void Zrtp::createDHPart1Packet()
@@ -141,7 +145,9 @@ void Zrtp::createDHPart1Packet()
     dhPart1->setH1(h1);
     generateIds(dhPart1);
     setPv(dhPart1);
-    createMac(dhPart1);
+    uint8_t *mac = generateMac(dhPart1);
+    dhPart1->setMac(mac);
+    delete(mac);
 }
 
 void Zrtp::createDHPart2Packet()
@@ -151,7 +157,9 @@ void Zrtp::createDHPart2Packet()
     dhPart2->setH1(h1);
     generateIds(dhPart2);
     setPv(dhPart2);
-    createMac(dhPart2);
+    uint8_t *mac = generateMac(dhPart2);
+    dhPart2->setMac(mac);
+    delete(mac);
 }
 
 void Zrtp::createConfirm1Packet()
@@ -167,7 +175,9 @@ void Zrtp::createConfirm1Packet()
     confirm1->setInitVector(vector);
 
     encryptConfirmData();
-    createConfirmMac(confirm1);
+    uint8_t *confirmMac = generateConfirmMac(confirm1,true);
+    confirm1->setConfirmMac(confirmMac);
+    delete(confirmMac);
 }
 
 void Zrtp::createConfirm2Packet()
@@ -183,7 +193,9 @@ void Zrtp::createConfirm2Packet()
     confirm2->setInitVector(vector);
 
     encryptConfirmData();
-    createConfirmMac(confirm2);
+    uint8_t *confirmMac = generateConfirmMac(confirm2,true);
+    confirm2->setConfirmMac(confirmMac);
+    delete(confirmMac);
 }
 
 void Zrtp::generateHashImages()
@@ -229,10 +241,11 @@ void Zrtp::generateIds(PacketDHPart *packet)
     }
 }
 
-void Zrtp::createMac(Packet *packet)
+uint8_t *Zrtp::generateMac(Packet *packet)
 {
     uint8_t key[HASHIMAGE_SIZE];
 
+    //NEMOZEM FURT SVOJE HASH IMAGE POUZIVAT
     switch(packet->getType()[0])
     {
     //Hello
@@ -253,45 +266,49 @@ void Zrtp::createMac(Packet *packet)
 
     assert(buffer);
 
-    uint16_t length = packet->getLength() - 2;
+    uint16_t length = (packet->getLength() - 2) * WORD_SIZE;
 
-    buffer[(length) * WORD_SIZE] = '\0';
-
-    uint8_t* digest;
-    digest = HMAC(EVP_sha256(), key, HASHIMAGE_SIZE,
+    uint8_t* digest = HMAC(EVP_sha256(), key, HASHIMAGE_SIZE,
                   buffer, length, NULL, NULL);
 
     assert(digest);
 
-    uint8_t computedMac[MAC_SIZE + 1];
+    uint8_t *computedMac = new uint8_t[MAC_SIZE + 1];
     for(int i = 0; i < 4; i++)
     {
         sprintf((char*)&computedMac[i*2], "%02x", (unsigned int)digest[i]);
     }
-    packet->setMac(computedMac);
+    return computedMac;
 }
 
-void Zrtp::createConfirmMac(PacketConfirm *packet)
+uint8_t *Zrtp::generateConfirmMac(PacketConfirm *packet, bool sending)
 {
     uint8_t key[SHA256_DIGEST_LENGTH];
-    (myRole == Initiator) ? memcpy(&key,macKeyI,MAC_SIZE) : memcpy(&key,macKeyR,MAC_SIZE);
+    if(myRole == Initiator)
+    {
+        (sending) ? memcpy(&key,macKeyI,SHA256_DIGEST_LENGTH) : memcpy(&key,macKeyR,SHA256_DIGEST_LENGTH);
+    }
+    else
+    {
+        (sending) ? memcpy(&key,macKeyR,SHA256_DIGEST_LENGTH) : memcpy(&key,macKeyI,SHA256_DIGEST_LENGTH);
+    }
+
     uint8_t *buffer = packet->toBytes();
     uint16_t bufferLength = packet->getLength() * WORD_SIZE;
 
     uint8_t *startHash = &(buffer[9*WORD_SIZE]);
 
-    uint8_t* digest;
-    digest = HMAC(EVP_sha256(), key, HASHIMAGE_SIZE,
+    uint8_t* digest = HMAC(EVP_sha256(), key, HASHIMAGE_SIZE,
                   startHash, bufferLength - 9*WORD_SIZE, NULL, NULL);
 
     assert(digest);
 
-    uint8_t computedMac[MAC_SIZE + 1];
+    uint8_t *computedMac = new uint8_t[MAC_SIZE + 1];
     for(int i = 0; i < 4; i++)
     {
         sprintf((char*)&computedMac[i*2], "%02x", (unsigned int)digest[i]);
     }
-    packet->setConfirmMac(computedMac);
+    return computedMac;
 }
 
 bool Zrtp::chooseAlgorithm()
@@ -765,8 +782,7 @@ void Zrtp::kdf(uint8_t *key, uint8_t *label, int32_t labelLength, uint8_t *conte
     pos += KDF_CONTEXT_LENGTH;
     memcpy(pos,&lengthL,sizeof(int32_t));
 
-    uint8_t* digest;
-    digest = HMAC(EVP_sha256(), ki, lengthL,
+    uint8_t* digest = HMAC(EVP_sha256(), ki, lengthL,
                   buffer, bufferLength, NULL, NULL);
 
     assert(digest);
@@ -811,8 +827,8 @@ void Zrtp::keyDerivation()
 
 void Zrtp::encryptConfirmData()
 {
-    uint8_t started[40] = {0};
-    uint8_t encrypted[40] = {0};
+    uint8_t started[ENCRYPTED_PART_LENGTH] = {0};
+    uint8_t encrypted[ENCRYPTED_PART_LENGTH] = {0};
     int outputLength;
     int cipherTextLen;
     uint8_t iv[VECTOR_SIZE];
@@ -828,11 +844,11 @@ void Zrtp::encryptConfirmData()
         memcpy(iv,confirm2->getVector(),VECTOR_SIZE);
 
         uint8_t *pos = &(buffer[36]);
-        memcpy(started,pos,40);
+        memcpy(started,pos,ENCRYPTED_PART_LENGTH);
 
         EVP_EncryptInit_ex(ctx, EVP_aes_128_cfb128(), 0, zrtpKeyI, iv);
 
-        EVP_EncryptUpdate(ctx, encrypted, &outputLength, started, 40);
+        EVP_EncryptUpdate(ctx, encrypted, &outputLength, started, ENCRYPTED_PART_LENGTH);
 
         cipherTextLen = outputLength;
 
@@ -840,7 +856,7 @@ void Zrtp::encryptConfirmData()
 
         cipherTextLen += outputLength;
 
-        assert(cipherTextLen == 40);
+        assert(cipherTextLen == ENCRYPTED_PART_LENGTH);
 
         EVP_CIPHER_CTX_free(ctx);
 
@@ -854,11 +870,11 @@ void Zrtp::encryptConfirmData()
         memcpy(iv,confirm1->getVector(),VECTOR_SIZE);
 
         uint8_t *pos = &(buffer[36]);
-        memcpy(started,pos,40);
+        memcpy(started,pos,ENCRYPTED_PART_LENGTH);
 
         EVP_EncryptInit_ex(ctx, EVP_aes_128_cfb128(), 0, zrtpKeyR, iv);
 
-        EVP_EncryptUpdate(ctx, encrypted, &outputLength, started, 40);
+        EVP_EncryptUpdate(ctx, encrypted, &outputLength, started, ENCRYPTED_PART_LENGTH);
 
         cipherTextLen = outputLength;
 
@@ -866,7 +882,7 @@ void Zrtp::encryptConfirmData()
 
         cipherTextLen += outputLength;
 
-        assert(cipherTextLen == 40);
+        assert(cipherTextLen == ENCRYPTED_PART_LENGTH);
 
         EVP_CIPHER_CTX_free(ctx);
 
@@ -878,9 +894,9 @@ void Zrtp::decryptConfirmData(uint8_t *data)
 {
     uint8_t *pos = &(data[36]);
 
-    uint8_t encrypted[40] = {0};
-    memcpy(encrypted,pos,40);
-    uint8_t decrypted[40] = {0};
+    uint8_t encrypted[ENCRYPTED_PART_LENGTH] = {0};
+    memcpy(encrypted,pos,ENCRYPTED_PART_LENGTH);
+    uint8_t decrypted[ENCRYPTED_PART_LENGTH] = {0};
     int outputLength;
     int plainTextLen;
     uint8_t iv[VECTOR_SIZE];
@@ -900,7 +916,7 @@ void Zrtp::decryptConfirmData(uint8_t *data)
 
         EVP_DecryptInit_ex(ctx, EVP_aes_128_cfb128(), 0, zrtpKeyI, iv);
     }
-    EVP_DecryptUpdate(ctx, decrypted, &outputLength, encrypted, 40);
+    EVP_DecryptUpdate(ctx, decrypted, &outputLength, encrypted, ENCRYPTED_PART_LENGTH);
 
     plainTextLen = outputLength;
 
@@ -908,7 +924,7 @@ void Zrtp::decryptConfirmData(uint8_t *data)
 
     plainTextLen += outputLength;
 
-    assert(plainTextLen == 40);
+    assert(plainTextLen == ENCRYPTED_PART_LENGTH);
 
     EVP_CIPHER_CTX_free(ctx);
     //parsing of encrypted part

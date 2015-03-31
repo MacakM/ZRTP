@@ -197,15 +197,20 @@ private:
      * Creates MAC hash at the end of the Hello, Commit and DHPart packets
      *
      * @param packet    packet which is going to be hashed
+     *
+     * @return          MAC
      */
-    void createMac(Packet *packet);
+    uint8_t *generateMac(Packet *packet);
 
     /**
      * Creates MAC hash for Confirm packets
      *
      * @param packet    confirm packet
+     * @param sending   true = packet for sending, false = received packet
+     *
+     * @return          confirm mac
      */
-    void createConfirmMac(PacketConfirm *packet);
+    uint8_t *generateConfirmMac(PacketConfirm *packet, bool sending);
 
     /**
      * Chooses DH key agreement algorithm based on RFC.
@@ -241,6 +246,8 @@ private:
     /**
      * Returns hvi from a commit packet. Have to create DHPart2 packet first.
      * hvi = hash(initiator's DHPart2 message || responder's Hello message)
+     *
+     * @return  hvi
      */
     uint8_t *generateHvi();
 

@@ -98,7 +98,18 @@ bool PacketConfirm::parse(uint8_t *data, uint32_t *errorCode)
     {
         initVector[i] = *(pos++);
     }
+    for(uint8_t i = 0; i < ENCRYPTED_PART_LENGTH; i++)
+    {
+        encryptedPart[i] = *(pos++);
+    }
+    encryptionDone = true;
+
     return true;
+}
+
+uint8_t *PacketConfirm::getConfirmMac()
+{
+    return confirmMac;
 }
 
 uint8_t *PacketConfirm::getVector()

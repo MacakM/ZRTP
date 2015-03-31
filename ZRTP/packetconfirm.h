@@ -36,6 +36,13 @@ public:
     virtual bool parse(uint8_t *data, uint32_t *errorCode);
 
     /**
+     * Returns confirm mac.
+     *
+     * @return  confirm mac
+     */
+    uint8_t *getConfirmMac();
+
+    /**
      * Gets initialization vector.
      *
      * @return  IV
