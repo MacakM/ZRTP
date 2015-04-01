@@ -165,6 +165,11 @@ uint8_t *PacketCommit::getSas()
     return sas;
 }
 
+uint8_t *PacketCommit::getMac()
+{
+    return mac;
+}
+
 void PacketCommit::setH2(uint8_t *hash)
 {
     memcpy(h2,hash,HASHIMAGE_SIZE);

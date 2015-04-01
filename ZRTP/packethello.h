@@ -90,6 +90,13 @@ public:
     uint8_t getKeyCount();
 
     /**
+     * Returns mac of packet.
+     *
+     * @return  mac
+     */
+    uint8_t *getMac();
+
+    /**
      * Sets clientID.
      *
      * @param id   clientID

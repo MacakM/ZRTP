@@ -107,10 +107,10 @@ void Zrtp::createHelloPacket(std::string clientId)
     hello = new PacketHello();
     hello->setVersion((uint8_t*)chooseHighestVersion().c_str());
     hello->setClientId(clientId);
-    hello->setH3(h3);
+    hello->setH3(myH3);
     hello->setZid(myZID);
     hello->AddSupportedTypes(userInfo);
-    uint8_t *mac = generateMac(hello);
+    uint8_t *mac = generateMac(hello, true);
     hello->setMac(mac);
     delete(mac);
 }
@@ -118,7 +118,7 @@ void Zrtp::createHelloPacket(std::string clientId)
 void Zrtp::createCommitPacket()
 {
     commit = new PacketCommit();
-    commit->setH2(h2);
+    commit->setH2(myH2);
     commit->setZid(myZID);
     commit->setKeyAgreement(keyAgreement);
     memcpy(hash,(uint8_t*)"S256",WORD_SIZE);
@@ -133,7 +133,7 @@ void Zrtp::createCommitPacket()
     uint8_t *myHvi = generateHvi();
     commit->setHvi(myHvi);
     delete(myHvi);
-    uint8_t *mac = generateMac(commit);
+    uint8_t *mac = generateMac(commit, true);
     commit->setMac(mac);
     delete(mac);
 }
@@ -142,10 +142,10 @@ void Zrtp::createDHPart1Packet()
 {
     dhPart1 = new PacketDHPart();
     dhPart1->setType((uint8_t*)"DHPart1 ");
-    dhPart1->setH1(h1);
+    dhPart1->setH1(myH1);
     generateIds(dhPart1);
     setPv(dhPart1);
-    uint8_t *mac = generateMac(dhPart1);
+    uint8_t *mac = generateMac(dhPart1, true);
     dhPart1->setMac(mac);
     delete(mac);
 }
@@ -154,10 +154,10 @@ void Zrtp::createDHPart2Packet()
 {
     dhPart2 = new PacketDHPart();
     dhPart2->setType((uint8_t*)"DHPart2 ");
-    dhPart2->setH1(h1);
+    dhPart2->setH1(myH1);
     generateIds(dhPart2);
     setPv(dhPart2);
-    uint8_t *mac = generateMac(dhPart2);
+    uint8_t *mac = generateMac(dhPart2, true);
     dhPart2->setMac(mac);
     delete(mac);
 }
@@ -166,7 +166,7 @@ void Zrtp::createConfirm1Packet()
 {
     confirm1 = new PacketConfirm();
     confirm1->setType((uint8_t*)"Confirm1");
-    confirm1->setH0(h0);
+    confirm1->setH0(myH0);
     confirm1->setSigLen(0);
     confirm1->setExpInterval(0);
 
@@ -184,7 +184,7 @@ void Zrtp::createConfirm2Packet()
 {
     confirm2 = new PacketConfirm();
     confirm2->setType((uint8_t*)"Confirm2");
-    confirm2->setH0(h0);
+    confirm2->setH0(myH0);
     confirm2->setSigLen(0);
     confirm2->setExpInterval(0);
 
@@ -200,15 +200,15 @@ void Zrtp::createConfirm2Packet()
 
 void Zrtp::generateHashImages()
 {
-    RAND_bytes(h0,HASHIMAGE_SIZE);
+    RAND_bytes(myH0,HASHIMAGE_SIZE);
 
-    SHA256(h0,HASHIMAGE_SIZE,h1);
-    SHA256(h1,HASHIMAGE_SIZE,h2);
-    SHA256(h2,HASHIMAGE_SIZE,h3);
+    SHA256(myH0,HASHIMAGE_SIZE,myH1);
+    SHA256(myH1,HASHIMAGE_SIZE,myH2);
+    SHA256(myH2,HASHIMAGE_SIZE,myH3);
     return;
 }
 
-void Zrtp::calculateRespondersH2(uint8_t *peerH1)
+void Zrtp::calculatePeerH2(uint8_t *peerH1)
 {
     SHA256(peerH1,HASHIMAGE_SIZE,peerH2);
     return;
@@ -241,24 +241,44 @@ void Zrtp::generateIds(PacketDHPart *packet)
     }
 }
 
-uint8_t *Zrtp::generateMac(Packet *packet)
+uint8_t *Zrtp::generateMac(Packet *packet, bool sending)
 {
     uint8_t key[HASHIMAGE_SIZE];
 
-    //NEMOZEM FURT SVOJE HASH IMAGE POUZIVAT
     switch(packet->getType()[0])
     {
     //Hello
     case 'H':
-        memcpy(key,h2,HASHIMAGE_SIZE);
+        if(sending)
+        {
+            memcpy(key,myH2,HASHIMAGE_SIZE);
+        }
+        else
+        {
+            memcpy(key,peerH2,HASHIMAGE_SIZE);
+        }
         break;
     //Commit
     case 'C':
-        memcpy(key,h1,HASHIMAGE_SIZE);
+        if(sending)
+        {
+            memcpy(key,myH1,HASHIMAGE_SIZE);
+        }
+        else
+        {
+            memcpy(key,peerH1,HASHIMAGE_SIZE);
+        }
         break;
     //DHPart1 or DHPart2
     case 'D':
-        memcpy(key,h0,HASHIMAGE_SIZE);
+        if(sending)
+        {
+            memcpy(key,myH0,HASHIMAGE_SIZE);
+        }
+        else
+        {
+            memcpy(key,peerH0,HASHIMAGE_SIZE);
+        }
         break;
     }
 

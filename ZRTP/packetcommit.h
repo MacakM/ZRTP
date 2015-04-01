@@ -83,6 +83,13 @@ public:
     uint8_t *getSas();
 
     /**
+     * Returns mac of packet.
+     *
+     * @return  mac
+     */
+    uint8_t *getMac();
+
+    /**
      * Sets hash image H2.
      *
      * @param hash  H2

@@ -236,6 +236,11 @@ uint8_t PacketHello::getKeyCount()
     return counts.kc;
 }
 
+uint8_t *PacketHello::getMac()
+{
+    return mac;
+}
+
 void PacketHello::setClientId(std::string id)
 {
     memset(clientId,0,CLIENTID_SIZE);

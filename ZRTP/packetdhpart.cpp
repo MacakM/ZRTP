@@ -127,6 +127,11 @@ uint8_t *PacketDHPart::getH1()
     return h1;
 }
 
+uint8_t *PacketDHPart::getMac()
+{
+    return mac;
+}
+
 void PacketDHPart::setH1(uint8_t *hash)
 {
     memcpy(h1,hash,HASHIMAGE_SIZE);

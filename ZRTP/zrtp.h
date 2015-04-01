@@ -174,7 +174,7 @@ private:
     /**
      * Calculates responder's h2 because responder doesn't send Commit.
      */
-    void calculateRespondersH2(uint8_t *peerH1);
+    void calculatePeerH2(uint8_t *peerH1);
 
     /**
      * Checks whether the previous hash image is hash of actual hash image.
@@ -194,16 +194,17 @@ private:
     void generateIds(PacketDHPart *packet);
 
     /**
-     * Creates MAC hash at the end of the Hello, Commit and DHPart packets
+     * Creates MAC hash of the Hello, Commit and DHPart packets.
      *
      * @param packet    packet which is going to be hashed
+     * @param sending   true = packet for sending, false = received packet
      *
      * @return          MAC
      */
-    uint8_t *generateMac(Packet *packet);
+    uint8_t *generateMac(Packet *packet, bool sending);
 
     /**
-     * Creates MAC hash for Confirm packets
+     * Creates MAC hash of Confirm packets
      *
      * @param packet    confirm packet
      * @param sending   true = packet for sending, false = received packet
@@ -355,12 +356,14 @@ private:
     PacketConfirm *confirm2;
     PacketError *error;
 
-    uint8_t h0[HASHIMAGE_SIZE];
-    uint8_t h1[HASHIMAGE_SIZE];
-    uint8_t h2[HASHIMAGE_SIZE];
-    uint8_t h3[HASHIMAGE_SIZE];
-
+    uint8_t myH0[HASHIMAGE_SIZE];
+    uint8_t myH1[HASHIMAGE_SIZE];
+    uint8_t myH2[HASHIMAGE_SIZE];
+    uint8_t myH3[HASHIMAGE_SIZE];
+    uint8_t peerH0[HASHIMAGE_SIZE];
+    uint8_t peerH1[HASHIMAGE_SIZE];
     uint8_t peerH2[HASHIMAGE_SIZE];
+    uint8_t peerH3[HASHIMAGE_SIZE];
 
     uint8_t hash[WORD_SIZE];
     uint8_t cipher[WORD_SIZE];
