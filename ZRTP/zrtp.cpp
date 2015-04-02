@@ -790,14 +790,6 @@ void Zrtp::createS0()
     memcpy(s0,hash,SHA256_DIGEST_LENGTH);
     delete(buffer);
     BN_clear_free(dhResult);
-
-    std::cout << std::endl;
-    std::cout << "S0:" << std::endl;
-    for(int i = 0; i < SHA256_DIGEST_LENGTH; i++)
-    {
-        std::cout << s0[i];
-    }
-    std::cout << std::endl;
 }
 
 void Zrtp::kdf(uint8_t *key, uint8_t *label, int32_t labelLength, uint8_t *context, int32_t lengthL, uint8_t *derivedKey)
@@ -841,12 +833,6 @@ void Zrtp::keyDerivation()
     //generate sashash and sasvalue
     kdf(s0,(uint8_t*)"SAS",3,kdfContext,SHA256_DIGEST_LENGTH, sasHash);
     sasValue = sasHash[0] | (sasHash[1] << 8) | (sasHash[2] << 16) | (sasHash[3] << 24);
-
-    char *sas = base32(sasValue);
-    char words[4];
-    memcpy(words,sas,4);
-    std::cout << std::endl << "SAS: " << words[0] << words[1] << words[2] << words[3] << std::endl;
-    delete(sas);
 
     //generate ExportedKey
     kdf(s0,(uint8_t*)"Exported key",12,kdfContext,SHA256_DIGEST_LENGTH, exportedKey);

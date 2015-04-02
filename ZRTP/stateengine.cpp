@@ -356,8 +356,6 @@ void StateEngine::handleSentHelloAck()
                 uint16_t messageLength = zrtp->dhPart1->getLength() * WORD_SIZE;
                 zrtp->sendData(message,messageLength);
                 std::cout << "Actual state: WaitDHPart2" << std::endl;
-                //after 10 seconds invoke protocol timeout error
-                zrtp->activateTimer(PROTOCOL_TIMEOUT);
                 actualState = WaitDHPart2;
                 return;
             }
@@ -429,8 +427,6 @@ void StateEngine::handleSentHelloAck()
             uint16_t messageLength = zrtp->dhPart1->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
             std::cout << "Actual state: WaitDHPart2" << std::endl;
-            //after 10 seconds invoke protocol timeout error
-            zrtp->activateTimer(PROTOCOL_TIMEOUT);
             actualState = WaitDHPart2;
         }
     }
@@ -660,8 +656,6 @@ void StateEngine::handleSentCommit()
             uint16_t messageLength = zrtp->dhPart1->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
             std::cout << "Actual state: WaitDHPart2" << std::endl;
-            //after 10 seconds invoke protocol timeout error
-            zrtp->activateTimer(PROTOCOL_TIMEOUT);
             actualState = WaitDHPart2;
         }
     }
@@ -759,8 +753,6 @@ void StateEngine::handleWaitCommit()
             uint16_t messageLength = zrtp->dhPart1->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
             std::cout << "Actual state: WaitDHPart2" << std::endl;
-            //after 10 seconds invoke protocol timeout error
-            zrtp->activateTimer(PROTOCOL_TIMEOUT);
             actualState = WaitDHPart2;
         }
     }
@@ -768,11 +760,6 @@ void StateEngine::handleWaitCommit()
 
 void StateEngine::handleWaitDHPart2()
 {
-    if(actualEvent->type == Timeout)
-    {
-        sendError(ProtocolTimeout);
-        return;
-    }
     if(actualEvent->type == Message)
     {
         zrtp->cancelTimer();
@@ -845,7 +832,6 @@ void StateEngine::handleWaitDHPart2()
             std::cout << "Actual state: WaitConfirm2" << std::endl;
             actualState = WaitConfirm2;
         }
-        zrtp->activateTimer(PROTOCOL_TIMEOUT);
     }
 }
 
@@ -925,14 +911,8 @@ void StateEngine::handleWaitConfirm1()
 
 void StateEngine::handleWaitConfirm2()
 {
-    if(actualEvent->type == Timeout)
-    {
-        sendError(ProtocolTimeout);
-        return;
-    }
     if(actualEvent->type == Message)
     {
-        zrtp->cancelTimer();
         uint8_t *msg = actualEvent->message;
         uint8_t type[TYPE_SIZE];
         memcpy(type,(msg+4),TYPE_SIZE);
@@ -986,7 +966,6 @@ void StateEngine::handleWaitConfirm2()
             uint8_t *message = zrtp->confirm1->toBytes();
             uint16_t messageLength = zrtp->confirm1->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
-            zrtp->activateTimer(PROTOCOL_TIMEOUT);
         }
 
         else if(memcmp(type,"Confirm2", TYPE_SIZE) == 0)
@@ -1036,7 +1015,44 @@ void StateEngine::handleWaitConfirm2()
             uint16_t messageLength = packet->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
             delete(packet);
+
             std::cout << "Actual state: Secured" << std::endl;
+
+            //print SRTP keys and salts
+            std::cout << std::endl;
+            std::cout << "SRTP Initiator's key: ";
+            for(int8_t i = 0; i < AES1_KEY_LENGTH; i++)
+            {
+                std::cout << std::hex << zrtp->srtpKeyI[i];
+            }
+            std::cout << std::endl;
+            std::cout << "SRTP Initiator's salt: ";
+            for(int8_t i = 0; i < SALT_KEY_LENGTH; i++)
+            {
+                std::cout << std::hex << zrtp->srtpSaltI[i];
+            }
+            std::cout << std::endl;
+            std::cout << "SRTP Responder's key: ";
+            for(int8_t i = 0; i < AES1_KEY_LENGTH; i++)
+            {
+                std::cout << std::hex << zrtp->srtpKeyR[i];
+            }
+            std::cout << std::endl;
+            std::cout << "SRTP Responder's salt: ";
+            for(int8_t i = 0; i < SALT_KEY_LENGTH; i++)
+            {
+                std::cout << std::hex << zrtp->srtpSaltR[i];
+            }
+            std::cout << std::endl;
+
+            //print SAS
+            char *sasPointer = zrtp->base32(zrtp->sasValue);
+            char sas[4];
+            memcpy(sas,sasPointer,4);
+
+            std::cout << std::endl << "SAS: " << std::hex << sas[0] << sas[1] << sas[2] << sas[3] << std::endl;
+            delete(sasPointer);
+
             actualState = Secured;
         }
     }
@@ -1062,7 +1078,44 @@ void StateEngine::handleWaitConf2Ack()
         if(memcmp(type,"Conf2ACK", TYPE_SIZE) == 0)
         {
             zrtp->cancelTimer();
+
             std::cout << "Actual state: Secured" << std::endl;
+
+            //print SRTP keys and salts
+            std::cout << std::endl;
+            std::cout << "SRTP Initiator's key: ";
+            for(int8_t i = 0; i < AES1_KEY_LENGTH; i++)
+            {
+                std::cout << std::hex << zrtp->srtpKeyI[i];
+            }
+            std::cout << std::endl;
+            std::cout << "SRTP Initiator's salt: ";
+            for(int8_t i = 0; i < SALT_KEY_LENGTH; i++)
+            {
+                std::cout << std::hex << zrtp->srtpSaltI[i];
+            }
+            std::cout << std::endl;
+            std::cout << "SRTP Responder's key: ";
+            for(int8_t i = 0; i < AES1_KEY_LENGTH; i++)
+            {
+                std::cout << std::hex << zrtp->srtpKeyR[i];
+            }
+            std::cout << std::endl;
+            std::cout << "SRTP Responder's salt: ";
+            for(int8_t i = 0; i < SALT_KEY_LENGTH; i++)
+            {
+                std::cout << std::hex << zrtp->srtpSaltR[i];
+            }
+            std::cout << std::endl;
+
+            //print SAS
+            char *sasPointer = zrtp->base32(zrtp->sasValue);
+            char sas[4];
+            memcpy(sas,sasPointer,4);
+
+            std::cout << std::endl << "SAS: " << std::hex << sas[0] << sas[1] << sas[2] << sas[3] << std::endl;
+            delete(sasPointer);
+
             actualState = Secured;
         }
     }
@@ -1119,6 +1172,8 @@ void StateEngine::sendError(uint32_t code)
     uint8_t *message = zrtp->error->toBytes();
     uint16_t messageLength = zrtp->error->getLength() * WORD_SIZE;
     zrtp->sendData(message,messageLength);
+
+    std::cout << " error code: " << std::hex << code << std::endl;
 
     sentMessage = message;
     sentMessageLength = messageLength;

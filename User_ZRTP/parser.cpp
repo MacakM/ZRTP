@@ -49,6 +49,24 @@ Arguments Parser::getArguments(int argc, char *argv[])
         args.sendPort = NULL;
     }
 
+    if(cmdOptionExists(argv, argv+argc, "--packet-delay"))
+    {
+        args.packetDelay = getCmdOption(argv, argv + argc, "--packet-delay");
+    }
+    else
+    {
+        args.packetDelay = 0;
+    }
+
+    if(cmdOptionExists(argv, argv+argc, "--packet-loss"))
+    {
+        args.packetLoss = getCmdOption(argv, argv + argc, "--packet-loss");
+    }
+    else
+    {
+        args.packetLoss = 0;
+    }
+
     return args;
 }
 

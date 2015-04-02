@@ -18,11 +18,14 @@ public:
     /**
      * Constructor of ZrtpTimeout.
      * @param manager   NetworkManager that created this thread.
+     * @param delay     maximum simulated delay in milliseconds
      */
-    explicit ZrtpTimeout(NetworkManager *manager);
+    explicit ZrtpTimeout(NetworkManager *manager, int32_t delay);
 
 private:
     NetworkManager *manager;
+
+    int32_t delay;
 
     void run();
 };

@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QUdpSocket>
+#include <QTime>
 #include <QTimer>
 #include <QMutex>
 #include <vector>
@@ -100,6 +101,9 @@ private:
      * @param args  loaded arguments
      */
     void setArguments(Arguments args);
+
+    int32_t packetDelay;
+    int8_t packetLoss;
 
     threadVector threads;
     UserInfo info;

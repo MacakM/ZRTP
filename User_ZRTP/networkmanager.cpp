@@ -3,13 +3,13 @@
 NetworkManager::NetworkManager(int argc, char *argv[], QObject *parent) :
     QObject(parent)
 {
+    qsrand(QTime::currentTime().msec());
     threads.reserve(15);
     actualSignal = (Signal)0;
     actualTime = 0;
 
     connect(this,SIGNAL(signalReceived()),this,SLOT(processSignal()));
     mutex = new QMutex();
-    srand (time(NULL));
     sendSocket = new QUdpSocket();
     readSocket = new QUdpSocket();
 
@@ -54,7 +54,7 @@ void NetworkManager::setActualSignal(uint8_t signalNumber, int32_t time)
 
 void NetworkManager::processPendingDatagram()
 {
-    uint8_t randValue = rand() % 5;
+    int8_t randValue = qrand() % 100;
 
     QByteArray datagram;
     QHostAddress sender;
@@ -65,8 +65,8 @@ void NetworkManager::processPendingDatagram()
     datagram.resize(readSocket->pendingDatagramSize());
     readSocket->readDatagram(datagram.data(), datagram.size(), &sender, &senderPort);
 
-    // simulated 20% packet loss
-    if(randValue == 0)
+    // simulated packet loss
+    if(randValue < packetLoss)
     {
         return;
     }
@@ -89,7 +89,7 @@ void NetworkManager::processPendingDatagram()
 
     uint8_t *message = (uint8_t*)malloc(size);
     memcpy(message,datagram.data(),size);
-    ZrtpMessage *t = new ZrtpMessage(this,message,size);
+    ZrtpMessage *t = new ZrtpMessage(this,message,size,packetDelay);
     threads.push_back(t);
     t->start();
 }
@@ -135,6 +135,7 @@ void NetworkManager::setArguments(Arguments args)
     {
         receiveIp = QHostAddress("0.0.0.0");
     }
+
     if(args.receivePort != NULL)
     {
         receivePort = atoi(args.receivePort);
@@ -159,6 +160,7 @@ void NetworkManager::setArguments(Arguments args)
     {
         sendIp = QHostAddress("127.0.0.1");
     }
+
     if(args.sendPort != NULL)
     {
         sendPort = atoi(args.sendPort);
@@ -174,11 +176,29 @@ void NetworkManager::setArguments(Arguments args)
             sendPort = 41001;
         }
     }
+
+    if(args.packetLoss != NULL)
+    {
+        packetLoss = atoi(args.packetLoss);
+    }
+    else
+    {
+        packetLoss = 0;
+    }
+
+    if(args.packetDelay != NULL)
+    {
+        packetDelay = atoi(args.packetDelay);
+    }
+    else
+    {
+        packetDelay = 0;
+    }
 }
 
 void NetworkManager::createTimeoutThread()
 {
-    ZrtpTimeout *t = new ZrtpTimeout(this);
+    ZrtpTimeout *t = new ZrtpTimeout(this,packetDelay);
     threads.push_back(t);
     t->start();
 }

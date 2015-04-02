@@ -11,6 +11,8 @@ typedef struct
     char *receivePort;
     char *sendIp;
     char *sendPort;
+    char *packetDelay;
+    char *packetLoss;
 }Arguments;
 
 /**
