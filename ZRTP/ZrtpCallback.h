@@ -18,6 +18,7 @@ public:
      *
      * @param data      sending data
      * @param length    data length
+     *
      * @return          true = successful, false = otherwise
      */
     virtual bool sendData (const uint8_t* data, int32_t length) = 0;
@@ -26,6 +27,7 @@ public:
      * Activates user's timer.
      *
      * @param time  timeout interval in milliseconds
+     *
      * @return      true = successful, false = otherwise
      */
     virtual bool activateTimer(int32_t time) = 0;
@@ -38,12 +40,12 @@ public:
     virtual bool cancelTimer() = 0;
 
     /**
-     * Enter user's critical section.
+     * Enters user's critical section.
      */
     virtual void enterCriticalSection() = 0;
 
     /**
-     * Leave user's critical section.
+     * Leaves user's critical section.
      */
     virtual void leaveCriticalSection() = 0;
 

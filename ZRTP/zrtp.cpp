@@ -18,13 +18,6 @@ Zrtp::Zrtp(ZrtpCallback *cb, Role role, std::string clientId, UserInfo *info)
     RAND_bytes(auxsecret,ID_SIZE);
     RAND_bytes(pbxsecret,ID_SIZE);
 
-    //generate private and public key
-    diffieHellman();
-
-    assert(publicKey);
-    assert(privateKey);
-    assert(p);
-
     engine = new StateEngine(this);
 
     assert(engine);
@@ -44,6 +37,54 @@ Zrtp::~Zrtp()
     if(engine)
     {
         delete engine;
+    }
+}
+
+void Zrtp::endZrtp()
+{
+    if(hello)
+    {
+        delete(hello);
+    }
+    if(peerHello)
+    {
+        delete(peerHello);
+    }
+    if(commit)
+    {
+        delete(commit);
+    }
+    if(dhPart1)
+    {
+        delete(dhPart1);
+    }
+    if(dhPart2)
+    {
+        delete(dhPart2);
+    }
+    if(confirm1)
+    {
+        delete(confirm1);
+    }
+    if(confirm2)
+    {
+        delete(confirm2);
+    }
+    if(error)
+    {
+        delete(error);
+    }
+    if(privateKey)
+    {
+        BN_clear_free(privateKey);
+    }
+    if(publicKey)
+    {
+        BN_clear_free(publicKey);
+    }
+    if(p)
+    {
+        BN_clear_free(p);
     }
 }
 
@@ -249,36 +290,15 @@ uint8_t *Zrtp::generateMac(Packet *packet, bool sending)
     {
     //Hello
     case 'H':
-        if(sending)
-        {
-            memcpy(key,myH2,HASHIMAGE_SIZE);
-        }
-        else
-        {
-            memcpy(key,peerH2,HASHIMAGE_SIZE);
-        }
+        sending ? memcpy(key,myH2,HASHIMAGE_SIZE) : memcpy(key,peerH2,HASHIMAGE_SIZE);
         break;
     //Commit
     case 'C':
-        if(sending)
-        {
-            memcpy(key,myH1,HASHIMAGE_SIZE);
-        }
-        else
-        {
-            memcpy(key,peerH1,HASHIMAGE_SIZE);
-        }
+        sending ? memcpy(key,myH1,HASHIMAGE_SIZE) : memcpy(key,peerH1,HASHIMAGE_SIZE);
         break;
     //DHPart1 or DHPart2
     case 'D':
-        if(sending)
-        {
-            memcpy(key,myH0,HASHIMAGE_SIZE);
-        }
-        else
-        {
-            memcpy(key,peerH0,HASHIMAGE_SIZE);
-        }
+        sending ? memcpy(key,myH0,HASHIMAGE_SIZE) : memcpy(key,peerH0,HASHIMAGE_SIZE);
         break;
     }
 
@@ -548,9 +568,6 @@ void Zrtp::diffieHellman()
     BN_copy(publicKey,dh->pub_key);
     BN_copy(p, dh->p);
 
-    /*BN_free(prime);
-    BN_free(&generator);*/
-
     DH_free(dh);
 }
 
@@ -560,7 +577,7 @@ uint8_t *Zrtp::generateHvi()
     (myRole == Initiator) ? helloR = peerHello : helloR = hello;
 
     assert(dhPart2);
-    uint8_t *buffer = (uint8_t*)malloc((dhPart2->getLength() + helloR->getLength()) * WORD_SIZE);
+    uint8_t *buffer = new uint8_t[(dhPart2->getLength() + helloR->getLength()) * WORD_SIZE];
 
     memcpy(buffer, dhPart2->toBytes(), dhPart2->getLength() * WORD_SIZE);
     uint8_t *secondHalf = &(buffer[dhPart2->getLength() * WORD_SIZE]);
@@ -569,20 +586,20 @@ uint8_t *Zrtp::generateHvi()
     uint8_t *hash = new uint8_t[SHA256_DIGEST_LENGTH];
     assert(buffer);
     SHA256(buffer, (dhPart2->getLength() + helloR->getLength()) * WORD_SIZE, hash);
-    free(buffer);
+    delete(buffer);
     return hash;
 }
 
 void Zrtp::setPv(PacketDHPart *packet)
 {
     assert(publicKey);
-    uint8_t *buffer = (uint8_t*)malloc((BN_num_bytes(publicKey)+1) * sizeof(uint8_t));
+    uint8_t *buffer = new uint8_t[(BN_num_bytes(publicKey)+1) * sizeof(uint8_t)];
     buffer[BN_num_bytes(publicKey)] = '\0';
 
     BN_bn2bin(publicKey,buffer);
 
     packet->setPv(buffer);
-    free(buffer);
+    delete(buffer);
 }
 
 bool Zrtp::isValidPeerPv()
@@ -600,22 +617,22 @@ bool Zrtp::isValidPeerPv()
     //check publicKey != 1
     if(BN_cmp(peerPublicKey,testingNumber) == 0)
     {
-        BN_free(peerPublicKey);
+        BN_clear_free(peerPublicKey);
         BN_free(testingNumber);
         return false;
     }
 
-    BN_add(testingNumber,p,testingNumber);
+    BN_sub(testingNumber,p,testingNumber);
 
     //check publicKey != p - 1
     if(BN_cmp(peerPublicKey,testingNumber) == 0)
     {
-        BN_free(peerPublicKey);
+        BN_clear_free(peerPublicKey);
         BN_free(testingNumber);
         return false;
     }
 
-    BN_free(peerPublicKey);
+    BN_clear_free(peerPublicKey);
     BN_free(testingNumber);
     return true;
 }
@@ -625,8 +642,8 @@ void Zrtp::createTotalHash()
     PacketHello *helloR;
     (myRole == Initiator) ? helloR = peerHello : helloR = hello;
 
-    uint8_t *buffer = (uint8_t*)malloc((helloR->getLength() + commit->getLength() +
-                                        dhPart1->getLength() + dhPart2->getLength()) * WORD_SIZE);
+    uint8_t *buffer = new uint8_t[(helloR->getLength() + commit->getLength() +
+                                        dhPart1->getLength() + dhPart2->getLength()) * WORD_SIZE];
 
     memcpy(buffer, helloR->toBytes(), helloR->getLength() * WORD_SIZE);
     uint8_t *nextPos = &(buffer[helloR->getLength() * WORD_SIZE]);
@@ -641,7 +658,7 @@ void Zrtp::createTotalHash()
     SHA256(buffer, (helloR->getLength() + commit->getLength() +
                     dhPart1->getLength() + dhPart2->getLength()) * WORD_SIZE, hash);
     memcpy(totalHash,hash,SHA256_DIGEST_LENGTH);
-    free(buffer);
+    delete(buffer);
 /*
     std::cout << "Total hash:" << std::endl;
     for(int i = 0; i < SHA256_DIGEST_LENGTH; i++)
@@ -668,25 +685,24 @@ void Zrtp::createDHResult()
 
     BN_copy(dhResult,result);
 
-    BN_free(peerPublicKey);
-    BN_free(result);
+    BN_clear_free(peerPublicKey);
+    BN_clear_free(result);
     BN_CTX_free(ctx);
-
+/*
     uint8_t *buffer;
     buffer = (uint8_t*)calloc(BN_num_bytes(dhResult), sizeof(uint8_t));
 
     BN_bn2bin(dhResult,buffer);
 
-    free(buffer);
-    /*
     std::cout << std::endl;
     std::cout << "DHResult:" << std::endl;
     for(int i = 0; i < BN_num_bytes(dhResult); i++)
     {
         std::cout << buffer[i];
     }
-    std::cout << std::endl;*/
+    std::cout << std::endl;
 
+    free(buffer);*/
 }
 
 void Zrtp::createKDFContext()
@@ -735,9 +751,9 @@ void Zrtp::createS0()
     int32_t counter = 1;
     bool initiator = (myRole == Initiator);
 
-    uint8_t *buffer = (uint8_t*)malloc(sizeof(int32_t) + BN_num_bytes(dhResult)
+    uint8_t *buffer = new uint8_t[sizeof(int32_t) + BN_num_bytes(dhResult)
                                        + 13*sizeof(uint8_t) + 2*ZID_SIZE + SHA256_DIGEST_LENGTH
-                                       + 3*ID_SIZE + 3*sizeof(int32_t));
+                                       + 3*ID_SIZE + 3*sizeof(int32_t)];
     uint8_t *pos = buffer;
     memcpy(pos, &counter, sizeof(int32_t));
     pos += sizeof(int32_t);
@@ -772,7 +788,8 @@ void Zrtp::createS0()
     SHA256(buffer,bufferLength,hash);
 
     memcpy(s0,hash,SHA256_DIGEST_LENGTH);
-    BN_clear(dhResult);
+    delete(buffer);
+    BN_clear_free(dhResult);
 
     std::cout << std::endl;
     std::cout << "S0:" << std::endl;
@@ -790,7 +807,7 @@ void Zrtp::kdf(uint8_t *key, uint8_t *label, int32_t labelLength, uint8_t *conte
     memcpy(ki,key,SHA256_DIGEST_LENGTH);
 
     int32_t bufferLength = sizeof(int32_t) + labelLength + sizeof(uint8_t) + KDF_CONTEXT_LENGTH + sizeof(int32_t);
-    uint8_t *buffer = (uint8_t*)malloc(bufferLength);
+    uint8_t *buffer = new uint8_t[bufferLength];
     uint8_t *pos = buffer;
     memcpy(pos,&counter,sizeof(int32_t));
     pos += sizeof(int32_t);
@@ -813,7 +830,7 @@ void Zrtp::kdf(uint8_t *key, uint8_t *label, int32_t labelLength, uint8_t *conte
         sprintf((char*)&computedMac[i*2], "%02x", (unsigned int)digest[i]);
     }
     memcpy(derivedKey,computedMac,lengthL);
-    free(buffer);
+    delete(buffer);
 }
 
 void Zrtp::keyDerivation()
@@ -823,7 +840,13 @@ void Zrtp::keyDerivation()
 
     //generate sashash and sasvalue
     kdf(s0,(uint8_t*)"SAS",3,kdfContext,SHA256_DIGEST_LENGTH, sasHash);
-    memcpy(sasValue,sasHash,32);
+    sasValue = sasHash[0] | (sasHash[1] << 8) | (sasHash[2] << 16) | (sasHash[3] << 24);
+
+    char *sas = base32(sasValue);
+    char words[4];
+    memcpy(words,sas,4);
+    std::cout << std::endl << "SAS: " << words[0] << words[1] << words[2] << words[3] << std::endl;
+    delete(sas);
 
     //generate ExportedKey
     kdf(s0,(uint8_t*)"Exported key",12,kdfContext,SHA256_DIGEST_LENGTH, exportedKey);
@@ -878,8 +901,6 @@ void Zrtp::encryptConfirmData()
 
         assert(cipherTextLen == ENCRYPTED_PART_LENGTH);
 
-        EVP_CIPHER_CTX_free(ctx);
-
         confirm2->setEncryptedPart(encrypted);
     }
     else    //Responder
@@ -904,10 +925,9 @@ void Zrtp::encryptConfirmData()
 
         assert(cipherTextLen == ENCRYPTED_PART_LENGTH);
 
-        EVP_CIPHER_CTX_free(ctx);
-
         confirm1->setEncryptedPart(encrypted);
     }
+    EVP_CIPHER_CTX_free(ctx);
 }
 
 void Zrtp::decryptConfirmData(uint8_t *data)
@@ -1027,4 +1047,16 @@ bool Zrtp::compareVersions()
         }
     }
     return false;
+}
+
+char *Zrtp::base32(uint32_t bits)
+{
+    int i, n, shift;
+    char *result = new char[4];
+    for(i = 0, shift = 27; i!=4; ++i, shift -= 5)
+    {
+        n = (bits >> shift) & 31;
+        result[i] = "ybndrfg8ejkmcpqxot1uwisza345h769"[n];
+    }
+    return result;
 }

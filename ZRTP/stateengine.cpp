@@ -58,6 +58,12 @@ bool StateEngine::timerNext(zrtpTimer *timer)
 void StateEngine::processEvent(Event *event)
 {
     assert(event);
+    if(event->type == End)
+    {
+        std::cout << "Actual state: Initial" << std::endl;
+        actualState = Initial;
+    }
+
     if(event->messageLength > 0)
     {
         if(memcmp(event->message + 4,"Error   ",TYPE_SIZE) == 0)
@@ -80,6 +86,7 @@ void StateEngine::processEvent(Event *event)
             delete(packet);
         }
     }
+
     actualEvent = event;
     (this->*handlers[actualState])();
 }
@@ -155,6 +162,13 @@ void StateEngine::handleSentHello()
                     sendError(KeyExchangeNotSupported);
                     return;
                 }
+
+                //generate private and public key
+                zrtp->diffieHellman();
+
+                assert(zrtp->publicKey);
+                assert(zrtp->privateKey);
+                assert(zrtp->p);
 
                 std::cout << "Actual state: SentHelloAck" << std::endl;
                 actualState = SentHelloAck;
@@ -274,6 +288,7 @@ void StateEngine::handleSentHelloAck()
             }
             zrtp->cancelTimer();
             delete(packet);
+
             if(zrtp->myRole == Responder)
             {
                 std::cout << "Actual state: WaitCommit" << std::endl;
@@ -399,8 +414,8 @@ void StateEngine::handleSentHelloAck()
             delete(zrtp->commit);
             zrtp->commit = peerCommit;
             zrtp->myRole = Responder;
-            //Free created DHPart2 and create new DHPart1
-            free(zrtp->dhPart2);
+            //delete created DHPart2 and create new DHPart1
+            delete(zrtp->dhPart2);
 
             if(!zrtp->checkCompatibility(&errorCode))
             {
@@ -470,6 +485,14 @@ void StateEngine::handleReceivedHelloAck()
                 sendError(KeyExchangeNotSupported);
                 return;
             }
+
+            //generate private and public key
+            zrtp->diffieHellman();
+
+            assert(zrtp->publicKey);
+            assert(zrtp->privateKey);
+            assert(zrtp->p);
+
 
             if(zrtp->myRole == Responder)
             {
@@ -623,8 +646,8 @@ void StateEngine::handleSentCommit()
             zrtp->commit = peerCommit;
             zrtp->myRole = Responder;
             zrtp->cancelTimer();
-            //Free created DHPart2 and create new DHPart1
-            free(zrtp->dhPart2);
+            //delete created DHPart2 and create new DHPart1
+            delete(zrtp->dhPart2);
 
             if(!zrtp->checkCompatibility(&errorCode))
             {
@@ -1012,9 +1035,9 @@ void StateEngine::handleWaitConfirm2()
             uint8_t *message = packet->toBytes();
             uint16_t messageLength = packet->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
+            delete(packet);
             std::cout << "Actual state: Secured" << std::endl;
             actualState = Secured;
-            delete(packet);
         }
     }
 }

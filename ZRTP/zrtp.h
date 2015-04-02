@@ -4,6 +4,7 @@
 #define KDF_CONTEXT_LENGTH  2 * ZID_SIZE + SHA256_DIGEST_LENGTH
 #define AES1_KEY_LENGTH     16
 #define SALT_KEY_LENGTH     14
+#define SAS_VALUE_LENGTH    4
 
 #include <iostream>
 #include <algorithm>
@@ -27,17 +28,6 @@
 #include <openssl/rand.h>
 #include <openssl/dh.h>
 #include <openssl/aes.h>
-
-#define KEY_TYPE_COUNT  5
-
-typedef enum
-{
-    DH2k = 0,
-    EC25 = 1,
-    DH3k = 2,
-    EC38 = 3,
-    EC52 = 4
-}KeyType;
 
 typedef enum
 {
@@ -78,6 +68,11 @@ public:
      * Zrtp destructor.
      */
     ~Zrtp();
+
+    /**
+     * Ends Zrtp.
+     */
+    void endZrtp();
 
     /**
      * Method called by user when ZRTP message arrives.
@@ -340,6 +335,8 @@ private:
      */
     bool compareVersions();
 
+    char *base32(uint32_t bits);
+
     uint8_t myZID[ZID_SIZE];
     ZrtpCallback *callback;
     Role myRole;
@@ -387,7 +384,7 @@ private:
 
     uint8_t zrtpSess[SHA256_DIGEST_LENGTH];
     uint8_t sasHash[SHA256_DIGEST_LENGTH];
-    uint8_t sasValue[32];
+    uint32_t sasValue;
     uint8_t exportedKey[SHA256_DIGEST_LENGTH];
 
     uint8_t srtpKeyI[AES1_KEY_LENGTH];
