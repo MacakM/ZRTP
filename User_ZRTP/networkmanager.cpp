@@ -94,16 +94,6 @@ void NetworkManager::processPendingDatagram()
     t->start();
 }
 
-void NetworkManager::processZrtpTimeout()
-{
-    zrtp->processTimeout();
-}
-
-void NetworkManager::processZrtpMessage(uint8_t *msg, int32_t length)
-{
-    zrtp->processMessage(msg, length);
-}
-
 void NetworkManager::processSignal()
 {
     if (actualSignal == activate)
@@ -116,9 +106,14 @@ void NetworkManager::processSignal()
     }
 }
 
-uint8_t NetworkManager::getMyZid()
+void NetworkManager::processZrtpTimeout()
 {
-    return myZid;
+    zrtp->processTimeout();
+}
+
+void NetworkManager::processZrtpMessage(uint8_t *msg, int32_t length)
+{
+    zrtp->processMessage(msg, length);
 }
 
 void NetworkManager::setArguments(Arguments args)

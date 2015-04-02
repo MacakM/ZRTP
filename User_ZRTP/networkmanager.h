@@ -22,6 +22,11 @@
 
 typedef std::vector<QThread*> threadVector;
 
+/**
+ * Class that is in charge of all network events that happens on chosen port and IP address.
+ *
+ * @author Martin Macak
+ */
 class NetworkManager : public QObject
 {
     Q_OBJECT
@@ -34,24 +39,68 @@ class NetworkManager : public QObject
     friend class MyCallbacks;
 
 public:
+    /**
+     * NetworkManager constructor.
+     *
+     * @param argc      command line argument argc
+     * @param argv      command line argument argv
+     * @param parent    parent of this class
+     */
     explicit NetworkManager(int argc, char *argv[], QObject *parent = 0);
 
+    /**
+     * Set actual signal so NetworkManager can process it.
+     *
+     * @param signalNumber  1 = set timer with given time, 2 = cancel timer
+     * @param time          given time
+     */
     void setActualSignal(uint8_t signalNumber, int32_t time = 0);
 
 signals:
+    /**
+     * Is emited when the signal has been set.
+     */
     void signalReceived();
 
 public slots:
+    /**
+     * Slot that is called when there are some pending data in readSocket.
+     */
     void processPendingDatagram();
+
+    /**
+     * Slot that is called when timeout occurs
+     */
     void createTimeoutThread();
+
+    /**
+     * Process set signal.
+     */
     void processSignal();
 
 public:
-    uint8_t getMyZid();
+    /**
+     * Calls ZRTP method to process timeout.
+     *
+     */
     void processZrtpTimeout();
+
+    /**
+     * Calls ZRTP method to process received message.
+     *
+     * @param msg       received message
+     * @param length    length of the message
+     */
     void processZrtpMessage(uint8_t *msg, int32_t length);
 
 private:
+    /**
+     * Sets given arguments from parser.
+     *
+     * @param args  loaded arguments
+     */
+    void setArguments(Arguments args);
+
     threadVector threads;
     UserInfo info;
 
@@ -75,8 +124,6 @@ private:
 
     std::ofstream myFile;
     QMutex *mutex;
-
-    void setArguments(Arguments args);
 };
 
 #endif // NETWORKMANAGER_H

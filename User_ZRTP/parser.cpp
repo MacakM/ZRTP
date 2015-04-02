@@ -1,9 +1,5 @@
 #include "parser.h"
 
-Parser::Parser()
-{
-}
-
 Arguments Parser::getArguments(int argc, char *argv[])
 {
     Arguments args;
