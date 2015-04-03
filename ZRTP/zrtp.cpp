@@ -22,7 +22,9 @@ Zrtp::Zrtp(ZrtpCallback *cb, Role role, std::string clientId, UserInfo *info)
 
     assert(engine);
 
-    createHelloPacket(clientId);
+    memset(myClientId,0,CLIENTID_SIZE);
+    memcpy(myClientId, clientId.c_str(),clientId.length());
+    createHelloPacket(myClientId);
 
     assert(hello);
 
@@ -34,58 +36,17 @@ Zrtp::Zrtp(ZrtpCallback *cb, Role role, std::string clientId, UserInfo *info)
 
 Zrtp::~Zrtp()
 {
-    if(engine)
-    {
-        delete engine;
-    }
-}
-
-void Zrtp::endZrtp()
-{
-    if(hello)
-    {
-        delete(hello);
-    }
-    if(peerHello)
-    {
-        delete(peerHello);
-    }
-    if(commit)
-    {
-        delete(commit);
-    }
-    if(dhPart1)
-    {
-        delete(dhPart1);
-    }
-    if(dhPart2)
-    {
-        delete(dhPart2);
-    }
-    if(confirm1)
-    {
-        delete(confirm1);
-    }
-    if(confirm2)
-    {
-        delete(confirm2);
-    }
-    if(error)
-    {
-        delete(error);
-    }
-    if(privateKey)
-    {
-        BN_clear_free(privateKey);
-    }
-    if(publicKey)
-    {
-        BN_clear_free(publicKey);
-    }
-    if(p)
-    {
-        BN_clear_free(p);
-    }
+    delete engine;
+    delete(hello);
+    delete(peerHello);
+    delete(commit);
+    delete(dhPart1);
+    delete(dhPart2);
+    delete(confirm1);
+    delete(confirm2);
+    BN_clear_free(privateKey);
+    BN_clear_free(publicKey);
+    BN_clear_free(p);
 }
 
 void Zrtp::processMessage(uint8_t *msg, int32_t length)
@@ -143,7 +104,7 @@ void Zrtp::leaveCriticalSection()
     callback->leaveCriticalSection();
 }
 
-void Zrtp::createHelloPacket(std::string clientId)
+void Zrtp::createHelloPacket(uint8_t *clientId)
 {
     hello = new PacketHello();
     hello->setVersion((uint8_t*)chooseHighestVersion().c_str());
@@ -153,7 +114,7 @@ void Zrtp::createHelloPacket(std::string clientId)
     hello->AddSupportedTypes(userInfo);
     uint8_t *mac = generateMac(hello, true);
     hello->setMac(mac);
-    delete(mac);
+    delete[](mac);
 }
 
 void Zrtp::createCommitPacket()
@@ -173,10 +134,10 @@ void Zrtp::createCommitPacket()
     createDHPart2Packet();
     uint8_t *myHvi = generateHvi();
     commit->setHvi(myHvi);
-    delete(myHvi);
+    delete[](myHvi);
     uint8_t *mac = generateMac(commit, true);
     commit->setMac(mac);
-    delete(mac);
+    delete[](mac);
 }
 
 void Zrtp::createDHPart1Packet()
@@ -188,7 +149,7 @@ void Zrtp::createDHPart1Packet()
     setPv(dhPart1);
     uint8_t *mac = generateMac(dhPart1, true);
     dhPart1->setMac(mac);
-    delete(mac);
+    delete[](mac);
 }
 
 void Zrtp::createDHPart2Packet()
@@ -200,7 +161,7 @@ void Zrtp::createDHPart2Packet()
     setPv(dhPart2);
     uint8_t *mac = generateMac(dhPart2, true);
     dhPart2->setMac(mac);
-    delete(mac);
+    delete[](mac);
 }
 
 void Zrtp::createConfirm1Packet()
@@ -218,7 +179,7 @@ void Zrtp::createConfirm1Packet()
     encryptConfirmData();
     uint8_t *confirmMac = generateConfirmMac(confirm1,true);
     confirm1->setConfirmMac(confirmMac);
-    delete(confirmMac);
+    delete[](confirmMac);
 }
 
 void Zrtp::createConfirm2Packet()
@@ -236,7 +197,7 @@ void Zrtp::createConfirm2Packet()
     encryptConfirmData();
     uint8_t *confirmMac = generateConfirmMac(confirm2,true);
     confirm2->setConfirmMac(confirmMac);
-    delete(confirmMac);
+    delete[](confirmMac);
 }
 
 void Zrtp::generateHashImages()
@@ -586,7 +547,7 @@ uint8_t *Zrtp::generateHvi()
     uint8_t *hash = new uint8_t[SHA256_DIGEST_LENGTH];
     assert(buffer);
     SHA256(buffer, (dhPart2->getLength() + helloR->getLength()) * WORD_SIZE, hash);
-    delete(buffer);
+    delete[](buffer);
     return hash;
 }
 
@@ -599,7 +560,7 @@ void Zrtp::setPv(PacketDHPart *packet)
     BN_bn2bin(publicKey,buffer);
 
     packet->setPv(buffer);
-    delete(buffer);
+    delete[](buffer);
 }
 
 bool Zrtp::isValidPeerPv()
@@ -658,7 +619,7 @@ void Zrtp::createTotalHash()
     SHA256(buffer, (helloR->getLength() + commit->getLength() +
                     dhPart1->getLength() + dhPart2->getLength()) * WORD_SIZE, hash);
     memcpy(totalHash,hash,SHA256_DIGEST_LENGTH);
-    delete(buffer);
+    delete[](buffer);
 /*
     std::cout << "Total hash:" << std::endl;
     for(int i = 0; i < SHA256_DIGEST_LENGTH; i++)
@@ -788,7 +749,7 @@ void Zrtp::createS0()
     SHA256(buffer,bufferLength,hash);
 
     memcpy(s0,hash,SHA256_DIGEST_LENGTH);
-    delete(buffer);
+    delete[](buffer);
     BN_clear_free(dhResult);
 }
 
@@ -822,7 +783,7 @@ void Zrtp::kdf(uint8_t *key, uint8_t *label, int32_t labelLength, uint8_t *conte
         sprintf((char*)&computedMac[i*2], "%02x", (unsigned int)digest[i]);
     }
     memcpy(derivedKey,computedMac,lengthL);
-    delete(buffer);
+    delete[](buffer);
 }
 
 void Zrtp::keyDerivation()
@@ -1025,11 +986,12 @@ bool Zrtp::compareVersions()
         if(userInfo->versions.size() != 0 && changedVersion)
         {
             //get clientID from actual Hello in order to create new Hello
-            char *buffer = (char*)hello->getClientId();
-            std::string id(buffer, ID_SIZE);
+            uint8_t *buffer = hello->getClientId();
+            uint8_t clientId[CLIENTID_SIZE];
+            memcpy(clientId,buffer,CLIENTID_SIZE);
 
             delete(hello);
-            createHelloPacket(id);
+            createHelloPacket(clientId);
         }
     }
     return false;

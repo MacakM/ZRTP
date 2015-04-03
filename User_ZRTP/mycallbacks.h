@@ -57,6 +57,11 @@ public:
      */
     virtual void leaveCriticalSection();
 
+    /**
+     * Tells user that key agreement has ended successfuly.
+     */
+    virtual void keyAgreed();
+
 private:
     NetworkManager *manager;
 };

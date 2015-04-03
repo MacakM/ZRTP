@@ -335,14 +335,15 @@ void StateEngine::handleSentHelloAck()
                     return;
                 }
                 //check Hello MAC
+                assert(zrtp->peerHello);
                 uint8_t *mac = zrtp->generateMac(zrtp->peerHello,false);
                 if(memcmp(mac,zrtp->peerHello->getMac(),MAC_SIZE) != 0)
                 {
-                    delete(mac);
+                    delete[](mac);
                     sendError(CriticalSoftwareError);
                     return;
                 }
-                delete(mac);
+                delete[](mac);
                 //check whether commit contains supported algorithms
                 if(!zrtp->checkCompatibility(&errorCode))
                 {
@@ -351,7 +352,7 @@ void StateEngine::handleSentHelloAck()
                 }
 
                 zrtp->createDHPart1Packet();
-
+                assert(zrtp->dhPart1);
                 uint8_t *message = zrtp->dhPart1->toBytes();
                 uint16_t messageLength = zrtp->dhPart1->getLength() * WORD_SIZE;
                 zrtp->sendData(message,messageLength);
@@ -383,14 +384,15 @@ void StateEngine::handleSentHelloAck()
                 return;
             }
             //check Hello MAC
+            assert(zrtp->peerHello);
             uint8_t *mac = zrtp->generateMac(zrtp->peerHello,false);
             if(memcmp(mac,zrtp->peerHello->getMac(),MAC_SIZE) != 0)
             {
-                delete(mac);
+                delete[](mac);
                 sendError(CriticalSoftwareError);
                 return;
             }
-            delete(mac);
+            delete[](mac);
 
             //discard commit with lower hvi
             if(zrtp->commit->hasGreaterHvi(peerCommit))
@@ -422,7 +424,7 @@ void StateEngine::handleSentHelloAck()
             }
 
             zrtp->createDHPart1Packet();
-
+            assert(zrtp->dhPart1);
             uint8_t *message = zrtp->dhPart1->toBytes();
             uint16_t messageLength = zrtp->dhPart1->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
@@ -456,6 +458,7 @@ void StateEngine::handleReceivedHelloAck()
                 return;
             }
             //equal ZID check
+            assert(zrtp->hello);
             if(memcmp(zrtp->peerHello->getZid(),zrtp->hello->getZid(),ZID_SIZE) == 0)
             {
                 sendError(EqualZid);
@@ -571,14 +574,15 @@ void StateEngine::handleSentCommit()
                 return;
             }
             //check Hello MAC
+            assert(zrtp->peerHello);
             uint8_t *mac = zrtp->generateMac(zrtp->peerHello,false);
             if(memcmp(mac,zrtp->peerHello->getMac(),MAC_SIZE) != 0)
             {
-                delete(mac);
+                delete[](mac);
                 sendError(CriticalSoftwareError);
                 return;
             }
-            delete(mac);
+            delete[](mac);
 
             zrtp->cancelTimer();
             uint8_t *message = zrtp->dhPart2->toBytes();
@@ -621,14 +625,15 @@ void StateEngine::handleSentCommit()
                 return;
             }
             //check Hello MAC
+            assert(zrtp->peerHello);
             uint8_t *mac = zrtp->generateMac(zrtp->peerHello,false);
             if(memcmp(mac,zrtp->peerHello->getMac(),MAC_SIZE) != 0)
             {
-                delete(mac);
+                delete[](mac);
                 sendError(CriticalSoftwareError);
                 return;
             }
-            delete(mac);
+            delete[](mac);
 
             //discard commit with lower hvi
             if(zrtp->commit->hasGreaterHvi(peerCommit))
@@ -652,6 +657,7 @@ void StateEngine::handleSentCommit()
             }
 
             zrtp->createDHPart1Packet();
+            assert(zrtp->dhPart1);
             uint8_t *message = zrtp->dhPart1->toBytes();
             uint16_t messageLength = zrtp->dhPart1->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
@@ -732,14 +738,15 @@ void StateEngine::handleWaitCommit()
                 return;
             }
             //check Hello MAC
+            assert(zrtp->peerHello);
             uint8_t *mac = zrtp->generateMac(zrtp->peerHello,false);
             if(memcmp(mac,zrtp->peerHello->getMac(),MAC_SIZE) != 0)
             {
-                delete(mac);
+                delete[](mac);
                 sendError(CriticalSoftwareError);
                 return;
             }
-            delete(mac);
+            delete[](mac);
 
             if(!zrtp->checkCompatibility(&errorCode))
             {
@@ -748,7 +755,7 @@ void StateEngine::handleWaitCommit()
             }
 
             zrtp->createDHPart1Packet();
-
+            assert(zrtp->dhPart1);
             uint8_t *message = zrtp->dhPart1->toBytes();
             uint16_t messageLength = zrtp->dhPart1->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
@@ -793,11 +800,11 @@ void StateEngine::handleWaitDHPart2()
             uint8_t *calculatedHvi = zrtp->generateHvi();
             if(memcmp(zrtp->commit->getHvi(),calculatedHvi,HVI_SIZE) != 0)
             {
-                delete(calculatedHvi);
+                delete[](calculatedHvi);
                 sendError(DhHviError);
                 return;
             }
-            delete(calculatedHvi);
+            delete[](calculatedHvi);
             //check whether the public value is valid
             if(!zrtp->isValidPeerPv())
             {
@@ -812,20 +819,22 @@ void StateEngine::handleWaitDHPart2()
                 return;
             }
             //check Commit MAC
+            assert(zrtp->commit);
             uint8_t *mac = zrtp->generateMac(zrtp->commit,false);
             if(memcmp(mac,zrtp->commit->getMac(),MAC_SIZE) != 0)
             {
-                delete(mac);
+                delete[](mac);
                 sendError(CriticalSoftwareError);
                 return;
             }
-            delete(mac);
+            delete[](mac);
 
             zrtp->createDHResult();
             zrtp->sharedSecretCalculation();
             zrtp->keyDerivation();
 
             zrtp->createConfirm1Packet();
+            assert(zrtp->confirm1);
             uint8_t *message = zrtp->confirm1->toBytes();
             uint16_t messageLength = zrtp->confirm1->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
@@ -872,11 +881,11 @@ void StateEngine::handleWaitConfirm1()
             uint8_t *confMac = zrtp->generateConfirmMac(zrtp->confirm1,false);
             if(memcmp(confMac,zrtp->confirm1->getConfirmMac(),MAC_SIZE) != 0)
             {
-                delete(confMac);
+                delete[](confMac);
                 sendError(BadConfirm);
                 return;
             }
-            delete(confMac);
+            delete[](confMac);
             zrtp->decryptConfirmData(msg);
             //check hash image h1
             memcpy(zrtp->peerH0,zrtp->confirm1->getH0(),HASHIMAGE_SIZE);
@@ -886,16 +895,18 @@ void StateEngine::handleWaitConfirm1()
                 return;
             }
             //check DHPart1 MAC
+            assert(zrtp->dhPart1);
             uint8_t *mac = zrtp->generateMac(zrtp->dhPart1,false);
             if(memcmp(mac,zrtp->dhPart1->getMac(),MAC_SIZE) != 0)
             {
-                delete(mac);
+                delete[](mac);
                 sendError(CriticalSoftwareError);
                 return;
             }
-            delete(mac);
+            delete[](mac);
 
             zrtp->createConfirm2Packet();
+            assert(zrtp->confirm2);
             uint8_t *message = zrtp->confirm2->toBytes();
             uint16_t messageLength = zrtp->confirm2->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
@@ -935,11 +946,11 @@ void StateEngine::handleWaitConfirm2()
             uint8_t *calculatedHvi = zrtp->generateHvi();
             if(memcmp(zrtp->commit->getHvi(),calculatedHvi,HVI_SIZE) != 0)
             {
-                delete(calculatedHvi);
+                delete[](calculatedHvi);
                 sendError(DhHviError);
                 return;
             }
-            delete(calculatedHvi);
+            delete[](calculatedHvi);
             //check whether the public value is valid
             if(!zrtp->isValidPeerPv())
             {
@@ -954,14 +965,15 @@ void StateEngine::handleWaitConfirm2()
                 return;
             }
             //check Commit MAC
+            assert(zrtp->commit);
             uint8_t *mac = zrtp->generateMac(zrtp->commit,false);
             if(memcmp(mac,zrtp->commit->getMac(),MAC_SIZE) != 0)
             {
-                delete(mac);
+                delete[](mac);
                 sendError(CriticalSoftwareError);
                 return;
             }
-            delete(mac);
+            delete[](mac);
 
             uint8_t *message = zrtp->confirm1->toBytes();
             uint16_t messageLength = zrtp->confirm1->getLength() * WORD_SIZE;
@@ -987,11 +999,11 @@ void StateEngine::handleWaitConfirm2()
             uint8_t *confMac = zrtp->generateConfirmMac(zrtp->confirm2,false);
             if(memcmp(confMac,zrtp->confirm2->getConfirmMac(),MAC_SIZE) != 0)
             {
-                delete(confMac);
+                delete[](confMac);
                 sendError(BadConfirm);
                 return;
             }
-            delete(confMac);
+            delete[](confMac);
             zrtp->decryptConfirmData(msg);
             //check hash image h1
             memcpy(zrtp->peerH0,zrtp->confirm2->getH0(),HASHIMAGE_SIZE);
@@ -1001,14 +1013,15 @@ void StateEngine::handleWaitConfirm2()
                 return;
             }
             //check DHPart2 MAC
+            assert(zrtp->dhPart2);
             uint8_t *mac = zrtp->generateMac(zrtp->dhPart2,false);
             if(memcmp(mac,zrtp->dhPart2->getMac(),MAC_SIZE) != 0)
             {
-                delete(mac);
+                delete[](mac);
                 sendError(CriticalSoftwareError);
                 return;
             }
-            delete(mac);
+            delete[](mac);
 
             PacketConf2Ack *packet = new PacketConf2Ack();
             uint8_t *message = packet->toBytes();
@@ -1051,8 +1064,9 @@ void StateEngine::handleWaitConfirm2()
             memcpy(sas,sasPointer,4);
 
             std::cout << std::endl << "SAS: " << std::hex << sas[0] << sas[1] << sas[2] << sas[3] << std::endl;
-            delete(sasPointer);
+            delete[](sasPointer);
 
+            zrtp->callback->keyAgreed();
             actualState = Secured;
         }
     }
@@ -1114,8 +1128,9 @@ void StateEngine::handleWaitConf2Ack()
             memcpy(sas,sasPointer,4);
 
             std::cout << std::endl << "SAS: " << std::hex << sas[0] << sas[1] << sas[2] << sas[3] << std::endl;
-            delete(sasPointer);
+            delete[](sasPointer);
 
+            zrtp->callback->keyAgreed();
             actualState = Secured;
         }
     }
@@ -1160,6 +1175,7 @@ void StateEngine::handleWaitErrorAck()
         if(memcmp(type,"ErrorACK", TYPE_SIZE) == 0)
         {
             zrtp->cancelTimer();
+            delete(zrtp->error);
             std::cout << "Actual state: Initial" << std::endl;
             actualState = Initial;
         }

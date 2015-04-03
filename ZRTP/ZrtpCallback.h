@@ -49,6 +49,11 @@ public:
      */
     virtual void leaveCriticalSection() = 0;
 
+    /**
+     * Tells user that key agreement has ended successfuly.
+     */
+    virtual void keyAgreed() = 0;
+
 };
 
 #endif // CALLBACK_H

@@ -40,3 +40,8 @@ void MyCallbacks::leaveCriticalSection()
 {
     manager->mutex->unlock();
 }
+
+void MyCallbacks::keyAgreed()
+{
+    manager->setActualSignal(3);
+}

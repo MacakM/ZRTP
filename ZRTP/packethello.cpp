@@ -241,10 +241,9 @@ uint8_t *PacketHello::getMac()
     return mac;
 }
 
-void PacketHello::setClientId(std::string id)
+void PacketHello::setClientId(uint8_t *id)
 {
-    memset(clientId,0,CLIENTID_SIZE);
-    memcpy(clientId,id.c_str(),id.length());
+    memcpy(clientId,id,CLIENTID_SIZE);
 }
 
 void PacketHello::setH3(uint8_t *hash)

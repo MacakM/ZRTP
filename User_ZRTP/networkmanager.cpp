@@ -3,6 +3,7 @@
 NetworkManager::NetworkManager(int argc, char *argv[], QObject *parent) :
     QObject(parent)
 {
+    counter = 0;
     qsrand(QTime::currentTime().msec());
     threads.reserve(15);
     actualSignal = (Signal)0;
@@ -12,6 +13,10 @@ NetworkManager::NetworkManager(int argc, char *argv[], QObject *parent) :
     mutex = new QMutex();
     sendSocket = new QUdpSocket();
     readSocket = new QUdpSocket();
+
+    restartTimer = new QTimer();
+    restartTimer->setSingleShot(true);
+    connect(restartTimer, SIGNAL(timeout()), this, SLOT(restartZrtp()));
 
     setArguments(Parser::getArguments(argc,argv));
 
@@ -87,9 +92,10 @@ void NetworkManager::processPendingDatagram()
     myFile << std::endl << std::endl;
     myFile.close();
 
-    uint8_t *message = (uint8_t*)malloc(size);
+    uint8_t *message = new uint8_t[size];
     memcpy(message,datagram.data(),size);
     ZrtpMessage *t = new ZrtpMessage(this,message,size,packetDelay);
+    connect(t, SIGNAL(finished()), t, SLOT(deleteLater()));
     threads.push_back(t);
     t->start();
 }
@@ -104,6 +110,26 @@ void NetworkManager::processSignal()
     {
         timer->stop();
     }
+    else if (actualSignal == restart)
+    {
+        (myRole == Responder) ? restartTimer->start(7000) : restartTimer->start(5000);
+    }
+}
+
+void NetworkManager::restartZrtp()
+{
+    delete(zrtp);
+    for(int i = threads.size() - 1; i >= 0; i--)
+    {
+        threads.erase(threads.begin() + i);
+    }
+    counter++;
+    std::cout << "COUNTER: " << counter << std::endl;
+    if(counter == 10000)
+    {
+        std::cin.get();
+    }
+    zrtp = new Zrtp(callbacks, myRole, "MacakM", &info);
 }
 
 void NetworkManager::processZrtpTimeout()
@@ -199,6 +225,7 @@ void NetworkManager::setArguments(Arguments args)
 void NetworkManager::createTimeoutThread()
 {
     ZrtpTimeout *t = new ZrtpTimeout(this,packetDelay);
+    connect(t, SIGNAL(finished()), t, SLOT(deleteLater()));
     threads.push_back(t);
     t->start();
 }

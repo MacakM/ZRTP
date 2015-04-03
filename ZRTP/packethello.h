@@ -101,7 +101,7 @@ public:
      *
      * @param id   clientID
      */
-    void setClientId(std::string id);
+    void setClientId(uint8_t *id);
 
     /**
      * Sets hash image H3.

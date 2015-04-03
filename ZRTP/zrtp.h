@@ -70,11 +70,6 @@ public:
     ~Zrtp();
 
     /**
-     * Ends Zrtp.
-     */
-    void endZrtp();
-
-    /**
      * Method called by user when ZRTP message arrives.
      *
      * @param msg       received message
@@ -134,7 +129,7 @@ private:
      *
      * @param clientId  obtained from user in constructor
      */
-    void createHelloPacket(std::string clientId);
+    void createHelloPacket(uint8_t *clientId);
 
     /**
      * Prepares Commit packet for sending.
@@ -340,6 +335,7 @@ private:
     uint8_t myZID[ZID_SIZE];
     ZrtpCallback *callback;
     Role myRole;
+    uint8_t myClientId[CLIENTID_SIZE];
     UserInfo *userInfo;
     StateEngine *engine;
 

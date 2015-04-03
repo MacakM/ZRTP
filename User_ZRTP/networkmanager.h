@@ -34,7 +34,8 @@ class NetworkManager : public QObject
     typedef enum
     {
         activate = 1,
-        stop = 2
+        stop = 2,
+        restart = 3
     } Signal;
 
     friend class MyCallbacks;
@@ -78,6 +79,11 @@ public slots:
      * Process set signal.
      */
     void processSignal();
+
+    /**
+     * Restarts all Zrtp process.
+     */
+    void restartZrtp();
 
 public:
     /**
@@ -128,6 +134,9 @@ private:
 
     std::ofstream myFile;
     QMutex *mutex;
+
+    QTimer *restartTimer;
+    quint32 counter;
 };
 
 #endif // NETWORKMANAGER_H
