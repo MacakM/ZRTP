@@ -62,7 +62,10 @@ void Zrtp::processMessage(uint8_t *msg, int32_t length)
     event.type = Message;
     event.message = msg;
     event.messageLength = length;
-    engine->processEvent(&event);
+    if(engine != NULL)
+    {
+        engine->processEvent(&event);
+    }
     leaveCriticalSection();
 }
 
@@ -295,37 +298,11 @@ uint8_t *Zrtp::generateConfirmMac(PacketConfirm *packet, bool sending)
         (sending) ? memcpy(&key,macKeyR,SHA256_DIGEST_LENGTH) : memcpy(&key,macKeyI,SHA256_DIGEST_LENGTH);
     }
 
-    uint8_t *buffer = packet->toBytes();
-    uint16_t bufferLength = packet->getLength() * WORD_SIZE;
+    uint8_t startHash[ENCRYPTED_PART_LENGTH];
+    memcpy(startHash,packet->getEncryptedPart(),ENCRYPTED_PART_LENGTH);
 
-    std::ofstream myFile;
-    if(myRole == Initiator && !sending)
-    {
-        myFile.open("confirm1.txt",std::ios::app);
-        myFile << "BUFFER: " << std::endl;
-        for(uint16_t i = 0; i < bufferLength; i++)
-        {
-            myFile << std::hex << buffer[i];
-        }
-        myFile << std::endl;
-        myFile.close();
-    }
-    if(myRole == Responder && sending)
-    {
-        myFile.open("confirm2.txt",std::ios::app);
-        myFile << "BUFFER: " << std::endl;
-        for(uint16_t i = 0; i < bufferLength; i++)
-        {
-            myFile << std::hex << buffer[i];
-        }
-        myFile << std::endl;
-        myFile.close();
-    }
-
-    uint8_t *startHash = &(buffer[9*WORD_SIZE]);
-
-    uint8_t* digest = HMAC(EVP_sha256(), key, HASHIMAGE_SIZE,
-                  startHash, bufferLength - 9*WORD_SIZE, NULL, NULL);
+    uint8_t* digest = HMAC(EVP_sha256(), key, SHA256_DIGEST_LENGTH,
+                  startHash, ENCRYPTED_PART_LENGTH, NULL, NULL);
 
     assert(digest);
 
@@ -333,29 +310,6 @@ uint8_t *Zrtp::generateConfirmMac(PacketConfirm *packet, bool sending)
     for(int i = 0; i < 4; i++)
     {
         sprintf((char*)&computedMac[i*2], "%02x", (unsigned int)digest[i]);
-    }
-
-    if(myRole == Initiator && !sending)
-    {
-        myFile.open("confirm1.txt",std::ios::app);
-        myFile << "MAC: " << std::endl;
-        for(uint16_t i = 0; i < MAC_SIZE; i++)
-        {
-            myFile << std::hex << computedMac[i];
-        }
-        myFile << std::endl;
-        myFile.close();
-    }
-    if(myRole == Responder && sending)
-    {
-        myFile.open("confirm2.txt",std::ios::app);
-        myFile << "MAC: " << std::endl;
-        for(uint16_t i = 0; i < MAC_SIZE; i++)
-        {
-            myFile << std::hex << computedMac[i];
-        }
-        myFile << std::endl;
-        myFile.close();
     }
 
     delete[] (digest);
@@ -569,8 +523,21 @@ void Zrtp::diffieHellman()
     dh->p = prime;
     dh->g = generator;
 
-    DH_generate_key(dh);
 
+    std::ofstream myFile;
+    if(myRole == Initiator) myFile.open("test.txt", std::ios::app);
+    else myFile.open("testR.txt", std::ios::app);
+    myFile << "START" << std::endl;
+    //have to generate keys with needed length
+    do
+    {
+        myFile << "a";
+        DH_generate_key(dh);
+    }
+    while((BN_num_bytes(dh->priv_key) * sizeof(uint8_t) != DH3K_LENGTH) &&
+          (BN_num_bytes(dh->pub_key) * sizeof(uint8_t) != DH3K_LENGTH));
+    myFile << std::endl;
+    myFile.close();
     privateKey = BN_new();
     publicKey = BN_new();
     p = BN_new();
@@ -604,9 +571,7 @@ uint8_t *Zrtp::generateHvi()
 void Zrtp::setPv(PacketDHPart *packet)
 {
     assert(publicKey);
-    uint8_t *buffer = new uint8_t[(BN_num_bytes(publicKey)+1) * sizeof(uint8_t)];
-    buffer[BN_num_bytes(publicKey)] = '\0';
-
+    uint8_t *buffer = new uint8_t[DH3K_LENGTH];
     BN_bn2bin(publicKey,buffer);
 
     packet->setPv(buffer);
@@ -692,6 +657,7 @@ void Zrtp::createDHResult()
     (myRole == Initiator) ? dhPartR = dhPart1 : dhPartR = dhPart2;
 
     BN_bin2bn(dhPartR->getPv(),DH3K_LENGTH,peerPublicKey);
+
     BN_mod_exp(result,peerPublicKey,privateKey, p, ctx);
 
     BN_copy(dhResult,result);

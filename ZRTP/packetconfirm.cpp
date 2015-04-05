@@ -12,7 +12,7 @@ PacketConfirm::PacketConfirm()
 PacketConfirm::~PacketConfirm()
 {
     std::cout << "Confirm destructing" << std::endl;
-    delete(packetHeader);
+    delete (packetHeader);
     memset(data,0,MAX_CONFIRM_LENGTH);
 }
 
@@ -120,6 +120,11 @@ uint8_t *PacketConfirm::getVector()
 uint8_t *PacketConfirm::getH0()
 {
     return h0;
+}
+
+uint8_t *PacketConfirm::getEncryptedPart()
+{
+    return encryptedPart;
 }
 
 void PacketConfirm::setEncryptedPart(uint8_t *data)

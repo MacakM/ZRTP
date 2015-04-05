@@ -29,6 +29,8 @@
 #include <openssl/dh.h>
 #include <openssl/aes.h>
 
+#include <fstream>
+
 typedef enum
 {
     Initiator,

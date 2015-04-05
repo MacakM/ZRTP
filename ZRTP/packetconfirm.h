@@ -57,6 +57,13 @@ public:
     uint8_t *getH0();
 
     /**
+     * Returns encrypted part of the packet.
+     *
+     * @return  encrypted data
+     */
+    uint8_t *getEncryptedPart();
+
+    /**
      * Sets encrypted part of packet instead of decrypted part.
      *
      * @param data  encrypted data
