@@ -523,18 +523,27 @@ void Zrtp::diffieHellman()
     dh->p = prime;
     dh->g = generator;
 
-
     std::ofstream myFile;
     if(myRole == Initiator) myFile.open("test.txt", std::ios::app);
     else myFile.open("testR.txt", std::ios::app);
     myFile << "START" << std::endl;
-    //have to generate keys with needed length
+    //fixed bug when generate_key produces shorter keys
     do
     {
+        if(dh->pub_key)
+        {
+            BN_free(dh->pub_key);
+            dh->pub_key = NULL;
+        }
+        if(dh->priv_key)
+        {
+            BN_free(dh->priv_key);
+            dh->priv_key = NULL;
+        }
         myFile << "a";
         DH_generate_key(dh);
     }
-    while((BN_num_bytes(dh->priv_key) * sizeof(uint8_t) != DH3K_LENGTH) &&
+    while((BN_num_bytes(dh->priv_key) * sizeof(uint8_t) != DH3K_LENGTH) ||
           (BN_num_bytes(dh->pub_key) * sizeof(uint8_t) != DH3K_LENGTH));
     myFile << std::endl;
     myFile.close();
@@ -545,6 +554,42 @@ void Zrtp::diffieHellman()
     BN_copy(privateKey,dh->priv_key);
     BN_copy(publicKey,dh->pub_key);
     BN_copy(p, dh->p);
+
+    std::ofstream notMyFile;
+    if(myRole == Initiator) notMyFile.open("DHResultI.txt", std::ios::app);
+    else notMyFile.open("DHResultR.txt", std::ios::app);
+    //private key
+    uint8_t *buffer;
+    buffer = (uint8_t*)calloc(DH3K_LENGTH, sizeof(uint8_t));
+
+    BN_bn2bin(privateKey,buffer);
+
+    notMyFile << std::endl;
+    notMyFile << "My private key:" << std::endl;
+    for(int i = 0; i < DH3K_LENGTH; i++)
+    {
+        notMyFile << std::hex << buffer[i];
+    }
+    notMyFile << std::endl;
+
+    free(buffer);
+
+    //peer public key
+    buffer = (uint8_t*)calloc(DH3K_LENGTH, sizeof(uint8_t));
+
+    BN_bn2bin(publicKey,buffer);
+
+    notMyFile << std::endl;
+    notMyFile << "My public key:" << std::endl;
+    for(int i = 0; i < DH3K_LENGTH; i++)
+    {
+        notMyFile << std::hex << buffer[i];
+    }
+    notMyFile << std::endl;
+
+    notMyFile.close();
+
+    free(buffer);
 
     DH_free(dh);
 }
@@ -662,24 +707,64 @@ void Zrtp::createDHResult()
 
     BN_copy(dhResult,result);
 
-    BN_clear_free(peerPublicKey);
-    BN_clear_free(result);
-    BN_CTX_free(ctx);
-/*
+    std::ofstream myFile;
+    if(myRole == Responder) myFile.open("DHresultR.txt",std::ios::app);
+    else myFile.open("DHResultI.txt",std::ios::app);
+
+    //private key
     uint8_t *buffer;
-    buffer = (uint8_t*)calloc(BN_num_bytes(dhResult), sizeof(uint8_t));
+    buffer = (uint8_t*)calloc(DH3K_LENGTH, sizeof(uint8_t));
+
+    BN_bn2bin(privateKey,buffer);
+
+    myFile << std::endl;
+    myFile << "My private key:" << std::endl;
+    for(int i = 0; i < DH3K_LENGTH; i++)
+    {
+        myFile << std::hex << buffer[i];
+    }
+    myFile << std::endl;
+
+    free(buffer);
+
+    //peer public key
+    buffer = (uint8_t*)calloc(DH3K_LENGTH, sizeof(uint8_t));
+
+    BN_bn2bin(peerPublicKey,buffer);
+
+    myFile << std::endl;
+    myFile << "Peer public key:" << std::endl;
+    for(int i = 0; i < DH3K_LENGTH; i++)
+    {
+        myFile << std::hex << buffer[i];
+    }
+    myFile << std::endl;
+
+    free(buffer);
+
+    //DHResult
+    buffer = (uint8_t*)calloc(DH3K_LENGTH, sizeof(uint8_t));
 
     BN_bn2bin(dhResult,buffer);
 
-    std::cout << std::endl;
-    std::cout << "DHResult:" << std::endl;
-    for(int i = 0; i < BN_num_bytes(dhResult); i++)
+    myFile << std::endl;
+    myFile << "DHResult:" << std::endl;
+    for(int i = 0; i < DH3K_LENGTH; i++)
     {
-        std::cout << buffer[i];
+        myFile << std::hex << buffer[i];
     }
-    std::cout << std::endl;
+    myFile << std::endl;
 
-    free(buffer);*/
+    myFile.close();
+
+    free(buffer);
+
+
+
+
+    BN_clear_free(peerPublicKey);
+    BN_clear_free(result);
+    BN_CTX_free(ctx);
 }
 
 void Zrtp::createKDFContext()
