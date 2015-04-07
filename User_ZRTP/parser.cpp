@@ -67,6 +67,15 @@ Arguments Parser::getArguments(int argc, char *argv[])
         args.packetLoss = 0;
     }
 
+    if(cmdOptionExists(argv, argv+argc, "--testing"))
+    {
+        args.testing = getCmdOption(argv, argv + argc, "--testing")[0];
+    }
+    else
+    {
+        args.testing = 0;
+    }
+
     return args;
 }
 

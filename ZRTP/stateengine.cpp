@@ -77,6 +77,7 @@ void StateEngine::processEvent(Event *event)
                 sendError(MalformedPacket);
                 return;
             }
+            delete(zrtp->error);
             PacketErrorAck *packet = new PacketErrorAck();
             uint8_t *message = packet->toBytes();
             uint16_t messageLength = packet->getLength() * WORD_SIZE;
@@ -1066,8 +1067,8 @@ void StateEngine::handleWaitConfirm2()
             std::cout << std::endl << "SAS: " << std::hex << sas[0] << sas[1] << sas[2] << sas[3] << std::endl;
             delete[] (sasPointer);
 
-            zrtp->callback->keyAgreed();
             actualState = Secured;
+            zrtp->callback->keyAgreed();
         }
     }
 }
@@ -1130,8 +1131,8 @@ void StateEngine::handleWaitConf2Ack()
             std::cout << std::endl << "SAS: " << std::hex << sas[0] << sas[1] << sas[2] << sas[3] << std::endl;
             delete[] (sasPointer);
 
-            zrtp->callback->keyAgreed();
             actualState = Secured;
+            zrtp->callback->keyAgreed();
         }
     }
 }

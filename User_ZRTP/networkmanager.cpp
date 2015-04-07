@@ -47,7 +47,7 @@ NetworkManager::NetworkManager(int argc, char *argv[], QObject *parent) :
     (myRole == Initiator) ? Sleep(10000) : Sleep(5000);
 
     zrtp = new Zrtp(callbacks, myRole, "MacakM", &info);
-    myZid = zrtp->getZid();
+    memcpy(myZid,zrtp->getZid(),ZID_SIZE);
 }
 
 void NetworkManager::setActualSignal(uint8_t signalNumber, int32_t time)
@@ -102,23 +102,31 @@ void NetworkManager::processPendingDatagram()
 
 void NetworkManager::processSignal()
 {
-    if (actualSignal == activate)
+    if (actualSignal == activateTimer)
     {
         timer->start(actualTime);
     }
-    else if (actualSignal == stop)
+    else if (actualSignal == stopTimer)
     {
         timer->stop();
     }
-    else if (actualSignal == restart)
+    else if (actualSignal == zrtpEnded)
     {
-        (myRole == Responder) ? restartTimer->start(7000) : restartTimer->start(5000);
+        if(testing)
+        {
+            //restart zrtp communication after short delay
+            (myRole == Responder) ? restartTimer->start(7000) : restartTimer->start(5000);
+        }
+        else
+        {
+            std::cout << "Call secured" << std::endl;
+        }
     }
 }
 
 void NetworkManager::restartZrtp()
 {
-    delete(zrtp);
+    delete (zrtp);
     for(int i = threads.size() - 1; i >= 0; i--)
     {
         threads.erase(threads.begin() + i);
@@ -220,6 +228,16 @@ void NetworkManager::setArguments(Arguments args)
     {
         packetDelay = 0;
     }
+
+    if(args.testing == '1')
+    {
+        testing = true;
+    }
+    else
+    {
+        testing = false;
+    }
+
 }
 
 void NetworkManager::createTimeoutThread()

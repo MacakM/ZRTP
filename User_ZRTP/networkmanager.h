@@ -33,9 +33,9 @@ class NetworkManager : public QObject
     Q_OBJECT
     typedef enum
     {
-        activate = 1,
-        stop = 2,
-        restart = 3
+        activateTimer = 1,
+        stopTimer = 2,
+        zrtpEnded = 3
     } Signal;
 
     friend class MyCallbacks;
@@ -53,7 +53,7 @@ public:
     /**
      * Set actual signal so NetworkManager can process it.
      *
-     * @param signalNumber  1 = set timer with given time, 2 = cancel timer
+     * @param signalNumber  1 = set timer with given time, 2 = cancel timer, 3 = zrtp ended
      * @param time          given time
      */
     void setActualSignal(uint8_t signalNumber, int32_t time = 0);
@@ -117,7 +117,7 @@ private:
     Signal actualSignal;
     int32_t actualTime;
 
-    uint8_t myZid;
+    uint8_t myZid[ZID_SIZE];
 
     QUdpSocket *sendSocket;
     QUdpSocket *readSocket;
@@ -135,6 +135,7 @@ private:
     std::ofstream myFile;
     QMutex *mutex;
 
+    bool testing;
     QTimer *restartTimer;
     quint32 counter;
 };

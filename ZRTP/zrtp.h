@@ -89,7 +89,7 @@ public:
      *
      * @return ZID
      */
-    uint8_t getZid();
+    uint8_t *getZid();
 
 private:
     /**

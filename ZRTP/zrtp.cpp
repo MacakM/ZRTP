@@ -6,7 +6,14 @@ Zrtp::Zrtp(ZrtpCallback *cb, Role role, std::string clientId, UserInfo *info)
     {
         throw std::invalid_argument("NULL callback");
     }
-    userInfo = info;
+    userInfo = new UserInfo();
+    userInfo->authTagTypes = info->authTagTypes;
+    userInfo->cipherTypes = info->cipherTypes;
+    userInfo->hashTypes = info->hashTypes;
+    userInfo->keyAgreementTypes = info->keyAgreementTypes;
+    userInfo->sasTypes = info->sasTypes;
+    userInfo->versions = info->versions;
+
     callback = cb;
     myRole = role;
 
@@ -36,6 +43,7 @@ Zrtp::Zrtp(ZrtpCallback *cb, Role role, std::string clientId, UserInfo *info)
 
 Zrtp::~Zrtp()
 {
+    delete(userInfo);
     delete (engine);
     delete (hello);
     delete (peerHello);
@@ -77,9 +85,9 @@ void Zrtp::processTimeout()
     engine->processEvent(&event);
 }
 
-uint8_t Zrtp::getZid()
+uint8_t *Zrtp::getZid()
 {
-    return *myZID;
+    return myZID;
 }
 
 bool Zrtp::sendData(const uint8_t *data, int32_t length)
@@ -523,10 +531,11 @@ void Zrtp::diffieHellman()
     dh->p = prime;
     dh->g = generator;
 
-    std::ofstream myFile;
+    /*std::ofstream myFile;
     if(myRole == Initiator) myFile.open("test.txt", std::ios::app);
     else myFile.open("testR.txt", std::ios::app);
-    myFile << "START" << std::endl;
+    myFile << "START" << std::endl;*/
+
     //fixed bug when generate_key produces shorter keys
     do
     {
@@ -540,13 +549,13 @@ void Zrtp::diffieHellman()
             BN_free(dh->priv_key);
             dh->priv_key = NULL;
         }
-        myFile << "a";
+        //myFile << "a";
         DH_generate_key(dh);
     }
     while((BN_num_bytes(dh->priv_key) * sizeof(uint8_t) != DH3K_LENGTH) ||
           (BN_num_bytes(dh->pub_key) * sizeof(uint8_t) != DH3K_LENGTH));
-    myFile << std::endl;
-    myFile.close();
+    //myFile << std::endl;
+    //myFile.close();
     privateKey = BN_new();
     publicKey = BN_new();
     p = BN_new();
@@ -554,7 +563,7 @@ void Zrtp::diffieHellman()
     BN_copy(privateKey,dh->priv_key);
     BN_copy(publicKey,dh->pub_key);
     BN_copy(p, dh->p);
-
+/*
     std::ofstream notMyFile;
     if(myRole == Initiator) notMyFile.open("DHResultI.txt", std::ios::app);
     else notMyFile.open("DHResultR.txt", std::ios::app);
@@ -589,7 +598,7 @@ void Zrtp::diffieHellman()
 
     notMyFile.close();
 
-    free(buffer);
+    free(buffer);*/
 
     DH_free(dh);
 }
@@ -707,12 +716,12 @@ void Zrtp::createDHResult()
 
     BN_copy(dhResult,result);
 
-    std::ofstream myFile;
-    if(myRole == Responder) myFile.open("DHresultR.txt",std::ios::app);
-    else myFile.open("DHResultI.txt",std::ios::app);
+    //std::ofstream myFile;
+    //if(myRole == Responder) myFile.open("DHresultR.txt",std::ios::app);
+    //else myFile.open("DHResultI.txt",std::ios::app);
 
     //private key
-    uint8_t *buffer;
+    /*uint8_t *buffer;
     buffer = (uint8_t*)calloc(DH3K_LENGTH, sizeof(uint8_t));
 
     BN_bn2bin(privateKey,buffer);
@@ -757,10 +766,7 @@ void Zrtp::createDHResult()
 
     myFile.close();
 
-    free(buffer);
-
-
-
+    free(buffer);*/
 
     BN_clear_free(peerPublicKey);
     BN_clear_free(result);
