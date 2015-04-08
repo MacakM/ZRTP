@@ -60,7 +60,12 @@ public:
     /**
      * Tells user that key agreement has ended successfuly.
      */
-    virtual void keyAgreed();
+    virtual void keyAgreed(SrtpMaterial *material);
+
+    /**
+     * Tells user that key agreement has failed.
+     */
+    virtual void agreementFailed();
 
 private:
     NetworkManager *manager;

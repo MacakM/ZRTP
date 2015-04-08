@@ -41,7 +41,51 @@ void MyCallbacks::leaveCriticalSection()
     manager->mutex->unlock();
 }
 
-void MyCallbacks::keyAgreed()
+void MyCallbacks::keyAgreed(SrtpMaterial *material)
 {
+    // save all SRTP material
+    memcpy(manager->material.srtpKeyI,material->srtpKeyI,AES1_KEY_LENGTH);
+    memcpy(manager->material.srtpKeyR,material->srtpKeyR,AES1_KEY_LENGTH);
+    memcpy(manager->material.srtpSaltI,material->srtpSaltI,SALT_KEY_LENGTH);
+    memcpy(manager->material.srtpSaltR,material->srtpSaltR,SALT_KEY_LENGTH);
+    memcpy(manager->material.sas,material->sas,SAS_LENGTH);
+
+    //print SRTP keys and salts
+    std::cout << "SRTP Initiator's key: ";
+    for(int8_t i = 0; i < AES1_KEY_LENGTH; i++)
+    {
+        std::cout << std::hex << material->srtpKeyI[i];
+    }
+    std::cout << std::endl << "SRTP Initiator's salt: ";
+    for(int8_t i = 0; i < SALT_KEY_LENGTH; i++)
+    {
+        std::cout << std::hex << material->srtpSaltI[i];
+    }
+    std::cout << std::endl << "SRTP Responder's key: ";
+    for(int8_t i = 0; i < AES1_KEY_LENGTH; i++)
+    {
+        std::cout << std::hex << material->srtpKeyR[i];
+    }
+    std::cout << std::endl << "SRTP Responder's salt: ";
+    for(int8_t i = 0; i < SALT_KEY_LENGTH; i++)
+    {
+        std::cout << std::hex << material->srtpSaltR[i];
+    }
+    std::cout << std::endl;
+    //print SAS
+    std::cout << std::endl << "SAS: ";
+    for(int8_t i = 0; i < SAS_LENGTH; i++)
+    {
+        std::cout << std::hex << material->sas[i];
+    }
+    std::cout << std::endl;
+
+    delete (material);
+
     manager->setActualSignal(3);
+}
+
+void MyCallbacks::agreementFailed()
+{
+    manager->setActualSignal(4);
 }

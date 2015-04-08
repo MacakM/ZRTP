@@ -122,6 +122,10 @@ void NetworkManager::processSignal()
             std::cout << "Call secured" << std::endl;
         }
     }
+    else if(actualSignal == zrtpFailed)
+    {
+        std::cout << "Agreement failed!" << std::endl;
+    }
 }
 
 void NetworkManager::restartZrtp()

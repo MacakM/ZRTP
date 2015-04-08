@@ -82,6 +82,7 @@ void StateEngine::processEvent(Event *event)
             uint8_t *message = packet->toBytes();
             uint16_t messageLength = packet->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
+            zrtp->callback->agreementFailed();
             std::cout << "Actual state: Initial" << std::endl;
             actualState = Initial;
             delete (packet);
@@ -1032,43 +1033,18 @@ void StateEngine::handleWaitConfirm2()
 
             std::cout << "Actual state: Secured" << std::endl;
 
-            //print SRTP keys and salts
-            std::cout << std::endl;
-            std::cout << "SRTP Initiator's key: ";
-            for(int8_t i = 0; i < AES1_KEY_LENGTH; i++)
-            {
-                std::cout << std::hex << zrtp->srtpKeyI[i];
-            }
-            std::cout << std::endl;
-            std::cout << "SRTP Initiator's salt: ";
-            for(int8_t i = 0; i < SALT_KEY_LENGTH; i++)
-            {
-                std::cout << std::hex << zrtp->srtpSaltI[i];
-            }
-            std::cout << std::endl;
-            std::cout << "SRTP Responder's key: ";
-            for(int8_t i = 0; i < AES1_KEY_LENGTH; i++)
-            {
-                std::cout << std::hex << zrtp->srtpKeyR[i];
-            }
-            std::cout << std::endl;
-            std::cout << "SRTP Responder's salt: ";
-            for(int8_t i = 0; i < SALT_KEY_LENGTH; i++)
-            {
-                std::cout << std::hex << zrtp->srtpSaltR[i];
-            }
-            std::cout << std::endl;
+            SrtpMaterial *material = new SrtpMaterial();
+            memcpy(material->srtpKeyI,zrtp->srtpKeyI,AES1_KEY_LENGTH);
+            memcpy(material->srtpKeyR,zrtp->srtpKeyR,AES1_KEY_LENGTH);
+            memcpy(material->srtpSaltI,zrtp->srtpSaltI,SALT_KEY_LENGTH);
+            memcpy(material->srtpSaltR,zrtp->srtpSaltR,SALT_KEY_LENGTH);
 
-            //print SAS
             char *sasPointer = zrtp->base32(zrtp->sasValue);
-            char sas[4];
-            memcpy(sas,sasPointer,4);
-
-            std::cout << std::endl << "SAS: " << std::hex << sas[0] << sas[1] << sas[2] << sas[3] << std::endl;
+            memcpy(material->sas,sasPointer,SAS_LENGTH);
             delete[] (sasPointer);
 
             actualState = Secured;
-            zrtp->callback->keyAgreed();
+            zrtp->callback->keyAgreed(material);
         }
     }
 }
@@ -1096,43 +1072,18 @@ void StateEngine::handleWaitConf2Ack()
 
             std::cout << "Actual state: Secured" << std::endl;
 
-            //print SRTP keys and salts
-            std::cout << std::endl;
-            std::cout << "SRTP Initiator's key: ";
-            for(int8_t i = 0; i < AES1_KEY_LENGTH; i++)
-            {
-                std::cout << std::hex << zrtp->srtpKeyI[i];
-            }
-            std::cout << std::endl;
-            std::cout << "SRTP Initiator's salt: ";
-            for(int8_t i = 0; i < SALT_KEY_LENGTH; i++)
-            {
-                std::cout << std::hex << zrtp->srtpSaltI[i];
-            }
-            std::cout << std::endl;
-            std::cout << "SRTP Responder's key: ";
-            for(int8_t i = 0; i < AES1_KEY_LENGTH; i++)
-            {
-                std::cout << std::hex << zrtp->srtpKeyR[i];
-            }
-            std::cout << std::endl;
-            std::cout << "SRTP Responder's salt: ";
-            for(int8_t i = 0; i < SALT_KEY_LENGTH; i++)
-            {
-                std::cout << std::hex << zrtp->srtpSaltR[i];
-            }
-            std::cout << std::endl;
+            SrtpMaterial *material = new SrtpMaterial();
+            memcpy(material->srtpKeyI,zrtp->srtpKeyI,AES1_KEY_LENGTH);
+            memcpy(material->srtpKeyR,zrtp->srtpKeyR,AES1_KEY_LENGTH);
+            memcpy(material->srtpSaltI,zrtp->srtpSaltI,SALT_KEY_LENGTH);
+            memcpy(material->srtpSaltR,zrtp->srtpSaltR,SALT_KEY_LENGTH);
 
-            //print SAS
             char *sasPointer = zrtp->base32(zrtp->sasValue);
-            char sas[4];
-            memcpy(sas,sasPointer,4);
-
-            std::cout << std::endl << "SAS: " << std::hex << sas[0] << sas[1] << sas[2] << sas[3] << std::endl;
+            memcpy(material->sas,sasPointer,SAS_LENGTH);
             delete[] (sasPointer);
 
             actualState = Secured;
-            zrtp->callback->keyAgreed();
+            zrtp->callback->keyAgreed(material);
         }
     }
 }
@@ -1177,6 +1128,7 @@ void StateEngine::handleWaitErrorAck()
         {
             zrtp->cancelTimer();
             delete (zrtp->error);
+            zrtp->callback->agreementFailed();
             std::cout << "Actual state: Initial" << std::endl;
             actualState = Initial;
         }
@@ -1190,7 +1142,7 @@ void StateEngine::sendError(uint32_t code)
     uint16_t messageLength = zrtp->error->getLength() * WORD_SIZE;
     zrtp->sendData(message,messageLength);
 
-    std::cout << " error code: " << std::hex << code << std::endl;
+    std::cout << "error code: " << std::hex << code << std::endl;
 
     sentMessage = message;
     sentMessageLength = messageLength;

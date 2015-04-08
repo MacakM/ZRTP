@@ -35,7 +35,8 @@ class NetworkManager : public QObject
     {
         activateTimer = 1,
         stopTimer = 2,
-        zrtpEnded = 3
+        zrtpEnded = 3,
+        zrtpFailed = 4
     } Signal;
 
     friend class MyCallbacks;
@@ -138,6 +139,8 @@ private:
     bool testing;
     QTimer *restartTimer;
     quint32 counter;
+
+    SrtpMaterial material;
 };
 
 #endif // NETWORKMANAGER_H

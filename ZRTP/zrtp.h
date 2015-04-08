@@ -4,7 +4,7 @@
 #define KDF_CONTEXT_LENGTH  2 * ZID_SIZE + SHA256_DIGEST_LENGTH
 #define AES1_KEY_LENGTH     16
 #define SALT_KEY_LENGTH     14
-#define SAS_VALUE_LENGTH    4
+#define SAS_LENGTH          4
 
 #include <iostream>
 #include <algorithm>
@@ -332,6 +332,13 @@ private:
      */
     bool compareVersions();
 
+    /**
+     * Base32 encoding function for SAS.
+     *
+     * @param bits      sasValue
+     *
+     * @return          readable SAS
+     */
     char *base32(uint32_t bits);
 
     uint8_t myZID[ZID_SIZE];

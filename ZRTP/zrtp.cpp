@@ -240,18 +240,15 @@ bool Zrtp::isCorrectHashImage(uint8_t *previousH, uint8_t *actualH)
 
 void Zrtp::generateIds(PacketDHPart *packet)
 {
-    if(memcmp(hash,"S256",WORD_SIZE) == 0)
-    {
-        uint8_t id[SHA256_DIGEST_LENGTH];
-        SHA256(rs1,ID_SIZE,id);
-        packet->setRs1Id(id);
-        SHA256(rs2,ID_SIZE,id);
-        packet->setRs2Id(id);
-        SHA256(auxsecret,ID_SIZE,id);
-        packet->setAuxsecretId(id);
-        SHA256(pbxsecret,ID_SIZE,id);
-        packet->setPbxsecretId(id);
-    }
+    uint8_t id[SHA256_DIGEST_LENGTH];
+    SHA256(rs1,ID_SIZE,id);
+    packet->setRs1Id(id);
+    SHA256(rs2,ID_SIZE,id);
+    packet->setRs2Id(id);
+    SHA256(auxsecret,ID_SIZE,id);
+    packet->setAuxsecretId(id);
+    SHA256(pbxsecret,ID_SIZE,id);
+    packet->setPbxsecretId(id);
 }
 
 uint8_t *Zrtp::generateMac(Packet *packet, bool sending)
