@@ -9,5 +9,13 @@ int main(int argc, char *argv[])
 
     NetworkManager *manager = new NetworkManager(argc,argv);
 
-    return a.exec();
+    while(manager->hasEnded() == false)
+    {
+        Sleep(0);
+        a.processEvents();
+    }
+
+    delete(manager);
+
+    return 0;
 }

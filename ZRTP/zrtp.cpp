@@ -35,10 +35,11 @@ Zrtp::Zrtp(ZrtpCallback *cb, Role role, std::string clientId, UserInfo *info)
 
     assert(hello);
 
-    Event event;
-    event.type = Start;
-    event.messageLength = 0;
-    engine->processEvent(&event);
+    Event *event = new Event();
+    event->type = Start;
+    event->message = NULL;
+    event->messageLength = 0;
+    engine->processEvent(event);
 }
 
 Zrtp::~Zrtp()
@@ -66,23 +67,24 @@ void Zrtp::processMessage(uint8_t *msg, int32_t length)
         leaveCriticalSection();
         return;
     }
-    Event event;
-    event.type = Message;
-    event.message = msg;
-    event.messageLength = length;
+    Event *event = new Event();
+    event->type = Message;
+    event->message = msg;
+    event->messageLength = length;
     if(engine != NULL)
     {
-        engine->processEvent(&event);
+        engine->processEvent(event);
     }
     leaveCriticalSection();
 }
 
 void Zrtp::processTimeout()
 {
-    Event event;
-    event.type = Timeout;
-    event.messageLength = 0;
-    engine->processEvent(&event);
+    Event *event = new Event();
+    event->type = Timeout;
+    event->message = NULL;
+    event->messageLength = 0;
+    engine->processEvent(event);
 }
 
 uint8_t *Zrtp::getZid()
@@ -287,7 +289,7 @@ uint8_t *Zrtp::generateMac(Packet *packet, bool sending)
     {
         sprintf((char*)&computedMac[i*2], "%02x", (unsigned int)digest[i]);
     }
-    delete[] (digest);
+    //delete[] (digest);
     return computedMac;
 }
 
@@ -317,7 +319,7 @@ uint8_t *Zrtp::generateConfirmMac(PacketConfirm *packet, bool sending)
         sprintf((char*)&computedMac[i*2], "%02x", (unsigned int)digest[i]);
     }
 
-    delete[] (digest);
+    //delete[] (digest);
     return computedMac;
 }
 
@@ -882,12 +884,12 @@ void Zrtp::kdf(uint8_t *key, uint8_t *label, int32_t labelLength, uint8_t *conte
     assert(digest);
 
     uint8_t computedMac[lengthL + 1];
-    for(int i = 0; i < lengthL; i++)
+    for(int i = 0; i < lengthL / 2; i++)
     {
         sprintf((char*)&computedMac[i*2], "%02x", (unsigned int)digest[i]);
     }
     memcpy(derivedKey,computedMac,lengthL);
-    delete[] (digest);
+    //delete[] (digest);
     delete[] (buffer);
 }
 
@@ -1091,6 +1093,7 @@ bool Zrtp::compareVersions()
         if(userInfo->versions.size() != 0 && changedVersion)
         {
             //get clientID from actual Hello in order to create new Hello
+            callback->cancelTimer();
             uint8_t *buffer = hello->getClientId();
             uint8_t clientId[CLIENTID_SIZE];
             memcpy(clientId,buffer,CLIENTID_SIZE);

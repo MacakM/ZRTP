@@ -65,6 +65,11 @@ public:
     StateEngine(Zrtp *zrtp);
 
     /**
+      * StateEngine destructor.
+      */
+    ~StateEngine();
+
+    /**
      * Process given event from Zrtp.
      * Then calls state handler according to actual state.
      *

@@ -14,8 +14,16 @@ StateEngine::StateEngine(Zrtp *zrtp)
     T2.maxResend = 10;
 
     std::cout << "Actual state: Initial" << std::endl;
+    actualEvent = NULL;
     actualState = Initial;
 }
+
+StateEngine::~StateEngine()
+{
+    delete(actualEvent);
+}
+
+
 
 void StateEngine::initHandlers()
 {
@@ -89,6 +97,7 @@ void StateEngine::processEvent(Event *event)
         }
     }
 
+    delete(actualEvent);
     actualEvent = event;
     (this->*handlers[actualState])();
 }

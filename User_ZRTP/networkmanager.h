@@ -42,6 +42,7 @@ class NetworkManager : public QObject
     friend class MyCallbacks;
 
 public:
+
     /**
      * NetworkManager constructor.
      *
@@ -58,6 +59,13 @@ public:
      * @param time          given time
      */
     void setActualSignal(uint8_t signalNumber, int32_t time = 0);
+
+    /**
+     * Returns whether the key agreement has ended.
+     *
+     * @return      true = ended, false = otherwise
+     */
+    bool hasEnded();
 
 signals:
     /**
@@ -141,6 +149,8 @@ private:
     quint32 counter;
 
     SrtpMaterial material;
+
+    bool ended;
 };
 
 #endif // NETWORKMANAGER_H

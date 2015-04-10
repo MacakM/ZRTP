@@ -3,6 +3,7 @@
 NetworkManager::NetworkManager(int argc, char *argv[], QObject *parent) :
     QObject(parent)
 {
+    ended = false;
     counter = 0;
     qsrand(QTime::currentTime().msec());
     threads.reserve(15);
@@ -55,6 +56,11 @@ void NetworkManager::setActualSignal(uint8_t signalNumber, int32_t time)
     actualSignal = (Signal)signalNumber;
     actualTime = time;
     emit signalReceived();
+}
+
+bool NetworkManager::hasEnded()
+{
+    return ended;
 }
 
 void NetworkManager::processPendingDatagram()
@@ -120,6 +126,7 @@ void NetworkManager::processSignal()
         else
         {
             std::cout << "Call secured" << std::endl;
+            ended = true;
         }
     }
     else if(actualSignal == zrtpFailed)
