@@ -34,6 +34,8 @@ Zrtp::Zrtp(ZrtpCallback *cb, Role role, std::string clientId, UserInfo *info)
     createHelloPacket(myClientId);
 
     assert(hello);
+	
+	peerHello = NULL;
 
     Event *event = new Event();
     event->type = Start;

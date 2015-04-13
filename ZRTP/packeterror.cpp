@@ -20,7 +20,7 @@ PacketError::PacketError(uint32_t code)
 PacketError::~PacketError()
 {
     std::cout << "Error destructing" << std::endl;
-    delete(packetHeader);
+    delete (packetHeader);
     memset(data,0,MAX_ERROR_LENGTH);
 }
 

@@ -20,7 +20,7 @@ PacketHello::PacketHello()
 PacketHello::~PacketHello()
 {
     std::cout << "Hello destructing" << std::endl;
-    delete(packetHeader);
+    delete (packetHeader);
     memset(data,0,MAX_HELLO_LENGTH);
 }
 

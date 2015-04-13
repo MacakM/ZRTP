@@ -18,6 +18,10 @@ NetworkManager::NetworkManager(int argc, char *argv[], QObject *parent) :
     restartTimer = new QTimer();
     restartTimer->setSingleShot(true);
     connect(restartTimer, SIGNAL(timeout()), this, SLOT(restartZrtp()));
+	
+	endTimer = new QTimer();
+    endTimer->setSingleShot(true);
+    connect(endTimer, SIGNAL(timeout()), this, SLOT(endZrtp()));
 
     setArguments(Parser::getArguments(argc,argv));
 
@@ -49,6 +53,24 @@ NetworkManager::NetworkManager(int argc, char *argv[], QObject *parent) :
 
     zrtp = new Zrtp(callbacks, myRole, "MacakM", &info);
     memcpy(myZid,zrtp->getZid(),ZID_SIZE);
+}
+
+NetworkManager::~NetworkManager()
+{
+    delete(zrtp);
+    info.versions.clear();
+    info.hashTypes.clear();
+    info.cipherTypes.clear();
+    info.authTagTypes.clear();
+    info.keyAgreementTypes.clear();
+    info.sasTypes.clear();
+    delete(mutex);
+    delete(callbacks);
+    delete(timer);
+    delete(sendSocket);
+    delete(readSocket);
+    delete(restartTimer);
+    delete(endTimer);
 }
 
 void NetworkManager::setActualSignal(uint8_t signalNumber, int32_t time)
@@ -126,7 +148,7 @@ void NetworkManager::processSignal()
         else
         {
             std::cout << "Call secured" << std::endl;
-            ended = true;
+            (myRole == Responder) ? endTimer->start(7000) : endTimer->start(5000);
         }
     }
     else if(actualSignal == zrtpFailed)
@@ -137,18 +159,26 @@ void NetworkManager::processSignal()
 
 void NetworkManager::restartZrtp()
 {
-    delete (zrtp);
     for(int i = threads.size() - 1; i >= 0; i--)
     {
         threads.erase(threads.begin() + i);
     }
     counter++;
     std::cout << "COUNTER: " << counter << std::endl;
-    if(counter == 10000)
+    if(counter == 5)
     {
-        std::cin.get();
+        ended = true;
     }
-    zrtp = new Zrtp(callbacks, myRole, "MacakM", &info);
+	else
+	{
+		delete (zrtp);
+		zrtp = new Zrtp(callbacks, myRole, "MacakM", &info);
+	}
+}
+
+void NetworkManager::endZrtp()
+{
+    ended = true;
 }
 
 void NetworkManager::processZrtpTimeout()

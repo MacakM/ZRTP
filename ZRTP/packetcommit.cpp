@@ -11,7 +11,7 @@ PacketCommit::PacketCommit()
 PacketCommit::~PacketCommit()
 {
     std::cout << "Commit destructing" << std::endl;
-    delete(packetHeader);
+    delete (packetHeader);
     memset(data,0,MAX_COMMIT_LENGTH);
 }
 

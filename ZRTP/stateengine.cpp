@@ -139,6 +139,7 @@ void StateEngine::handleSentHello()
 
         if(memcmp(type,"Hello   ", TYPE_SIZE) == 0)
         {
+			delete(zrtp->peerHello);
             zrtp->peerHello = new PacketHello();
             if(!zrtp->peerHello->parse(msg, &errorCode))
             {
@@ -455,6 +456,7 @@ void StateEngine::handleReceivedHelloAck()
 
         if(memcmp(type,"Hello   ", TYPE_SIZE) == 0)
         {
+            delete(zrtp->peerHello);
             zrtp->peerHello = new PacketHello();
             if(!zrtp->peerHello->parse(msg, &errorCode))
             {

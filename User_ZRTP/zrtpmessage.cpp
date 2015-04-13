@@ -15,6 +15,6 @@ void ZrtpMessage::run()
     Sleep(delayTime);
     std::cout << "Received " << msg[4] << msg[5] << msg[6] << msg[7] << msg[8] << msg[9] << msg[10] << msg[11]<< std::endl;
     manager->processZrtpMessage(msg,length);
-    delete[](msg);
+    delete[] (msg);
     return;
 }

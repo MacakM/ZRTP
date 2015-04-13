@@ -11,7 +11,7 @@ PacketErrorAck::PacketErrorAck()
 PacketErrorAck::~PacketErrorAck()
 {
     std::cout << "ErrorAck destructing" << std::endl;
-    delete(packetHeader);
+    delete (packetHeader);
     memset(data,0,MAX_ERRORACK_LENGTH);
 }
 

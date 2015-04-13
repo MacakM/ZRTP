@@ -52,6 +52,8 @@ public:
      */
     explicit NetworkManager(int argc, char *argv[], QObject *parent = 0);
 
+	~NetworkManager();
+	
     /**
      * Set actual signal so NetworkManager can process it.
      *
@@ -93,6 +95,11 @@ public slots:
      * Restarts all Zrtp process.
      */
     void restartZrtp();
+	
+	/**
+      * Ends Zrtp process.
+      */
+    void endZrtp();
 
 public:
     /**
@@ -146,6 +153,7 @@ private:
 
     bool testing;
     QTimer *restartTimer;
+    QTimer *endTimer;
     quint32 counter;
 
     SrtpMaterial material;

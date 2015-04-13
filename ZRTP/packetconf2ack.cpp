@@ -11,7 +11,7 @@ PacketConf2Ack::PacketConf2Ack()
 PacketConf2Ack::~PacketConf2Ack()
 {
     std::cout << "Conf2ACK destructing" << std::endl;
-    delete(packetHeader);
+    delete (packetHeader);
     memset(data,0,MAX_CONF2ACK_LENGTH);
 }
 

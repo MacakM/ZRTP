@@ -11,7 +11,7 @@ PacketDHPart::PacketDHPart()
 PacketDHPart::~PacketDHPart()
 {
     std::cout << "DHPart destructing" << std::endl;
-    delete(packetHeader);
+    delete (packetHeader);
     memset(data,0,MAX_DHPART_LENGTH);
 }
 

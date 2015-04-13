@@ -25,6 +25,8 @@ class ZrtpCallback {
 public:
     ZrtpCallback() {}
 
+    virtual ~ZrtpCallback() {}
+
     /**
      * Sends data to other endpoint.
      *
