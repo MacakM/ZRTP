@@ -1075,12 +1075,12 @@ bool Zrtp::compareVersions()
     std::string peerVersion(buffer);
     std::string myVersion = chooseHighestVersion();
 
-    if(myVersion.compare(peerVersion) == 0)
+    if(myVersion.compare(0, 3, peerVersion, 0, 3) == 0)
     {
         return true;
     }
 
-    if(myVersion.compare(peerVersion) > 0)
+    if(myVersion.compare(0, 3, peerVersion, 0 ,3) > 0)
     {
         for(uint8_t i = 0; i < userInfo->versions.size(); i++)
         {

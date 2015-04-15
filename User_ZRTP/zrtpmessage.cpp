@@ -10,9 +10,12 @@ ZrtpMessage::ZrtpMessage(NetworkManager *manager, uint8_t *msg, int32_t length, 
 
 void ZrtpMessage::run()
 {
-    qsrand(QTime::currentTime().msec());
-    int32_t delayTime = qrand() % delay;
-    Sleep(delayTime);
+    if(delay != 0)
+    {
+        qsrand(QTime::currentTime().msec());
+        int32_t delayTime = qrand() % delay;
+        Sleep(delayTime);
+    }
     std::cout << "Received " << msg[4] << msg[5] << msg[6] << msg[7] << msg[8] << msg[9] << msg[10] << msg[11]<< std::endl;
     manager->processZrtpMessage(msg,length);
     delete[] (msg);

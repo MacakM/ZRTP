@@ -8,9 +8,12 @@ ZrtpTimeout::ZrtpTimeout(NetworkManager *manager, int32_t delay)
 
 void ZrtpTimeout::run()
 {
-    qsrand(QTime::currentTime().msec());
-    int32_t delayTime = qrand() % delay;
-    Sleep(delayTime);
+    if(delay != 0)
+    {
+        qsrand(QTime::currentTime().msec());
+        int32_t delayTime = qrand() % delay;
+        Sleep(delayTime);
+    }
     manager->processZrtpTimeout();
     return;
 }
