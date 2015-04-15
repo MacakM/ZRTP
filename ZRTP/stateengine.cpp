@@ -5,6 +5,8 @@ StateEngine::StateEngine(Zrtp *zrtp)
     initHandlers();
     this->zrtp = zrtp;
 
+    sentMessage = NULL;
+
     T1.start = 50;
     T1.cap = 200;
     T1.maxResend = 20;
@@ -20,10 +22,9 @@ StateEngine::StateEngine(Zrtp *zrtp)
 
 StateEngine::~StateEngine()
 {
-    delete(actualEvent);
+    delete[] (sentMessage);
+    delete (actualEvent);
 }
-
-
 
 void StateEngine::initHandlers()
 {
@@ -112,9 +113,12 @@ void StateEngine::handleInitial()
     uint8_t *message = zrtp->hello->toBytes();
     uint16_t messageLength = zrtp->hello->getLength() * WORD_SIZE;
     zrtp->sendData(message,messageLength);
-
-    sentMessage = message;
+    //sentMessage = message;
     sentMessageLength = messageLength;
+    delete[] (sentMessage);
+    sentMessage = new uint8_t[messageLength];
+    memcpy(sentMessage,message,messageLength);
+
     timerStart(&T1);
     std::cout << "Actual state: SentHello" << std::endl;
     actualState = SentHello;
@@ -197,8 +201,10 @@ void StateEngine::handleSentHello()
             uint16_t messageLength = zrtp->hello->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
 
-            sentMessage = message;
             sentMessageLength = messageLength;
+            delete[] (sentMessage);
+            sentMessage = new uint8_t[messageLength];
+            memcpy(sentMessage,message,messageLength);
             timerStart(&T1);
         }
 
@@ -278,8 +284,10 @@ void StateEngine::handleSentHelloAck()
             uint16_t messageLength = zrtp->hello->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
 
-            sentMessage = message;
             sentMessageLength = messageLength;
+            delete[] (sentMessage);
+            sentMessage = new uint8_t[messageLength];
+            memcpy(sentMessage,message,messageLength);
             timerStart(&T1);
         }
 
@@ -313,8 +321,10 @@ void StateEngine::handleSentHelloAck()
                 uint16_t messageLength = zrtp->commit->getLength() * WORD_SIZE;
                 zrtp->sendData(message,messageLength);
 
-                sentMessage = message;
                 sentMessageLength = messageLength;
+                delete[] (sentMessage);
+                sentMessage = new uint8_t[messageLength];
+                memcpy(sentMessage,message,messageLength);
                 timerStart(&T2);
                 std::cout << "Actual state: SentCommit" << std::endl;
                 actualState = SentCommit;
@@ -415,8 +425,10 @@ void StateEngine::handleSentHelloAck()
                 uint16_t messageLength = zrtp->commit->getLength() * WORD_SIZE;
                 zrtp->sendData(message,messageLength);
 
-                sentMessage = message;
                 sentMessageLength = messageLength;
+                delete[] (sentMessage);
+                sentMessage = new uint8_t[messageLength];
+                memcpy(sentMessage,message,messageLength);
                 timerStart(&T2);
                 std::cout << "Actual state: SentCommit" << std::endl;
                 actualState = SentCommit;
@@ -486,8 +498,10 @@ void StateEngine::handleReceivedHelloAck()
                 uint16_t messageLength = zrtp->hello->getLength() * WORD_SIZE;
                 zrtp->sendData(message,messageLength);
 
-                sentMessage = message;
                 sentMessageLength = messageLength;
+                delete[] (sentMessage);
+                sentMessage = new uint8_t[messageLength];
+                memcpy(sentMessage,message,messageLength);
                 timerStart(&T1);
                 return;
             }
@@ -525,8 +539,10 @@ void StateEngine::handleReceivedHelloAck()
                 uint16_t messageLength = zrtp->commit->getLength() * WORD_SIZE;
                 zrtp->sendData(message,messageLength);
 
-                sentMessage = message;
                 sentMessageLength = messageLength;
+                delete[] (sentMessage);
+                sentMessage = new uint8_t[messageLength];
+                memcpy(sentMessage,message,messageLength);
                 timerStart(&T2);
                 std::cout << "Actual state: SentCommit" << std::endl;
                 actualState = SentCommit;
@@ -602,8 +618,10 @@ void StateEngine::handleSentCommit()
             uint16_t messageLength = zrtp->dhPart2->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
 
-            sentMessage = message;
             sentMessageLength = messageLength;
+            delete[] (sentMessage);
+            sentMessage = new uint8_t[messageLength];
+            memcpy(sentMessage,message,messageLength);
 
             zrtp->createDHResult();
             zrtp->sharedSecretCalculation();
@@ -723,8 +741,10 @@ void StateEngine::handleWaitCommit()
             uint16_t messageLength = zrtp->hello->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
 
-            sentMessage = message;
             sentMessageLength = messageLength;
+            delete[] (sentMessage);
+            sentMessage = new uint8_t[messageLength];
+            memcpy(sentMessage,message,messageLength);
             timerStart(&T1);
         }
 
@@ -924,8 +944,10 @@ void StateEngine::handleWaitConfirm1()
             uint16_t messageLength = zrtp->confirm2->getLength() * WORD_SIZE;
             zrtp->sendData(message,messageLength);
 
-            sentMessage = message;
             sentMessageLength = messageLength;
+            delete[] (sentMessage);
+            sentMessage = new uint8_t[messageLength];
+            memcpy(sentMessage,message,messageLength);
             timerStart(&T2);
             std::cout << "Actual state: WaitConf2Ack" << std::endl;
             actualState = WaitConf2Ack;
@@ -1155,8 +1177,10 @@ void StateEngine::sendError(uint32_t code)
 
     std::cout << "error code: " << std::hex << code << std::endl;
 
-    sentMessage = message;
     sentMessageLength = messageLength;
+    delete[] (sentMessage);
+    sentMessage = new uint8_t[messageLength];
+    memcpy(sentMessage,message,messageLength);
     timerStart(&T2);
     std::cout << "Actual state: WaitErrorAck" << std::endl;
     actualState = WaitErrorAck;
