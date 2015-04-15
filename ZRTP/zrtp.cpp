@@ -62,11 +62,9 @@ Zrtp::~Zrtp()
 
 void Zrtp::processMessage(uint8_t *msg, int32_t length)
 {
-    enterCriticalSection();
     //ignore packet with shorter length than it should be
     if(length < (int32_t)sizeof(Header) - WORD_SIZE)
     {
-        leaveCriticalSection();
         return;
     }
     Event *event = new Event();
@@ -77,7 +75,6 @@ void Zrtp::processMessage(uint8_t *msg, int32_t length)
     {
         engine->processEvent(event);
     }
-    leaveCriticalSection();
 }
 
 void Zrtp::processTimeout()

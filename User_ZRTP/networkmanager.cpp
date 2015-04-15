@@ -123,7 +123,7 @@ void NetworkManager::processPendingDatagram()
     uint8_t *message = new uint8_t[size];
     memcpy(message,datagram.data(),size);
     ZrtpMessage *t = new ZrtpMessage(this,message,size,packetDelay);
-    connect(t, SIGNAL(finished()), t, SLOT(deleteLater()));
+    //connect(t, SIGNAL(finished()), t, SLOT(deleteLater()));
     threads.push_back(t);
     t->start();
 }
@@ -159,8 +159,15 @@ void NetworkManager::processSignal()
 
 void NetworkManager::restartZrtp()
 {
+    //wait for all threads to end
     for(int i = threads.size() - 1; i >= 0; i--)
     {
+        QThread *thread = threads.at(i);
+        while(thread->isRunning())
+        {
+            Sleep(100);
+        }
+        delete(threads.at(i));
         threads.erase(threads.begin() + i);
     }
     counter++;
@@ -170,7 +177,7 @@ void NetworkManager::restartZrtp()
         ended = true;
     }
 	else
-	{
+    {
 		delete (zrtp);
 		zrtp = new Zrtp(callbacks, myRole, "MacakM", &info);
 	}
@@ -284,7 +291,7 @@ void NetworkManager::setArguments(Arguments args)
 void NetworkManager::createTimeoutThread()
 {
     ZrtpTimeout *t = new ZrtpTimeout(this,packetDelay);
-    connect(t, SIGNAL(finished()), t, SLOT(deleteLater()));
+    //connect(t, SIGNAL(finished()), t, SLOT(deleteLater()));
     threads.push_back(t);
     t->start();
 }
