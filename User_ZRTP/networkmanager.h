@@ -67,7 +67,7 @@ public:
      *
      * @return      true = ended, false = otherwise
      */
-    bool hasEnded();
+    bool hasEnded() { return ended; }
 
 signals:
     /**
@@ -106,7 +106,7 @@ public:
      * Calls ZRTP method to process timeout.
      *
      */
-    void processZrtpTimeout();
+    void processZrtpTimeout() { zrtp->processTimeout(); }
 
     /**
      * Calls ZRTP method to process received message.
@@ -114,7 +114,7 @@ public:
      * @param msg       received message
      * @param length    length of the message
      */
-    void processZrtpMessage(uint8_t *msg, int32_t length);
+    void processZrtpMessage(uint8_t *msg, int32_t length) { zrtp->processMessage(msg, length); }
 
 private:
     /**

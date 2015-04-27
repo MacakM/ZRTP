@@ -11,7 +11,6 @@ PacketConfirm::PacketConfirm()
 
 PacketConfirm::~PacketConfirm()
 {
-    std::cout << "Confirm destructing" << std::endl;
     delete (packetHeader);
     memset(data,0,MAX_CONFIRM_LENGTH);
 }
@@ -107,73 +106,8 @@ bool PacketConfirm::parse(uint8_t *data, uint32_t *errorCode)
     return true;
 }
 
-uint8_t *PacketConfirm::getConfirmMac()
-{
-    return confirmMac;
-}
-
-uint8_t *PacketConfirm::getVector()
-{
-    return initVector;
-}
-
-uint8_t *PacketConfirm::getH0()
-{
-    return h0;
-}
-
-uint8_t *PacketConfirm::getEncryptedPart()
-{
-    return encryptedPart;
-}
-
 void PacketConfirm::setEncryptedPart(uint8_t *data)
 {
     memcpy(encryptedPart,data,ENCRYPTED_PART_LENGTH);
     encryptionDone = true;
-}
-
-void PacketConfirm::setConfirmMac(uint8_t *mac)
-{
-    memcpy(confirmMac,mac,MAC_SIZE);
-}
-
-void PacketConfirm::setInitVector(uint8_t *vector)
-{
-    memcpy(initVector,vector,VECTOR_SIZE);
-}
-
-void PacketConfirm::setH0(uint8_t *hash)
-{
-    memcpy(h0,hash,HASHIMAGE_SIZE);
-}
-
-void PacketConfirm::setSigLen(uint16_t length)
-{
-    sigLen = length;
-}
-
-void PacketConfirm::setFlagE()
-{
-    flags |= 8;
-}
-
-void PacketConfirm::setFlagV()
-{
-    flags |= 4;
-}
-
-void PacketConfirm::setFlagA()
-{
-    flags |= 2;
-}
-
-void PacketConfirm::setFlagD()
-{
-    flags |= 1;
-}
-
-void PacketConfirm::setExpInterval(uint32_t interval)
-{
-    expInterval = interval;
 }

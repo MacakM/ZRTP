@@ -10,7 +10,6 @@ PacketHelloAck::PacketHelloAck()
 
 PacketHelloAck::~PacketHelloAck()
 {
-    std::cout << "HelloAck destructing" << std::endl;
     delete (packetHeader);
     memset(data,0,MAX_HELLOACK_LENGTH);
 }

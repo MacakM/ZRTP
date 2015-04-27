@@ -45,92 +45,92 @@ public:
      *
      * @return ZID
      */
-    uint8_t *getZid();
+    uint8_t *getZid() { return zid; }
 
     /**
      * Returns protocol version.
      *
      * @return      version
      */
-    uint8_t *getVersion();
+    uint8_t *getVersion() { return version; }
 
     /**
      * Returns client identifier.
      *
      * @return  client identifier
      */
-    uint8_t *getClientId();
-
-    /**
-     * Sets protocol version.
-     *
-     * @param version   version
-     */
-    void setVersion(uint8_t *version);
+    uint8_t *getClientId() { return clientId; }
 
     /**
      * Returns hash image H3.
      *
      * @return  h3
      */
-    uint8_t *getH3();
+    uint8_t *getH3() { return h3; }
 
     /**
      * Returns all supported key agreement types from hello packet.
      *
      * @return  supported key agreement types
      */
-    uint8_t *getKeyAgreementTypes();
+    uint8_t *getKeyAgreementTypes() { return keyAgreementTypes; }
 
     /**
      * Returns number of supported key agreement types.
      *
      * @return  key agreement count
      */
-    uint8_t getKeyCount();
+    uint8_t getKeyCount() { return counts.kc; }
 
     /**
      * Returns mac of packet.
      *
      * @return  mac
      */
-    uint8_t *getMac();
+    uint8_t *getMac() { return mac; }
+
+    /**
+     * Sets protocol version.
+     *
+     * @param version   version
+     */
+    void setVersion(uint8_t *version) { memcpy(this->version,version,VERSION_SIZE); }
 
     /**
      * Sets clientID.
      *
      * @param id   clientID
      */
-    void setClientId(uint8_t *id);
+    void setClientId(uint8_t *id) { memcpy(clientId,id,CLIENTID_SIZE); }
 
     /**
      * Sets hash image H3.
      *
      * @param hash   H3
      */
-    void setH3(uint8_t *hash);
+    void setH3(uint8_t *hash) { memcpy(h3,hash,HASHIMAGE_SIZE); }
 
     /**
      * Sets ZID.
      *
      * @param zid   ZID
      */
-    void setZid(uint8_t *zid);
+    void setZid(uint8_t *zid) { memcpy(this->zid,zid,ZID_SIZE); }
 
     /**
      * Sets Signature-capable flag
      */
-    void setFlagS();
+    void setFlagS() { flags |= 64; }
 
     /**
      * Sets MiTM flag
      */
-    void setFlagM();
+    void setFlagM() { flags |= 32; }
 
     /**
      * Sets Passive flag
      */
-    void setFlagP();
+    void setFlagP() { flags |= 16; }
 
     /**
      * Adds all user supported algorithms and types.
@@ -142,7 +142,7 @@ public:
     /**
      * Sets MAC of packet.
      */
-    void setMac(uint8_t *mac);
+    void setMac(uint8_t *mac) { memcpy(this->mac, mac, MAC_SIZE); }
 
 private:
     uint8_t version[VERSION_SIZE];

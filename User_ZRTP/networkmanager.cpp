@@ -80,11 +80,6 @@ void NetworkManager::setActualSignal(uint8_t signalNumber, int32_t time)
     emit signalReceived();
 }
 
-bool NetworkManager::hasEnded()
-{
-    return ended;
-}
-
 void NetworkManager::processPendingDatagram()
 {
     int8_t randValue = qrand() % 100;
@@ -123,7 +118,6 @@ void NetworkManager::processPendingDatagram()
     uint8_t *message = new uint8_t[size];
     memcpy(message,datagram.data(),size);
     ZrtpMessage *t = new ZrtpMessage(this,message,size,packetDelay);
-    //connect(t, SIGNAL(finished()), t, SLOT(deleteLater()));
     threads.push_back(t);
     t->start();
 }
@@ -193,16 +187,6 @@ void NetworkManager::endZrtp()
     }
 
     ended = true;
-}
-
-void NetworkManager::processZrtpTimeout()
-{
-    zrtp->processTimeout();
-}
-
-void NetworkManager::processZrtpMessage(uint8_t *msg, int32_t length)
-{
-    zrtp->processMessage(msg, length);
 }
 
 void NetworkManager::setArguments(Arguments args)
@@ -298,7 +282,6 @@ void NetworkManager::setArguments(Arguments args)
 void NetworkManager::createTimeoutThread()
 {
     ZrtpTimeout *t = new ZrtpTimeout(this,packetDelay);
-    //connect(t, SIGNAL(finished()), t, SLOT(deleteLater()));
     threads.push_back(t);
     t->start();
 }

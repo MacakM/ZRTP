@@ -19,7 +19,6 @@ PacketHello::PacketHello()
 
 PacketHello::~PacketHello()
 {
-    std::cout << "Hello destructing" << std::endl;
     delete (packetHeader);
     memset(data,0,MAX_HELLO_LENGTH);
 }
@@ -201,75 +200,6 @@ bool PacketHello::parse(uint8_t *data, uint32_t *errorCode)
     return true;
 }
 
-uint8_t *PacketHello::getZid()
-{
-    return zid;
-}
-
-uint8_t *PacketHello::getVersion()
-{
-    return version;
-}
-
-uint8_t *PacketHello::getClientId()
-{
-    return clientId;
-}
-
-void PacketHello::setVersion(uint8_t *version)
-{
-    memcpy(this->version,version,VERSION_SIZE);
-}
-
-uint8_t *PacketHello::getH3()
-{
-    return h3;
-}
-
-uint8_t *PacketHello::getKeyAgreementTypes()
-{
-    return keyAgreementTypes;
-}
-
-uint8_t PacketHello::getKeyCount()
-{
-    return counts.kc;
-}
-
-uint8_t *PacketHello::getMac()
-{
-    return mac;
-}
-
-void PacketHello::setClientId(uint8_t *id)
-{
-    memcpy(clientId,id,CLIENTID_SIZE);
-}
-
-void PacketHello::setH3(uint8_t *hash)
-{
-    memcpy(h3,hash,HASHIMAGE_SIZE);
-}
-
-void PacketHello::setZid(uint8_t *zid)
-{
-    memcpy(this->zid,zid,ZID_SIZE);
-}
-
-void PacketHello::setFlagS()
-{
-    flags |= 64;
-}
-
-void PacketHello::setFlagM()
-{
-    flags |= 32;
-}
-
-void PacketHello::setFlagP()
-{
-    flags |= 16;
-}
 
 void PacketHello::AddSupportedTypes(UserInfo *info)
 {
@@ -298,11 +228,6 @@ void PacketHello::AddSupportedTypes(UserInfo *info)
         std::string value = info->sasTypes.at(i);
         addSas((uint8_t*)value.c_str());
     }
-}
-
-void PacketHello::setMac(uint8_t *mac)
-{
-    memcpy(this->mac, mac, MAC_SIZE);
 }
 
 void PacketHello::addHash(uint8_t *hash)

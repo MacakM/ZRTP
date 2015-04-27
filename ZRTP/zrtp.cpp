@@ -86,11 +86,6 @@ void Zrtp::processTimeout()
     engine->processEvent(event);
 }
 
-uint8_t *Zrtp::getZid()
-{
-    return myZID;
-}
-
 uint8_t *Zrtp::getActualState()
 {
     return (uint8_t*)engine->getActualState();
@@ -109,31 +104,6 @@ SrtpMaterial *Zrtp::getSrtpMaterial()
     delete[] (sasPointer);
 
     return material;
-}
-
-bool Zrtp::sendData(const uint8_t *data, int32_t length)
-{
-    return callback->sendData(data, length);
-}
-
-bool Zrtp::activateTimer(int32_t time)
-{
-    return callback->activateTimer(time);
-}
-
-bool Zrtp::cancelTimer()
-{
-    return callback->cancelTimer();
-}
-
-void Zrtp::enterCriticalSection()
-{
-    callback->enterCriticalSection();
-}
-
-void Zrtp::leaveCriticalSection()
-{
-    callback->leaveCriticalSection();
 }
 
 void Zrtp::createHelloPacket(uint8_t *clientId)
@@ -549,11 +519,6 @@ void Zrtp::diffieHellman()
     dh->p = prime;
     dh->g = generator;
 
-    /*std::ofstream myFile;
-    if(myRole == Initiator) myFile.open("test.txt", std::ios::app);
-    else myFile.open("testR.txt", std::ios::app);
-    myFile << "START" << std::endl;*/
-
     //fixed bug when generate_key produces shorter keys
     do
     {
@@ -567,13 +532,10 @@ void Zrtp::diffieHellman()
             BN_free(dh->priv_key);
             dh->priv_key = NULL;
         }
-        //myFile << "a";
         DH_generate_key(dh);
     }
     while((BN_num_bytes(dh->priv_key) * sizeof(uint8_t) != DH3K_LENGTH) ||
           (BN_num_bytes(dh->pub_key) * sizeof(uint8_t) != DH3K_LENGTH));
-    //myFile << std::endl;
-    //myFile.close();
     privateKey = BN_new();
     publicKey = BN_new();
     p = BN_new();
@@ -581,42 +543,6 @@ void Zrtp::diffieHellman()
     BN_copy(privateKey,dh->priv_key);
     BN_copy(publicKey,dh->pub_key);
     BN_copy(p, dh->p);
-/*
-    std::ofstream notMyFile;
-    if(myRole == Initiator) notMyFile.open("DHResultI.txt", std::ios::app);
-    else notMyFile.open("DHResultR.txt", std::ios::app);
-    //private key
-    uint8_t *buffer;
-    buffer = (uint8_t*)calloc(DH3K_LENGTH, sizeof(uint8_t));
-
-    BN_bn2bin(privateKey,buffer);
-
-    notMyFile << std::endl;
-    notMyFile << "My private key:" << std::endl;
-    for(int i = 0; i < DH3K_LENGTH; i++)
-    {
-        notMyFile << std::hex << buffer[i];
-    }
-    notMyFile << std::endl;
-
-    free(buffer);
-
-    //peer public key
-    buffer = (uint8_t*)calloc(DH3K_LENGTH, sizeof(uint8_t));
-
-    BN_bn2bin(publicKey,buffer);
-
-    notMyFile << std::endl;
-    notMyFile << "My public key:" << std::endl;
-    for(int i = 0; i < DH3K_LENGTH; i++)
-    {
-        notMyFile << std::hex << buffer[i];
-    }
-    notMyFile << std::endl;
-
-    notMyFile.close();
-
-    free(buffer);*/
 
     DH_free(dh);
 }
@@ -707,13 +633,6 @@ void Zrtp::createTotalHash()
                     dhPart1->getLength() + dhPart2->getLength()) * WORD_SIZE, hash);
     memcpy(totalHash,hash,SHA256_DIGEST_LENGTH);
     delete[] (buffer);
-/*
-    std::cout << "Total hash:" << std::endl;
-    for(int i = 0; i < SHA256_DIGEST_LENGTH; i++)
-    {
-        std::cout << totalHash[i];
-    }
-    std::cout << std::endl;*/
 }
 
 void Zrtp::createDHResult()
@@ -733,58 +652,6 @@ void Zrtp::createDHResult()
     BN_mod_exp(result,peerPublicKey,privateKey, p, ctx);
 
     BN_copy(dhResult,result);
-
-    //std::ofstream myFile;
-    //if(myRole == Responder) myFile.open("DHresultR.txt",std::ios::app);
-    //else myFile.open("DHResultI.txt",std::ios::app);
-
-    //private key
-    /*uint8_t *buffer;
-    buffer = (uint8_t*)calloc(DH3K_LENGTH, sizeof(uint8_t));
-
-    BN_bn2bin(privateKey,buffer);
-
-    myFile << std::endl;
-    myFile << "My private key:" << std::endl;
-    for(int i = 0; i < DH3K_LENGTH; i++)
-    {
-        myFile << std::hex << buffer[i];
-    }
-    myFile << std::endl;
-
-    free(buffer);
-
-    //peer public key
-    buffer = (uint8_t*)calloc(DH3K_LENGTH, sizeof(uint8_t));
-
-    BN_bn2bin(peerPublicKey,buffer);
-
-    myFile << std::endl;
-    myFile << "Peer public key:" << std::endl;
-    for(int i = 0; i < DH3K_LENGTH; i++)
-    {
-        myFile << std::hex << buffer[i];
-    }
-    myFile << std::endl;
-
-    free(buffer);
-
-    //DHResult
-    buffer = (uint8_t*)calloc(DH3K_LENGTH, sizeof(uint8_t));
-
-    BN_bn2bin(dhResult,buffer);
-
-    myFile << std::endl;
-    myFile << "DHResult:" << std::endl;
-    for(int i = 0; i < DH3K_LENGTH; i++)
-    {
-        myFile << std::hex << buffer[i];
-    }
-    myFile << std::endl;
-
-    myFile.close();
-
-    free(buffer);*/
 
     BN_clear_free(peerPublicKey);
     BN_clear_free(result);
@@ -815,14 +682,6 @@ void Zrtp::createKDFContext()
     pos = &context[2*ZID_SIZE];
     memcpy(pos,totalHash,SHA256_DIGEST_LENGTH);
     memcpy(kdfContext,context,KDF_CONTEXT_LENGTH);
-/*
-    std::cout << std::endl;
-    std::cout << "KDF_Context:" << std::endl;
-    for(int i = 0; i < KDF_CONTEXT_LENGTH; i++)
-    {
-        std::cout << kdfContext[i];
-    }
-    std::cout << std::endl;*/
 }
 
 void Zrtp::sharedSecretCalculation()

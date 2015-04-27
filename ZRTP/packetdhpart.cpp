@@ -10,7 +10,6 @@ PacketDHPart::PacketDHPart()
 
 PacketDHPart::~PacketDHPart()
 {
-    std::cout << "DHPart destructing" << std::endl;
     delete (packetHeader);
     memset(data,0,MAX_DHPART_LENGTH);
 }
@@ -115,54 +114,4 @@ bool PacketDHPart::parse(uint8_t *data, uint32_t *errorCode)
         mac[i] = *(pos++);
     }
     return true;
-}
-
-uint8_t *PacketDHPart::getPv()
-{
-    return pv;
-}
-
-uint8_t *PacketDHPart::getH1()
-{
-    return h1;
-}
-
-uint8_t *PacketDHPart::getMac()
-{
-    return mac;
-}
-
-void PacketDHPart::setH1(uint8_t *hash)
-{
-    memcpy(h1,hash,HASHIMAGE_SIZE);
-}
-
-void PacketDHPart::setRs1Id(uint8_t *rs1Id)
-{
-    memcpy(this->rs1Id,rs1Id,ID_SIZE);
-}
-
-void PacketDHPart::setRs2Id(uint8_t *rs2Id)
-{
-    memcpy(this->rs2Id,rs2Id,ID_SIZE);
-}
-
-void PacketDHPart::setAuxsecretId(uint8_t *auxsecretId)
-{
-    memcpy(this->auxsecretId,auxsecretId,ID_SIZE);
-}
-
-void PacketDHPart::setPbxsecretId(uint8_t *pbxsecretId)
-{
-    memcpy(this->pbxsecretId,pbxsecretId,ID_SIZE);
-}
-
-void PacketDHPart::setPv(uint8_t *publicValue)
-{
-    memcpy(pv,publicValue,DH3K_LENGTH);
-}
-
-void PacketDHPart::setMac(uint8_t *mac)
-{
-    memcpy(this->mac, mac, MAC_SIZE);
 }

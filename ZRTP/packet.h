@@ -72,33 +72,33 @@ public:
      *
      * @return  packet length
      */
-    uint16_t getLength();
+    uint16_t getLength() { return packetHeader->length; }
 
     /**
      * Returns type of packet.
      *
      * @return  packet type
      */
-    uint8_t *getType();
+    uint8_t *getType() { return packetHeader->type; }
 
     /**
      * Sets length of packet in WORDs.
      *
      * @param length    packet length
      */
-    void setLength(uint16_t length);
+    void setLength(uint16_t length) { packetHeader->length = length; }
 
     /**
      * Sets type of packet.
      *
      * @param type      packet type
      */
-    void setType(uint8_t *type);
+    void setType(uint8_t *type) { memcpy(packetHeader->type, type, TYPE_SIZE); }
 
     /**
      * Sets zrtp identifier 0x505a.
      */
-    void setZrtpIdentifier();
+    void setZrtpIdentifier() { packetHeader->identifier = (uint16_t)ZRTP_IDENTIFIER; }
 
     /**
      * Sets MAC of packet. Only implemented for Hello, Commit and DHPart packets.

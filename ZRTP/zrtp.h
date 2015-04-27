@@ -89,7 +89,7 @@ public:
      *
      * @return ZID
      */
-    uint8_t *getZid();
+    uint8_t *getZid() { return myZID; }
 
     /**
      * Returns the number of actual state of engine.
@@ -113,7 +113,7 @@ private:
      * @param length    length of data
      * @return          true = successful, false = otherwise
      */
-    bool sendData(const uint8_t *data, int32_t length);
+    bool sendData(const uint8_t *data, int32_t length) { return callback->sendData(data, length); }
 
     /**
      * Activate timer throught ZrtpCallback.
@@ -121,24 +121,24 @@ private:
      * @param time  timeout interval in milliseconds
      * @return      true = successful, false = otherwise
      */
-    bool activateTimer(int32_t time);
+    bool activateTimer(int32_t time) { return callback->activateTimer(time); }
 
     /**
      * Cancel timer throught ZrtpCallback.
      *
      * @return true = successful, false = otherwise
      */
-    bool cancelTimer();
+    bool cancelTimer() { return callback->cancelTimer(); }
 
     /**
      * Enter critical section throught ZrtpCallback.
      */
-    void enterCriticalSection();
+    void enterCriticalSection() { callback->enterCriticalSection(); }
 
     /**
      * Leave critical section throught ZrtpCallback.
      */
-    void leaveCriticalSection();
+    void leaveCriticalSection() { callback->leaveCriticalSection(); }
 
     /**
      * Prepares Hello packet for sending.

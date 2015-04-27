@@ -64,7 +64,7 @@ public:
     /**
       * StateEngine destructor.
       */
-    ~StateEngine();
+    ~StateEngine() { delete (actualEvent); }
 
     /**
      * Process given event from Zrtp.
@@ -74,7 +74,7 @@ public:
      */
     void processEvent(Event *event);
 
-    States *getActualState();
+    States *getActualState() { return &actualState; }
 
 private:
     Zrtp *zrtp;

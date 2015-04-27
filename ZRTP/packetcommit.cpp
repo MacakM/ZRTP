@@ -10,7 +10,6 @@ PacketCommit::PacketCommit()
 
 PacketCommit::~PacketCommit()
 {
-    std::cout << "Commit destructing" << std::endl;
     delete (packetHeader);
     memset(data,0,MAX_COMMIT_LENGTH);
 }
@@ -130,86 +129,6 @@ bool PacketCommit::parse(uint8_t *data, uint32_t *errorCode)
     return true;
 }
 
-uint8_t *PacketCommit::getHvi()
-{
-    return hvi;
-}
-
-uint8_t *PacketCommit::getH2()
-{
-    return h2;
-}
-
-uint8_t *PacketCommit::getHash()
-{
-    return hash;
-}
-
-uint8_t *PacketCommit::getCipher()
-{
-    return cipher;
-}
-
-uint8_t *PacketCommit::getAuthTag()
-{
-    return authTag;
-}
-
-uint8_t *PacketCommit::getKeyAgreement()
-{
-    return keyAgreement;
-}
-
-uint8_t *PacketCommit::getSas()
-{
-    return sas;
-}
-
-uint8_t *PacketCommit::getMac()
-{
-    return mac;
-}
-
-void PacketCommit::setH2(uint8_t *hash)
-{
-    memcpy(h2,hash,HASHIMAGE_SIZE);
-}
-
-void PacketCommit::setZid(uint8_t *zid)
-{
-    memcpy(this->zid,zid,ZID_SIZE);
-}
-
-void PacketCommit::setHash(uint8_t *hash)
-{
-    memcpy(this->hash,hash, WORD_SIZE);
-}
-
-void PacketCommit::setCipher(uint8_t *cipher)
-{
-    memcpy(this->cipher, cipher, WORD_SIZE);
-}
-
-void PacketCommit::setAuthTag(uint8_t *authTag)
-{
-    memcpy(this->authTag, authTag, WORD_SIZE);
-}
-
-void PacketCommit::setKeyAgreement(uint8_t *keyAgreement)
-{
-    memcpy(this->keyAgreement, keyAgreement, WORD_SIZE);
-}
-
-void PacketCommit::setSas(uint8_t *sas)
-{
-    memcpy(this->sas, sas, WORD_SIZE);
-}
-
-void PacketCommit::setHvi(uint8_t *hvi)
-{
-    memcpy(this->hvi, hvi, HVI_SIZE);
-}
-
 bool PacketCommit::hasGreaterHvi(PacketCommit *packet)
 {
     if(memcmp(this->hvi,packet->getHvi(),HVI_SIZE) > 0)
@@ -217,9 +136,4 @@ bool PacketCommit::hasGreaterHvi(PacketCommit *packet)
         return true;
     }
     return false;
-}
-
-void PacketCommit::setMac(uint8_t *mac)
-{
-    memcpy(this->mac, mac, MAC_SIZE);
 }

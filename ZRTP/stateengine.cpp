@@ -18,11 +18,6 @@ StateEngine::StateEngine(Zrtp *zrtp)
     actualState = Initial;
 }
 
-StateEngine::~StateEngine()
-{
-    delete (actualEvent);
-}
-
 void StateEngine::initHandlers()
 {
     handlers[Initial] = &StateEngine::handleInitial;
@@ -95,11 +90,6 @@ void StateEngine::processEvent(Event *event)
     actualEvent = event;
     (this->*handlers[actualState])();
     zrtp->leaveCriticalSection();
-}
-
-States *StateEngine::getActualState()
-{
-    return &actualState;
 }
 
 void StateEngine::handleInitial()

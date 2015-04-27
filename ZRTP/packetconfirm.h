@@ -40,28 +40,28 @@ public:
      *
      * @return  confirm mac
      */
-    uint8_t *getConfirmMac();
+    uint8_t *getConfirmMac() { return confirmMac; }
 
     /**
      * Gets initialization vector.
      *
      * @return  IV
      */
-    uint8_t *getVector();
+    uint8_t *getVector() { return initVector; }
 
     /**
      * Returns hash image H0.
      *
      * @return  h0
      */
-    uint8_t *getH0();
+    uint8_t *getH0() { return h0; }
 
     /**
      * Returns encrypted part of the packet.
      *
      * @return  encrypted data
      */
-    uint8_t *getEncryptedPart();
+    uint8_t *getEncryptedPart() { return encryptedPart; }
 
     /**
      * Sets encrypted part of packet instead of decrypted part.
@@ -75,55 +75,55 @@ public:
      *
      * @param mac   MAC
      */
-    void setConfirmMac(uint8_t *mac);
+    void setConfirmMac(uint8_t *mac) { memcpy(confirmMac,mac,MAC_SIZE); }
 
     /**
      * Sets initialization vector.
      *
      * @param vector    IV
      */
-    void setInitVector(uint8_t *vector);
+    void setInitVector(uint8_t *vector) { memcpy(initVector,vector,VECTOR_SIZE); }
 
     /**
      * Sets hash image H0
      *
      * @param hash  H0
      */
-    void setH0(uint8_t *hash);
+    void setH0(uint8_t *hash) { memcpy(h0,hash,HASHIMAGE_SIZE); }
 
     /**
      * Sets signature length.
      *
      * @param length    signature length
      */
-    void setSigLen(uint16_t length);
+    void setSigLen(uint16_t length) { sigLen = length; }
 
     /**
      * Sets PBX Enrollment flag.
      */
-    void setFlagE();
+    void setFlagE() { flags |= 8; }
 
     /**
      * Sets SAS Verified flag.
      */
-    void setFlagV();
+    void setFlagV() { flags |= 4; }
 
     /**
      * Sets Allow Clear flag.
      */
-    void setFlagA();
+    void setFlagA() { flags |= 2; }
 
     /**
      * Sets Disclosure flag.
      */
-    void setFlagD();
+    void setFlagD() { flags |= 1; }
 
     /**
      * Sets expiration interval.
      *
      * @param interval  expiration interval
      */
-    void setExpInterval(uint32_t interval);
+    void setExpInterval(uint32_t interval) { expInterval = interval; }
 
 private:
     bool encryptionDone;
