@@ -91,6 +91,20 @@ public:
      */
     uint8_t *getZid();
 
+    /**
+     * Returns the number of actual state of engine.
+     *
+     * @return actual state
+     */
+    uint8_t *getActualState();
+
+    /**
+     * Returns SRTP material.
+     *
+     * @return  SRTP material
+     */
+    SrtpMaterial *getSrtpMaterial();
+
 private:
     /**
      * Function that Zrtp calls when it wants to send message throught ZrtpCallback.

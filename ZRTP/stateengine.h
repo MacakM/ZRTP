@@ -1,8 +1,6 @@
 #ifndef STATEENGINE_H
 #define STATEENGINE_H
 
-#define PROTOCOL_TIMEOUT    10000
-
 #include "zrtp.h"
 #include "Integers.h"
 #include <map>
@@ -32,7 +30,6 @@ typedef enum
 typedef enum
 {
     Start,
-    End,
     Message,
     Timeout
 }EventType;
@@ -76,6 +73,8 @@ public:
      * @param event
      */
     void processEvent(Event *event);
+
+    States *getActualState();
 
 private:
     Zrtp *zrtp;

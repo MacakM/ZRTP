@@ -91,6 +91,26 @@ uint8_t *Zrtp::getZid()
     return myZID;
 }
 
+uint8_t *Zrtp::getActualState()
+{
+    return (uint8_t*)engine->getActualState();
+}
+
+SrtpMaterial *Zrtp::getSrtpMaterial()
+{
+    SrtpMaterial *material = new SrtpMaterial();
+    memcpy(material->srtpKeyI,srtpKeyI,AES1_KEY_LENGTH);
+    memcpy(material->srtpKeyR,srtpKeyR,AES1_KEY_LENGTH);
+    memcpy(material->srtpSaltI,srtpSaltI,SALT_KEY_LENGTH);
+    memcpy(material->srtpSaltR,srtpSaltR,SALT_KEY_LENGTH);
+
+    char *sasPointer = base32(sasValue);
+    memcpy(sas,sasPointer,SAS_LENGTH);
+    delete[] (sasPointer);
+
+    return material;
+}
+
 bool Zrtp::sendData(const uint8_t *data, int32_t length)
 {
     return callback->sendData(data, length);

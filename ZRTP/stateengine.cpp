@@ -65,11 +65,6 @@ void StateEngine::processEvent(Event *event)
 {
     zrtp->enterCriticalSection();
     assert(event);
-    if(event->type == End)
-    {
-        std::cout << "Actual state: Initial" << std::endl;
-        actualState = Initial;
-    }
 
     if(event->messageLength > 0)
     {
@@ -100,6 +95,11 @@ void StateEngine::processEvent(Event *event)
     actualEvent = event;
     (this->*handlers[actualState])();
     zrtp->leaveCriticalSection();
+}
+
+States *StateEngine::getActualState()
+{
+    return &actualState;
 }
 
 void StateEngine::handleInitial()

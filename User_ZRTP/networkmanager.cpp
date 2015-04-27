@@ -154,6 +154,7 @@ void NetworkManager::processSignal()
     else if(actualSignal == zrtpFailed)
     {
         std::cout << "Agreement failed!" << std::endl;
+		(myRole == Responder) ? endTimer->start(7000) : endTimer->start(5000);
     }
 }
 
@@ -163,10 +164,7 @@ void NetworkManager::restartZrtp()
     for(int i = threads.size() - 1; i >= 0; i--)
     {
         QThread *thread = threads.at(i);
-        while(thread->isRunning())
-        {
-            Sleep(100);
-        }
+        thread->wait();
         delete(threads.at(i));
         threads.erase(threads.begin() + i);
     }
@@ -185,6 +183,15 @@ void NetworkManager::restartZrtp()
 
 void NetworkManager::endZrtp()
 {
+    //wait for all threads to end
+    for(int i = threads.size() - 1; i >= 0; i--)
+    {
+        QThread *thread = threads.at(i);
+        thread->wait();
+        delete(threads.at(i));
+        threads.erase(threads.begin() + i);
+    }
+
     ended = true;
 }
 
