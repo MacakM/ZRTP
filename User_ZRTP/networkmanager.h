@@ -13,6 +13,7 @@
 #include "parser.h"
 #include "zrtpmessage.h"
 #include "zrtptimeout.h"
+#include "restarter.h"
 
 //just for testing
 #include <windows.h>
@@ -36,7 +37,8 @@ class NetworkManager : public QObject
         activateTimer = 1,
         stopTimer = 2,
         zrtpEnded = 3,
-        zrtpFailed = 4
+        zrtpFailed = 4,
+        zrtpRestart = 5
     } Signal;
 
     friend class MyCallbacks;
@@ -57,7 +59,8 @@ public:
     /**
      * Set actual signal so NetworkManager can process it.
      *
-     * @param signalNumber  1 = set timer with given time, 2 = cancel timer, 3 = zrtp ended
+     * @param signalNumber  1 = set timer with given time, 2 = cancel timer, 3 = zrtp ended,
+     *                      4 = zrtp failed, 5 = zrtp restarting
      * @param time          given time
      */
     void setActualSignal(uint8_t signalNumber, int32_t time = 0);
@@ -152,8 +155,6 @@ private:
     QMutex *mutex;
 
     bool testing;
-    QTimer *restartTimer;
-    QTimer *endTimer;
     quint32 counter;
 
     SrtpMaterial material;
