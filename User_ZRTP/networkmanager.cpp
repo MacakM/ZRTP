@@ -177,7 +177,7 @@ void NetworkManager::restartZrtp()
     restarted = false;
     counter++;
     std::cout << "COUNTER: " << counter << std::endl;
-    if(counter == 1000)
+    if(counter == testCap)
     {
         ended = true;
     }
@@ -281,12 +281,14 @@ void NetworkManager::setArguments(Arguments args)
         packetDelay = 0;
     }
 
-    if(args.testing == '1')
+    if(args.testing != NULL)
     {
+        testCap = atoi(args.testing);
         testing = true;
     }
     else
     {
+        testCap = 1;
         testing = false;
     }
 

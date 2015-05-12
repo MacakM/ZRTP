@@ -154,6 +154,7 @@ private:
 
     bool testing;
     quint32 counter;
+    quint32 testCap;
 
     SrtpMaterial material;
 

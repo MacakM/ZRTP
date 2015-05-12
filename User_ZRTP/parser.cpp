@@ -69,7 +69,7 @@ Arguments Parser::getArguments(int argc, char *argv[])
 
     if(cmdOptionExists(argv, argv+argc, "--testing"))
     {
-        args.testing = getCmdOption(argv, argv + argc, "--testing")[0];
+        args.testing = getCmdOption(argv, argv + argc, "--testing");
     }
     else
     {

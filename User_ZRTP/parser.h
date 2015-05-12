@@ -13,7 +13,7 @@ typedef struct
     char *sendPort;
     char *packetDelay;
     char *packetLoss;
-    char testing;
+    char *testing;
 }Arguments;
 
 /**
