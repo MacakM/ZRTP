@@ -7,6 +7,7 @@
 #include <QTimer>
 #include <QMutex>
 #include <QSystemSemaphore>
+#include <QTime>
 #include <vector>
 
 #include "zrtp.h"
@@ -163,6 +164,8 @@ private:
 
     //important when multiple restart signals occurs
     bool restarted;
+
+    QTime elapsedTimer;
 };
 
 #endif // NETWORKMANAGER_H

@@ -50,6 +50,7 @@ NetworkManager::NetworkManager(int argc, char *argv[], QObject *parent) :
     (myRole == Initiator) ? semaphoreA->release() : semaphoreB->release();
     (myRole == Initiator) ? semaphoreB->acquire() : semaphoreA->acquire();
 
+    elapsedTimer.start();
     zrtp = new Zrtp(callbacks, myRole, "MacakM", &info);
     memcpy(myZid,zrtp->getZid(),ZID_SIZE);
 }
@@ -57,6 +58,7 @@ NetworkManager::NetworkManager(int argc, char *argv[], QObject *parent) :
 NetworkManager::~NetworkManager()
 {
     delete(zrtp);
+    std:: cout << "Test took " << elapsedTimer.elapsed() << " milliseconds.";
     info.versions.clear();
     info.hashTypes.clear();
     info.cipherTypes.clear();
@@ -176,7 +178,7 @@ void NetworkManager::restartZrtp()
     }
     restarted = false;
     counter++;
-    std::cout << "COUNTER: " << counter << std::endl;
+    std::cout << "COUNTER: " << std::dec << counter << std::endl;
     if(counter == testCap)
     {
         ended = true;
