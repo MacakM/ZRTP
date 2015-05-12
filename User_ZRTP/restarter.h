@@ -2,7 +2,7 @@
 #define RESTARTER_H
 
 #include <QThread>
-#include <windows.h>
+#include <QSystemSemaphore>
 #include "networkmanager.h"
 
 class NetworkManager;
@@ -16,11 +16,11 @@ public:
     *
     * @param manager   NetworkManager that created this thread
     */
-    explicit Restarter(NetworkManager *manager, HANDLE semaphore);
+    explicit Restarter(NetworkManager *manager, QSystemSemaphore *semaphore);
 
 private:
     NetworkManager *manager;
-    HANDLE semaphore;
+    QSystemSemaphore *semaphore;
 
     void run();
 };

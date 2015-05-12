@@ -1,37 +1,15 @@
 #include "networkmanager.h"
 
-HANDLE semaphoreA;
-HANDLE semaphoreB;
-HANDLE semaphoreEnd;
+QSystemSemaphore *semaphoreA;
+QSystemSemaphore *semaphoreB;
 
 NetworkManager::NetworkManager(int argc, char *argv[], QObject *parent) :
     QObject(parent)
 {
-    if(strcmp(argv[1],"--create-semaphores") == 0)
-    {
-        semaphoreA = CreateSemaphore(NULL,0,1,L"Global\\semaphoreA");
-        semaphoreB = CreateSemaphore(NULL,0,1,L"Global\\semaphoreB");
-        semaphoreEnd = CreateSemaphore(NULL,0,2,L"Global\\semaphoreEnd");
-        WaitForSingleObject(semaphoreEnd,INFINITE);
-        WaitForSingleObject(semaphoreEnd,INFINITE);
-        CloseHandle(semaphoreA);
-        CloseHandle(semaphoreB);
-        CloseHandle(semaphoreEnd);
-        ended = true;
-        return;
-    }
+    semaphoreA = new QSystemSemaphore("semaphoreA", 0, QSystemSemaphore::Open);
+    semaphoreB = new QSystemSemaphore("semaphoreB", 0, QSystemSemaphore::Open);
 
-    semaphoreA = OpenSemaphore(SEMAPHORE_ALL_ACCESS, TRUE, L"Global\\semaphoreA");
-    semaphoreB = OpenSemaphore(SEMAPHORE_ALL_ACCESS, TRUE, L"Global\\semaphoreB");
-    semaphoreEnd = OpenSemaphore(SEMAPHORE_ALL_ACCESS, TRUE, L"Global\\semaphoreEnd");
-
-    if(semaphoreA == NULL || semaphoreB == NULL || semaphoreEnd == NULL)
-    {
-        std::cout << "Please, first create semaphores only with --create-semaphores option" << std::endl;
-        ended = true;
-        return;
-    }
-
+    restarted = false;
     ended = false;
     counter = 0;
     qsrand(QTime::currentTime().msec());
@@ -69,8 +47,8 @@ NetworkManager::NetworkManager(int argc, char *argv[], QObject *parent) :
 
     callbacks = new MyCallbacks(this);
 
-    ReleaseSemaphore((myRole == Initiator) ? semaphoreA : semaphoreB,1,NULL);
-    WaitForSingleObject((myRole == Initiator)? semaphoreB : semaphoreA,INFINITE);
+    (myRole == Initiator) ? semaphoreA->release() : semaphoreB->release();
+    (myRole == Initiator) ? semaphoreB->acquire() : semaphoreA->acquire();
 
     zrtp = new Zrtp(callbacks, myRole, "MacakM", &info);
     memcpy(myZid,zrtp->getZid(),ZID_SIZE);
@@ -90,7 +68,8 @@ NetworkManager::~NetworkManager()
     delete(timer);
     delete(sendSocket);
     delete(readSocket);
-    ReleaseSemaphore(semaphoreEnd,1,NULL);
+    delete(semaphoreA);
+    delete(semaphoreB);
 }
 
 void NetworkManager::setActualSignal(uint8_t signalNumber, int32_t time)
@@ -156,7 +135,12 @@ void NetworkManager::processSignal()
     {
         if(testing)
         {
-            ReleaseSemaphore((myRole == Initiator) ? semaphoreA : semaphoreB,1,NULL);
+            if(restarted)
+            {
+                return;
+            }
+            (myRole == Initiator) ? semaphoreA->release() : semaphoreB->release();
+            restarted = true;
 
             Restarter *t = new Restarter(this, (myRole == Initiator)? semaphoreB : semaphoreA);
             threads.push_back(t);
@@ -190,9 +174,10 @@ void NetworkManager::restartZrtp()
         delete(threads.at(i));
         threads.erase(threads.begin() + i);
     }
+    restarted = false;
     counter++;
     std::cout << "COUNTER: " << counter << std::endl;
-    if(counter == 10000)
+    if(counter == 1000)
     {
         ended = true;
     }

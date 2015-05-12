@@ -6,6 +6,7 @@
 #include <QTime>
 #include <QTimer>
 #include <QMutex>
+#include <QSystemSemaphore>
 #include <vector>
 
 #include "zrtp.h"
@@ -15,9 +16,6 @@
 #include "zrtptimeout.h"
 #include "restarter.h"
 
-//just for testing
-#include <windows.h>
-#include <conio.h>
 #include <fstream>
 #include <stdlib.h>
 #include <time.h>
@@ -159,7 +157,11 @@ private:
 
     SrtpMaterial material;
 
+    //tells main to quit
     bool ended;
+
+    //important when multiple restart signals occurs
+    bool restarted;
 };
 
 #endif // NETWORKMANAGER_H

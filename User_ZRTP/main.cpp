@@ -11,7 +11,6 @@ int main(int argc, char *argv[])
 
     while(manager->hasEnded() == false)
     {
-        Sleep(0);
         a.processEvents();
     }
 

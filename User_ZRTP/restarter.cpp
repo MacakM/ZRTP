@@ -1,6 +1,6 @@
 #include "restarter.h"
 
-Restarter::Restarter(NetworkManager *manager, HANDLE semaphore)
+Restarter::Restarter(NetworkManager *manager, QSystemSemaphore *semaphore)
 {
     this->manager = manager;
     this->semaphore = semaphore;
@@ -8,6 +8,6 @@ Restarter::Restarter(NetworkManager *manager, HANDLE semaphore)
 
 void Restarter::run()
 {
-    WaitForSingleObject(semaphore,INFINITE);
+    semaphore->acquire();
     manager->setActualSignal(5);
 }
