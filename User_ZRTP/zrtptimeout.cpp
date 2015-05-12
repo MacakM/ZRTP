@@ -12,7 +12,7 @@ void ZrtpTimeout::run()
     {
         qsrand(QTime::currentTime().msec());
         int32_t delayTime = qrand() % delay;
-        Sleep(delayTime);
+        msleep(delayTime);
     }
     manager->processZrtpTimeout();
     return;
