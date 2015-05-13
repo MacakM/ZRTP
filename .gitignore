@@ -1,5 +1,4 @@
 # QT Creator
-*.pro
 *.pro.user
 build-*
 
