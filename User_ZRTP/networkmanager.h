@@ -25,8 +25,6 @@ typedef std::vector<QThread*> threadVector;
 
 /**
  * Class that is in charge of all network events that happens on chosen port and IP address.
- *
- * @author Martin Macak
  */
 class NetworkManager : public QObject
 {
@@ -58,8 +56,8 @@ public:
     /**
      * Set actual signal so NetworkManager can process it.
      *
-     * @param signalNumber  1 = set timer with given time, 2 = cancel timer, 3 = zrtp ended,
-     *                      4 = zrtp failed, 5 = zrtp restarting
+     * @param signalNumber  1 = activate timer with given time, 2 = cancel timer,
+     *                      3 = zrtp ended, 4 = zrtp failed, 5 = zrtp restart
      * @param time          given time
      */
     void setActualSignal(uint8_t signalNumber, int32_t time = 0);
@@ -94,7 +92,7 @@ public slots:
     void processSignal();
 
     /**
-     * Restarts all Zrtp process.
+     * Restarts Zrtp process.
      */
     void restartZrtp();
 	
@@ -106,7 +104,6 @@ public slots:
 public:
     /**
      * Calls ZRTP method to process timeout.
-     *
      */
     void processZrtpTimeout() { zrtp->processTimeout(); }
 
@@ -122,12 +119,21 @@ private:
     /**
      * Sets given arguments from parser.
      *
-     * @param args  loaded arguments
+     * @param args  arguments from command line
      */
-    void setArguments(Arguments args);
+    void setArguments(Arguments *args);
 
+
+    Role myRole;
+    QHostAddress sendIp;
+    quint16 sendPort;
+    QHostAddress receiveIp;
+    quint16 receivePort;
     int32_t packetDelay;
     int8_t packetLoss;
+    quint32 testCap;
+
+    quint32 counter;
 
     threadVector threads;
     UserInfo info;
@@ -141,11 +147,6 @@ private:
     QUdpSocket *readSocket;
     QTimer *timer;
 
-    Role myRole;
-    QHostAddress sendIp;
-    quint16 sendPort;
-    QHostAddress receiveIp;
-    quint16 receivePort;
 
     Zrtp *zrtp;
     ZrtpCallback *callbacks;
@@ -153,9 +154,7 @@ private:
     std::ofstream myFile;
     QMutex *mutex;
 
-    bool testing;
-    quint32 counter;
-    quint32 testCap;
+
 
     SrtpMaterial material;
 

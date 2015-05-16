@@ -4,7 +4,7 @@ PacketConfirm::PacketConfirm()
 {
     packetHeader = new Header();
     setZrtpIdentifier();
-    setLength(19);
+    setLength(19);  //Confirm length without signature
     flags = 0;
     encryptionDone = false;
 }

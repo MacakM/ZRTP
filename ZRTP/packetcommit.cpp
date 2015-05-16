@@ -5,7 +5,7 @@ PacketCommit::PacketCommit()
     packetHeader = new Header();
     setZrtpIdentifier();
     setType((uint8_t*)"Commit  ");
-    setLength(29);
+    setLength(29);  //Commit length in DH mode
 }
 
 PacketCommit::~PacketCommit()

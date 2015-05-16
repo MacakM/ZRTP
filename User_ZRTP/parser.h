@@ -27,7 +27,15 @@ public:
      */
     Parser() {}
 
-    static Arguments getArguments(int argc, char* argv[]);
+    /**
+     * Returns arguments from command line.
+     *
+     * @param argc      command line argument argc
+     * @param argv      command line argument argv
+     *
+     * @return          loaded arguments.
+     */
+    static Arguments *getArguments(int argc, char* argv[]);
 
 private:
     /**

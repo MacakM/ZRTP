@@ -6,9 +6,9 @@ QSystemSemaphore *semaphoreB;
 NetworkManager::NetworkManager(int argc, char *argv[], QObject *parent) :
     QObject(parent)
 {
+    //initalize
     semaphoreA = new QSystemSemaphore("semaphoreA", 0, QSystemSemaphore::Open);
     semaphoreB = new QSystemSemaphore("semaphoreB", 0, QSystemSemaphore::Open);
-
     restarted = false;
     ended = false;
     counter = 0;
@@ -16,13 +16,14 @@ NetworkManager::NetworkManager(int argc, char *argv[], QObject *parent) :
     threads.reserve(15);
     actualSignal = (Signal)0;
     actualTime = 0;
-
     connect(this,SIGNAL(signalReceived()),this,SLOT(processSignal()));
     mutex = new QMutex();
     sendSocket = new QUdpSocket();
     readSocket = new QUdpSocket();
+
     setArguments(Parser::getArguments(argc,argv));
 
+    //add supported algorithms
     info.versions.push_back("1.10");
     //demonstration of version negotiation
     if(myRole == Responder) info.versions.push_back("1.20");
@@ -58,7 +59,6 @@ NetworkManager::NetworkManager(int argc, char *argv[], QObject *parent) :
 NetworkManager::~NetworkManager()
 {
     delete(zrtp);
-    std:: cout << "Test took " << elapsedTimer.elapsed() << " milliseconds.";
     info.versions.clear();
     info.hashTypes.clear();
     info.cipherTypes.clear();
@@ -105,6 +105,7 @@ void NetworkManager::processPendingDatagram()
     for(int i = 0; i < size; i++)
     {
         myFile << datagram[i];
+        //better output structure
         if(i % 12 == 11)
         {
             myFile << std::endl;
@@ -135,7 +136,14 @@ void NetworkManager::processSignal()
     }
     else if (actualSignal == zrtpEnded)
     {
-        if(testing)
+        counter++;
+        std::cout << "COUNTER: " << std::dec << counter << std::endl;
+        if(counter == testCap)
+        {
+            std::cout << "Call secured" << std::endl;
+            endZrtp();
+        }
+        else
         {
             if(restarted)
             {
@@ -147,11 +155,6 @@ void NetworkManager::processSignal()
             Restarter *t = new Restarter(this, (myRole == Initiator)? semaphoreB : semaphoreA);
             threads.push_back(t);
             t->start();
-        }
-        else
-        {
-            std::cout << "Call secured" << std::endl;
-            endZrtp();
         }
     }
     else if(actualSignal == zrtpFailed)
@@ -177,21 +180,14 @@ void NetworkManager::restartZrtp()
         threads.erase(threads.begin() + i);
     }
     restarted = false;
-    counter++;
-    std::cout << "COUNTER: " << std::dec << counter << std::endl;
-    if(counter == testCap)
-    {
-        ended = true;
-    }
-	else
-    {
-		delete (zrtp);
-		zrtp = new Zrtp(callbacks, myRole, "MacakM", &info);
-	}
+
+    delete (zrtp);
+    zrtp = new Zrtp(callbacks, myRole, "MacakM", &info);
 }
 
 void NetworkManager::endZrtp()
 {
+    std:: cout << "Test took " << elapsedTimer.elapsed() << " milliseconds." << std::endl;
     //wait for all threads to end
     for(int i = threads.size() - 1; i >= 0; i--)
     {
@@ -204,96 +200,34 @@ void NetworkManager::endZrtp()
     ended = true;
 }
 
-void NetworkManager::setArguments(Arguments args)
+void NetworkManager::setArguments(Arguments *args)
 {
-    if(args.role == '0')
-    {
-        myRole = Initiator;
-    }
-    else    //default - Responder
-    {
-        myRole = Responder;
-    }
+    //default role Responder
+    (args->role == '0') ? myRole = Initiator : myRole = Responder;
 
-    if(args.receiveIp != NULL)
-    {
-        receiveIp = QHostAddress(args.receiveIp);
-    }
-    else    //default - 0.0.0.0
-    {
-        receiveIp = QHostAddress("0.0.0.0");
-    }
+    //default receiveIp 0.0.0.0
+    (args->receiveIp != NULL)? receiveIp = QHostAddress(args->receiveIp) : receiveIp = QHostAddress("0.0.0.0");
 
-    if(args.receivePort != NULL)
-    {
-        receivePort = atoi(args.receivePort);
-    }
-    else    //default 41001 - Initiator, 41002 - Responder
-    {
-        if(myRole == Initiator)
-        {
-            receivePort = 41001;
-        }
-        else
-        {
-            receivePort = 41002;
-        }
-    }
+    //default receivePort 41001 - Initiator, 41002 - Responder
+    (args->receivePort != NULL) ? receivePort = atoi(args->receivePort) :
+        (myRole == Initiator) ? receivePort = 41001 : receivePort = 41002;
 
-    if(args.sendIp != NULL)
-    {
-        sendIp = QHostAddress(args.sendIp);
-    }
-    else    //default 127.0.0.1
-    {
-        sendIp = QHostAddress("127.0.0.1");
-    }
+    //default sendIp 127.0.0.1
+    (args->sendIp != NULL) ? sendIp = QHostAddress(args->sendIp) : sendIp = QHostAddress("127.0.0.1");
 
-    if(args.sendPort != NULL)
-    {
-        sendPort = atoi(args.sendPort);
-    }
-    else    //default 41001 - Responder, 41002 - Initiator
-    {
-        if(myRole == Initiator)
-        {
-            sendPort = 41002;
-        }
-        else
-        {
-            sendPort = 41001;
-        }
-    }
+    //default sendPort 41001 - Responder, 41002 - Initiator
+    (args->sendPort != NULL) ? sendPort = atoi(args->sendPort) :
+        (myRole == Initiator) ? sendPort = 41002 : sendPort = 41001;
 
-    if(args.packetLoss != NULL)
-    {
-        packetLoss = atoi(args.packetLoss);
-    }
-    else
-    {
-        packetLoss = 0;
-    }
+    //default packetLoss 0
+    (args->packetLoss != NULL) ? packetLoss = atoi(args->packetLoss) : packetLoss = 0;
 
-    if(args.packetDelay != NULL)
-    {
-        packetDelay = atoi(args.packetDelay);
-    }
-    else
-    {
-        packetDelay = 0;
-    }
+    //default packetDelay 0
+    (args->packetDelay != NULL) ? packetDelay = atoi(args->packetDelay) : packetDelay = 0;
 
-    if(args.testing != NULL)
-    {
-        testCap = atoi(args.testing);
-        testing = true;
-    }
-    else
-    {
-        testCap = 1;
-        testing = false;
-    }
-
+    //default number of iterations 1
+    (args->testing != NULL) ? testCap = atoi(args->testing) : testCap = 1;
+    delete(args);
 }
 
 void NetworkManager::createTimeoutThread()

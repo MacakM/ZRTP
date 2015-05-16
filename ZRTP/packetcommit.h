@@ -33,7 +33,6 @@ public:
      */
     virtual bool parse(uint8_t *data, uint32_t *errorCode);
 
-
     /**
      * Returns whether this packet has greater hvi than peer commit packet.
      * Important when choosing Initiator from two Initiator endpoints.

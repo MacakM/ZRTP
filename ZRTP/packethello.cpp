@@ -201,7 +201,7 @@ bool PacketHello::parse(uint8_t *data, uint32_t *errorCode)
 }
 
 
-void PacketHello::AddSupportedTypes(UserInfo *info)
+void PacketHello::addSupportedTypes(UserInfo *info)
 {
     for(uint8_t i = 0; i < info->hashTypes.size(); i++)
     {

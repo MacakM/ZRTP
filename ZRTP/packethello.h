@@ -137,7 +137,7 @@ public:
      *
      * @param info  user's info
      */
-    void AddSupportedTypes(UserInfo *info);
+    void addSupportedTypes(UserInfo *info);
 
     /**
      * Sets MAC of packet.

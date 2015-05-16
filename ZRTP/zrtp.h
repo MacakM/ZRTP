@@ -46,10 +46,6 @@ class StateEngine;
  * It cooperates with StateEngine class, giving it received messages and timeouts.
  *
  * User have to implement functions defined in ZrtpCallback class, so Zrtp can use them.
- *
- * @author Martin Macak
- *
- * @see ZrtpCallback
  */
 class Zrtp
 {

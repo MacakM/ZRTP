@@ -14,7 +14,8 @@ public:
     /**
     * Constructor of Restarter.
     *
-    * @param manager   NetworkManager that created this thread
+    * @param manager    NetworkManager that created this thread
+    * @param semaphore  semaphore which is waiting for
     */
     explicit Restarter(NetworkManager *manager, QSystemSemaphore *semaphore);
 

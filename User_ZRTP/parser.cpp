@@ -1,80 +1,32 @@
 #include "parser.h"
 
-Arguments Parser::getArguments(int argc, char *argv[])
+Arguments *Parser::getArguments(int argc, char *argv[])
 {
-    Arguments args;
+    Arguments *args = new Arguments;
 
-    if(cmdOptionExists(argv, argv+argc, "--user"))
-    {
-        args.role = getCmdOption(argv, argv + argc, "--user")[0];
-    }
-    else
-    {
-        args.role = 1;
-    }
+    (cmdOptionExists(argv, argv+argc, "--user")) ? args->role = getCmdOption(argv, argv + argc, "--user")[0]:
+        args->role = 1;
 
-    if(cmdOptionExists(argv, argv+argc, "--listen-ip"))
-    {
-        args.receiveIp = getCmdOption(argv, argv + argc, "--listen-ip");
-    }
-    else
-    {
-        args.receiveIp = NULL;
-    }
+    (cmdOptionExists(argv, argv+argc, "--listen-ip")) ? args->receiveIp = getCmdOption(argv, argv + argc, "--listen-ip"):
+        args->receiveIp = NULL;
 
-    if(cmdOptionExists(argv, argv+argc, "--listen-port"))
-    {
-        args.receivePort = getCmdOption(argv, argv + argc, "--listen-port");
-    }
-    else
-    {
-        args.receivePort = NULL;
-    }
+    (cmdOptionExists(argv, argv+argc, "--listen-port")) ? args->receivePort = getCmdOption(argv, argv + argc, "--listen-port"):
+        args->receivePort = NULL;
 
-    if(cmdOptionExists(argv, argv+argc, "--remote-ip"))
-    {
-        args.sendIp = getCmdOption(argv, argv + argc, "--remote-ip");
-    }
-    else
-    {
-        args.sendIp = NULL;
-    }
+    (cmdOptionExists(argv, argv+argc, "--remote-ip")) ? args->sendIp = getCmdOption(argv, argv + argc, "--remote-ip"):
+        args->sendIp = NULL;
 
-    if(cmdOptionExists(argv, argv+argc, "--remote-port"))
-    {
-        args.sendPort = getCmdOption(argv, argv + argc, "--remote-port");
-    }
-    else
-    {
-        args.sendPort = NULL;
-    }
+    (cmdOptionExists(argv, argv+argc, "--remote-port")) ? args->sendPort = getCmdOption(argv, argv + argc, "--remote-port"):
+        args->sendPort = NULL;
 
-    if(cmdOptionExists(argv, argv+argc, "--packet-delay"))
-    {
-        args.packetDelay = getCmdOption(argv, argv + argc, "--packet-delay");
-    }
-    else
-    {
-        args.packetDelay = 0;
-    }
+    (cmdOptionExists(argv, argv+argc, "--packet-delay")) ? args->packetDelay = getCmdOption(argv, argv + argc, "--packet-delay"):
+        args->packetDelay = 0;
 
-    if(cmdOptionExists(argv, argv+argc, "--packet-loss"))
-    {
-        args.packetLoss = getCmdOption(argv, argv + argc, "--packet-loss");
-    }
-    else
-    {
-        args.packetLoss = 0;
-    }
+    (cmdOptionExists(argv, argv+argc, "--packet-loss")) ? args->packetLoss = getCmdOption(argv, argv + argc, "--packet-loss"):
+        args->packetLoss = 0;
 
-    if(cmdOptionExists(argv, argv+argc, "--testing"))
-    {
-        args.testing = getCmdOption(argv, argv + argc, "--testing");
-    }
-    else
-    {
-        args.testing = 0;
-    }
+    (cmdOptionExists(argv, argv+argc, "--testing")) ? args->testing = getCmdOption(argv, argv + argc, "--testing"):
+        args->testing = 0;
 
     return args;
 }

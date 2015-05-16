@@ -51,13 +51,20 @@ typedef struct {
 typedef void (StateEngine::*Handler)(void);
 typedef std::map<States, Handler> handlerMap;
 
+/**
+ * StateEngine class is responsible for processing events from Zrtp class
+ * based on the actual state of the protocol.
+ *
+ * Then it calls methods from Zrtp class to control the progress of key
+ * agreement.
+ */
 class StateEngine
 {
 public:
     /**
      * StateEngine constructor.
      *
-     * Zrtp class that cooperates with StateEngine
+     * @param zrtp  Zrtp class that cooperates with StateEngine
      */
     StateEngine(Zrtp *zrtp);
 
@@ -74,6 +81,11 @@ public:
      */
     void processEvent(Event *event);
 
+    /**
+     * Returns the number of actual state.
+     *
+     * @return  actual state
+     */
     States *getActualState() { return &actualState; }
 
 private:

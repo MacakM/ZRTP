@@ -113,7 +113,7 @@ void Zrtp::createHelloPacket(uint8_t *clientId)
     hello->setClientId(clientId);
     hello->setH3(myH3);
     hello->setZid(myZID);
-    hello->AddSupportedTypes(userInfo);
+    hello->addSupportedTypes(userInfo);
     uint8_t *mac = generateMac(hello, true);
     hello->setMac(mac);
     delete[] (mac);
@@ -278,7 +278,6 @@ uint8_t *Zrtp::generateMac(Packet *packet, bool sending)
     {
         sprintf((char*)&computedMac[i*2], "%02x", (unsigned int)digest[i]);
     }
-    //delete[] (digest);
     return computedMac;
 }
 
@@ -767,7 +766,6 @@ void Zrtp::kdf(uint8_t *key, uint8_t *label, int32_t labelLength, uint8_t *conte
         sprintf((char*)&computedMac[i*2], "%02x", (unsigned int)digest[i]);
     }
     memcpy(derivedKey,computedMac,lengthL);
-    //delete[] (digest);
     delete[] (buffer);
 }
 
