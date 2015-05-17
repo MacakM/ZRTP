@@ -33,7 +33,7 @@ public:
      * @param argc      command line argument argc
      * @param argv      command line argument argv
      *
-     * @return          loaded arguments.
+     * @return          loaded arguments
      */
     static Arguments *getArguments(int argc, char* argv[]);
 

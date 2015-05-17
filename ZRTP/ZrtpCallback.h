@@ -65,6 +65,8 @@ public:
 
     /**
      * Tells user that key agreement has ended successfuly.
+     *
+     * @param material  SRTP material
      */
     virtual void keyAgreed(SrtpMaterial *material) = 0;
 

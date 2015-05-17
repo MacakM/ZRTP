@@ -82,7 +82,7 @@ public slots:
     void processPendingDatagram();
 
     /**
-     * Slot that is called when timeout occurs
+     * Slot that is called when timeout occurs.
      */
     void createTimeoutThread();
 
@@ -123,7 +123,6 @@ private:
      */
     void setArguments(Arguments *args);
 
-
     Role myRole;
     QHostAddress sendIp;
     quint16 sendPort;
@@ -147,14 +146,11 @@ private:
     QUdpSocket *readSocket;
     QTimer *timer;
 
-
     Zrtp *zrtp;
     ZrtpCallback *callbacks;
 
     std::ofstream myFile;
     QMutex *mutex;
-
-
 
     SrtpMaterial material;
 
